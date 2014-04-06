@@ -1,0 +1,95 @@
+<!--
+  ~ Copyright 2014 Alexey Plotnik
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<h3>Cluster state</h3>
+<div id="cluster-state"></div>
+
+<script type="text/javascript">
+    require(['app/cluster']);
+</script>
+
+<script type="text/html" id="cluster-state-frame-template">
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <h4>Capacity</h4>
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="cluster-overall-state-text-template">
+    <p><strong class="cluster-capacity">
+        <%= space_usage_template %>
+    </strong></p>
+</script>
+
+<script type="text/html" id="space-usage-template">
+    <%= percentage %>%,
+    <%= usedHuman %> (<%= used %> bytes) /
+    <%= totalHuman %> (<%= total %> bytes)
+</script>
+
+<script type="text/html" id="progress-bar-template">
+    <div id="<%= id %>" class="progress">
+        <div class="progress-bar progress-bar-info" role="progressbar"
+             aria-valuenow="<%= used_percentage %>"
+             aria-valuemin="0"
+             aria-valuemax="100" style='width: <%= used_percentage %>%'>
+            <span><%= progress_bar_label_template %></span>
+        </div>
+    </div>
+</script>
+
+
+<script type="text/html" id="progress-bar-label-template">
+    <span title="<%= usedHuman() %> / <%= totalHuman() %>">
+        <%= usedHuman() %> / <%= totalHuman() %>
+    </span>
+</script>
+
+<script type="text/html" id="storage-nodes-template">
+    <h4>Storage nodes</h4>
+</script>
+
+<script type="text/html" id="storage-node-template">
+    <div class="panel panel-default">
+
+        <div class="panel-heading">
+            <h3 class="panel-title"><b><%= endpoint %></b></h3>
+        </div>
+        <div class="panel-body">
+            <!-- PROGRESS BAR -->
+            <!-- DISKS -->
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="disk-template">
+    <div class="row">
+        <div class="col-md-2">
+            <span class="label label-default"><%= path %></span>
+        </div>
+        <div class="progress-container col-md-5">
+            <!-- PROGRESS BAR -->
+            <!-- LABEL -->
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="alert-template">
+    <div class="alert alert-info">
+        <%= message %>
+    </div>
+</script>
