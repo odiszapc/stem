@@ -32,7 +32,7 @@ Stem can act as a base for a wide variety of services:
 Stem Object Storage enables you to install as many HDDs to a cluster node as you want. When meta data are in a separated place it's easy — you are not afraid to exceed the RAM.
 
 #### Authors
-Alexey Plotnik (odiszapc@gmail.com). I do it just because I like it.
+Alexey Plotnik (odiszapc@gmail.com, http://twiter.com/odiszapc) I do it just because I like it.
 
 #### License
 Apache 2.0
