@@ -367,6 +367,6 @@ public class IntegrationTestBase
 
     protected String getStorageNodeConfigPath()
     {
-        return "../stem-storagenode/src/test/resources/stem.yaml";
+        return "components/storagenode/src/test/resources/stem.yaml";
     }
 }

@@ -20,8 +20,8 @@ blob_manager_endpoint: http://localhost:9997
 node_listen: localhost
 node_port: 9999
 
-meta_store_host: localhost
-meta_store_port:
+# meta_store_host: localhost
+# meta_store_port:
 
 # Each mount point is handled separately. For 5 mount points there are 5 thread pools
 # are created, RW operations are performed simultaneously.
