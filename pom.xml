@@ -26,6 +26,17 @@
   <packaging>pom</packaging>
   <version>0.0.1-SNAPSHOT</version>
 
+  <url>http://stemstorage.org</url>
+  <description>
+    Stem is a distributed object storage based on top of Netty, Grizzly and Zookeeper
+    and uses CRUSH algorithm as a data distribution strategy
+  </description>
+
+  <issueManagement>
+    <system>JIRA</system>
+    <url>http://tracker.stemstorage.org</url>
+  </issueManagement>
+
   <developers>
     <developer>
       <id>odiszapc</id>
