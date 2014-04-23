@@ -41,7 +41,7 @@
 
     <dependency>
       <groupId>org.stem</groupId>
-      <artifactId>stem-blobmanager</artifactId>
+      <artifactId>stem-clustermanager</artifactId>
       <version>${project.version}</version>
     </dependency>
 

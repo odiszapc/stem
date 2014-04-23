@@ -34,7 +34,7 @@ public class StemClient implements TopoMapSubscriber
 {
     private MetaStoreClient metaClient;
     private ZookeeperClient zooClient;
-    private TopoMapListener mappingListener; // Updated from Zookeeper size by BlobManager
+    private TopoMapListener mappingListener; // Updated from Zookeeper size by ClusterManager
     private TopoMapping mapping;
     private ArrayBalancer dht;
 

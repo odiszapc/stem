@@ -35,7 +35,7 @@ import java.util.concurrent.Executors;
 public class ClusterService
 {
     public static final ClusterService instance = new ClusterService();
-    private ClusterManagerClient client = ClusterManagerClient.create(StorageNodeDescriptor.getBlobManagerEndpoint());
+    private ClusterManagerClient client = ClusterManagerClient.create(StorageNodeDescriptor.getClusterManagerEndpoint());
     private Executor periodicTasksExecutor = Executors.newFixedThreadPool(5);
 
 

@@ -43,7 +43,7 @@ import java.util.UUID;
 
 public class IntegrationTestBase
 {
-    ClusterManagerLauncher blobManagerInstance;
+    ClusterManagerLauncher clusterManagerInstance;
     private TestingServer zookeeperInstance;
     protected ClusterManagerClient clusterManagerClient;
     protected Session cassandraTestSession;
@@ -61,8 +61,8 @@ public class IntegrationTestBase
         startZookeeperEmbedded();
         startCassandraEmbedded();
         loadSchema();
-        startBlobManagerEmbedded();
-        waitForBlobManager();
+        startClusterManagerEmbedded();
+        waitForClusterManager();
         clusterManagerClient = ClusterManagerClient
                 .create("http://localhost:9997");
         initCluster();
@@ -76,7 +76,7 @@ public class IntegrationTestBase
 //  TODO: turn off tear down for a while
 //        stopStorageNodeEmbedded();
 //        cleanupDataDirectories();
-//        stopBlobManagerEmbedded();
+//        stopClusterManagerEmbedded();
 //        stopCassandraEmbedded();
 //        stopZookeeperEmbedded();
     }
@@ -167,7 +167,7 @@ public class IntegrationTestBase
         return 1;
     }
 
-    private void waitForBlobManager()
+    private void waitForClusterManager()
     {
         try
         {
@@ -176,7 +176,7 @@ public class IntegrationTestBase
             int count = 0;
             while (!connected && count < maxCount)
             {
-                connected = tryBlobManager();
+                connected = tryClusterManager();
                 if (!connected)
                 {
                     Thread.sleep(500);
@@ -194,7 +194,7 @@ public class IntegrationTestBase
         }
     }
 
-    private boolean tryBlobManager() throws InterruptedException
+    private boolean tryClusterManager() throws InterruptedException
     {
         try
         {
@@ -234,23 +234,23 @@ public class IntegrationTestBase
         }
     }
 
-    private void startBlobManagerEmbedded()
+    private void startClusterManagerEmbedded()
     {
-        Thread blobManagerThread = new Thread()
+        Thread clusterManagerThread = new Thread()
         {
             @Override
             public void run()
             {
-                blobManagerInstance = new ClusterManagerLauncher();
-                blobManagerInstance.start();
+                clusterManagerInstance = new ClusterManagerLauncher();
+                clusterManagerInstance.start();
             }
         };
-        blobManagerThread.start();
+        clusterManagerThread.start();
     }
 
-    private void stopBlobManagerEmbedded()
+    private void stopClusterManagerEmbedded()
     {
-        blobManagerInstance.stop();
+        clusterManagerInstance.stop();
     }
 
     private void startCassandraEmbedded()

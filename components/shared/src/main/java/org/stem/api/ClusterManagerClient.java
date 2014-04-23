@@ -50,7 +50,7 @@ public class ClusterManagerClient extends BaseHttpClient
         }
         catch (Exception e)
         {
-            throw new RuntimeException("Can't join cluster, BlobManager response: " + e.getMessage());
+            throw new RuntimeException("Can't join cluster, ClusterManager response: " + e.getMessage());
         }
     }
 
