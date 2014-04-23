@@ -18,7 +18,7 @@ package org.stem.api.request;
 
 import java.util.List;
 
-public class AddStorageNodeRequest extends BlobManagerRequest
+public class AddStorageNodeRequest extends ClusterManagerRequest
 {
     String ipAddress;
     int port;

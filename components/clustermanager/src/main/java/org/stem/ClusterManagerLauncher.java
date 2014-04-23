@@ -41,13 +41,13 @@ import java.io.IOException;
 import java.net.URI;
 
 
-public class BlobManagerLauncher
+public class ClusterManagerLauncher
 {
     HttpServer server;
 
     public static void main(String[] args)
     {
-        BlobManagerLauncher launcher = new BlobManagerLauncher();
+        ClusterManagerLauncher launcher = new ClusterManagerLauncher();
         launcher.start();
     }
 

@@ -15,7 +15,7 @@
 #
 
 auto_allocate: true
-blob_manager_endpoint: http://localhost:9997
+cluster_manager_endpoint: http://localhost:9997
 
 node_listen: localhost
 node_port: 10000
