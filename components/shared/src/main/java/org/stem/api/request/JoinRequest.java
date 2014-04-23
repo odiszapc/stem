@@ -20,7 +20,7 @@ package org.stem.api.request;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JoinRequest extends BlobManagerRequest
+public class JoinRequest extends ClusterManagerRequest
 {
     private int port;
     private List<String> ipAddresses = new ArrayList<String>();

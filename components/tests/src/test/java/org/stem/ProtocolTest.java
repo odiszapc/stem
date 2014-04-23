@@ -112,7 +112,7 @@ public class ProtocolTest extends IntegrationTestBase
     @Test
     public void testDelete() throws Exception
     {
-        blobManagerClient.computeMapping();
+        clusterManagerClient.computeMapping();
 
         StemClient client = new StemClient();
         client.start();
@@ -170,7 +170,7 @@ public class ProtocolTest extends IntegrationTestBase
     {
         Logger.getLogger("io.netty").setLevel(Level.OFF);
 
-        blobManagerClient.computeMapping();
+        clusterManagerClient.computeMapping();
 
         StemClient client = new StemClient();
         client.start();
@@ -201,7 +201,7 @@ public class ProtocolTest extends IntegrationTestBase
     @Test
     public void testClusterWrite() throws Exception
     {
-        blobManagerClient.computeMapping();
+        clusterManagerClient.computeMapping();
 
         StemClient client = new StemClient();
         client.start();
@@ -221,7 +221,7 @@ public class ProtocolTest extends IntegrationTestBase
     @Test
     public void testClusterMultiThreadWrite() throws Exception
     {
-        blobManagerClient.computeMapping();
+        clusterManagerClient.computeMapping();
         MultiSourcesExecutor executor = new MultiSourcesExecutor();
         executor.submitWriters(4);
         executor.shutdown();

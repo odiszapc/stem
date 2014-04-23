@@ -71,7 +71,7 @@
     <orderEntry type="library" name="Maven: commons-io:commons-io:2.4" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-collections4:4.0" level="project" />
     <orderEntry type="module" module-name="stem-storagenode" />
-    <orderEntry type="module" module-name="stem-blobmanager" />
+    <orderEntry type="module" module-name="stem-clustermanager" />
     <orderEntry type="library" name="Maven: org.glassfish.grizzly:grizzly-http-server:2.3.11" level="project" />
     <orderEntry type="library" name="Maven: org.glassfish.grizzly:grizzly-http:2.3.11" level="project" />
     <orderEntry type="library" name="Maven: org.glassfish.grizzly:grizzly-framework:2.3.11" level="project" />

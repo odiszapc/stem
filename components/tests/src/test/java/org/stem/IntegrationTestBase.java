@@ -26,7 +26,7 @@ import org.apache.curator.test.TestingServer;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.stem.api.BlobManagerClient;
+import org.stem.api.ClusterManagerClient;
 import org.stem.api.response.StemResponse;
 import org.stem.client.StemClient;
 import org.stem.db.Layout;
@@ -43,9 +43,9 @@ import java.util.UUID;
 
 public class IntegrationTestBase
 {
-    BlobManagerLauncher blobManagerInstance;
+    ClusterManagerLauncher blobManagerInstance;
     private TestingServer zookeeperInstance;
-    protected BlobManagerClient blobManagerClient;
+    protected ClusterManagerClient clusterManagerClient;
     protected Session cassandraTestSession;
     protected StemClient client = new StemClient();
 
@@ -63,7 +63,7 @@ public class IntegrationTestBase
         loadSchema();
         startBlobManagerEmbedded();
         waitForBlobManager();
-        blobManagerClient = BlobManagerClient
+        clusterManagerClient = ClusterManagerClient
                 .create("http://localhost:9997");
         initCluster();
         startStorageNodeEmbedded();
@@ -154,7 +154,7 @@ public class IntegrationTestBase
 
     private void initCluster()
     {
-        blobManagerClient.initCluster("Test cluster", getVBuckets(), getRF());
+        clusterManagerClient.initCluster("Test cluster", getVBuckets(), getRF());
     }
 
     protected int getVBuckets()
@@ -198,7 +198,7 @@ public class IntegrationTestBase
     {
         try
         {
-            StemResponse info = BlobManagerClient
+            StemResponse info = ClusterManagerClient
                     .create("http://localhost:9997")
                     .info();
         }
@@ -241,7 +241,7 @@ public class IntegrationTestBase
             @Override
             public void run()
             {
-                blobManagerInstance = new BlobManagerLauncher();
+                blobManagerInstance = new ClusterManagerLauncher();
                 blobManagerInstance.start();
             }
         };
