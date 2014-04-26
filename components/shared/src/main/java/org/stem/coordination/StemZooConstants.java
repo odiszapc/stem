@@ -20,11 +20,11 @@ public class StemZooConstants
 {
     // TODO: think about ZNodes paths
     private static final String STEM_ROOT = "/stem";
-    private static final String BLOB_MANAGER = STEM_ROOT + "/blobmanager";
-    public static final String CLUSTER = BLOB_MANAGER + "/cluster";
-    public static final String TOPOLOGY = BLOB_MANAGER + "/topology";
-    public static final String OUT_SESSIONS = BLOB_MANAGER + "/streaming/out";
-    public static final String IN_SESSIONS = BLOB_MANAGER + "/streaming/in"; // TODO: do we really need this? It's pseudo session
+    private static final String CLUSTER_MANAGER = STEM_ROOT + "/clustermanager";
+    public static final String CLUSTER = CLUSTER_MANAGER + "/cluster";
+    public static final String TOPOLOGY = CLUSTER_MANAGER + "/topology";
+    public static final String OUT_SESSIONS = CLUSTER_MANAGER + "/streaming/out";
+    public static final String IN_SESSIONS = CLUSTER_MANAGER + "/streaming/in"; // TODO: do we really need this? It's pseudo session
 
     public static final String TOPO_MAP = "mapping";
 }

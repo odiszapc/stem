@@ -24,7 +24,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
-        <module name="stem-blobmanager" />
+        <module name="stem-clustermanager" />
         <module name="stem-frontend" />
         <module name="stem-shared" />
         <module name="stem-storagenode" />

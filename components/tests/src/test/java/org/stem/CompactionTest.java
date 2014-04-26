@@ -42,7 +42,7 @@ public class CompactionTest extends IntegrationTestBase
     public void setUp() throws IOException
     {
         super.setUp();
-        blobManagerClient.computeMapping();
+        clusterManagerClient.computeMapping();
         client.start();
     }
 
@@ -69,10 +69,7 @@ public class CompactionTest extends IntegrationTestBase
     @Test
     public void testCompaction() throws Exception
     {
-
-        System.out.println("### " + StorageNodeDescriptor.getMaxAllocationInMb());
-
-        blobManagerClient.computeMapping();
+        clusterManagerClient.computeMapping();
         StemClient client = new StemClient();
         client.start();
 

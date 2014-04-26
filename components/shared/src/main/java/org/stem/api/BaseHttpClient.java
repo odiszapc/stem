@@ -26,7 +26,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.AbstractHttpMessage;
-import org.stem.api.request.BlobManagerRequest;
+import org.stem.api.request.ClusterManagerRequest;
 import org.stem.api.response.StemResponse;
 import org.stem.util.JsonUtils;
 
@@ -72,7 +72,7 @@ public abstract class BaseHttpClient
         }
     }
 
-    public <T extends StemResponse> T send(HttpEntityEnclosingRequestBase request, BlobManagerRequest msg, Class<T> clazz)
+    public <T extends StemResponse> T send(HttpEntityEnclosingRequestBase request, ClusterManagerRequest msg, Class<T> clazz)
     {
         try
         {

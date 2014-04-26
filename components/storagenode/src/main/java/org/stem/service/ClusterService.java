@@ -17,7 +17,7 @@
 package org.stem.service;
 
 
-import org.stem.api.BlobManagerClient;
+import org.stem.api.ClusterManagerClient;
 import org.stem.api.request.JoinRequest;
 import org.stem.api.response.ClusterResponse;
 import org.stem.db.Layout;
@@ -35,7 +35,7 @@ import java.util.concurrent.Executors;
 public class ClusterService
 {
     public static final ClusterService instance = new ClusterService();
-    private BlobManagerClient client = BlobManagerClient.create(StorageNodeDescriptor.getBlobManagerEndpoint());
+    private ClusterManagerClient client = ClusterManagerClient.create(StorageNodeDescriptor.getClusterManagerEndpoint());
     private Executor periodicTasksExecutor = Executors.newFixedThreadPool(5);
 
 

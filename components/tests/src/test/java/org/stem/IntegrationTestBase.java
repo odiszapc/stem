@@ -26,7 +26,7 @@ import org.apache.curator.test.TestingServer;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.stem.api.BlobManagerClient;
+import org.stem.api.ClusterManagerClient;
 import org.stem.api.response.StemResponse;
 import org.stem.client.StemClient;
 import org.stem.db.Layout;
@@ -46,9 +46,9 @@ import java.util.UUID;
 
 public class IntegrationTestBase
 {
-    BlobManagerLauncher blobManagerInstance;
+    ClusterManagerLauncher clusterManagerInstance;
     private TestingServer zookeeperInstance;
-    protected BlobManagerClient blobManagerClient;
+    protected ClusterManagerClient clusterManagerClient;
     protected Session cassandraTestSession;
     protected StemClient client = new StemClient();
 
@@ -65,9 +65,9 @@ public class IntegrationTestBase
         loadSchema();
 
         startZookeeperEmbedded();
-        startBlobManagerEmbedded();
-        waitForBlobManager();
-        blobManagerClient = BlobManagerClient
+        startClusterManagerEmbedded();
+        waitForClusterManager();
+        clusterManagerClient = ClusterManagerClient
                 .create("http://localhost:9997");
         initCluster();
 
@@ -81,7 +81,7 @@ public class IntegrationTestBase
         stopStorageNodeEmbedded();
         cleanupDataDirectories();
 
-        stopBlobManagerEmbedded();
+        stopClusterManagerEmbedded();
         //stopCassandraEmbedded();
         stopZookeeperEmbedded();
     }
@@ -152,7 +152,7 @@ public class IntegrationTestBase
 
     private void initCluster()
     {
-        blobManagerClient.initCluster("Test cluster", getVBuckets(), getRF());
+        clusterManagerClient.initCluster("Test cluster", getVBuckets(), getRF());
     }
 
     protected int getVBuckets()
@@ -165,7 +165,7 @@ public class IntegrationTestBase
         return 1;
     }
 
-    private void waitForBlobManager()
+    private void waitForClusterManager()
     {
         try
         {
@@ -174,7 +174,7 @@ public class IntegrationTestBase
             int count = 0;
             while (!connected && count < maxCount)
             {
-                connected = tryBlobManager();
+                connected = tryClusterManager();
                 if (!connected)
                 {
                     Thread.sleep(500);
@@ -192,11 +192,11 @@ public class IntegrationTestBase
         }
     }
 
-    private boolean tryBlobManager() throws InterruptedException
+    private boolean tryClusterManager() throws InterruptedException
     {
         try
         {
-            StemResponse info = BlobManagerClient
+            StemResponse info = ClusterManagerClient
                     .create("http://localhost:9997")
                     .info();
         }
@@ -232,23 +232,23 @@ public class IntegrationTestBase
         }
     }
 
-    private void startBlobManagerEmbedded()
+    private void startClusterManagerEmbedded()
     {
-        Thread blobManagerThread = new Thread()
+        Thread clusterManagerThread = new Thread()
         {
             @Override
             public void run()
             {
-                blobManagerInstance = new BlobManagerLauncher();
-                blobManagerInstance.start();
+                clusterManagerInstance = new ClusterManagerLauncher();
+                clusterManagerInstance.start();
             }
         };
-        blobManagerThread.start();
+        clusterManagerThread.start();
     }
 
-    private void stopBlobManagerEmbedded()
+    private void stopClusterManagerEmbedded()
     {
-        blobManagerInstance.stop();
+        clusterManagerInstance.stop();
     }
 
     private void startCassandraEmbedded()

@@ -57,14 +57,14 @@ public class StreamingTest extends IntegrationTestBase
     @Test
     public void test() throws Exception
     {
-        blobManagerClient.computeMapping(); // first version of CRUSHmap
+        clusterManagerClient.computeMapping(); // first version of CRUSHmap
         client.start();
         List<byte[]> keysGenerated = generateStaticLoad(300);
         debugKeysPositions(keysGenerated, "initial");
         //joinPseudoNode(); // TODO: there we should wait for the real node
         waitForExternalStorageNode("localhost:10000");
         Layout layout = Layout.getInstance();
-        blobManagerClient.computeMapping(); // second version of CRUSHmap
+        clusterManagerClient.computeMapping(); // second version of CRUSHmap
         Thread.sleep(5000);
         debugKeysPositions(keysGenerated, "after rebalancing");
         CompactionManager.instance.performMajorCompaction();
@@ -163,6 +163,6 @@ public class StreamingTest extends IntegrationTestBase
             req.getDisks().add(disk);
         }
 
-        blobManagerClient.join(req);
+        clusterManagerClient.join(req);
     }
 }

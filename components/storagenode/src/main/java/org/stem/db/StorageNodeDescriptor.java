@@ -86,9 +86,9 @@ public class StorageNodeDescriptor
         return url;
     }
 
-    public static String getBlobManagerEndpoint()
+    public static String getClusterManagerEndpoint()
     {
-        return config.blob_manager_endpoint;
+        return config.cluster_manager_endpoint;
     }
 
     public static String[] getBlobMountPoints()

@@ -111,7 +111,7 @@ public class YamlConfigurator
 
     public YamlConfigurator setBlobManagerEndpoint(String value)
     {
-        config.blob_manager_endpoint = value;
+        config.cluster_manager_endpoint = value;
         return this;
     }
 
