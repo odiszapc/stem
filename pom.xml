@@ -157,7 +157,7 @@
     <slf4j.version>1.7.7</slf4j.version>
     <achilles.version>3.0.2</achilles.version>
     <datastax-driver.version>2.0.1</datastax-driver.version>
-    <cassandra.version>2.0.6</cassandra.version>
+    <cassandra.version>2.0.7</cassandra.version>
     <grizzly.version>2.3.11</grizzly.version>
     <jersey.version>2.7</jersey.version>
   </properties>

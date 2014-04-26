@@ -37,19 +37,11 @@ public class AllocatorTest extends IntegrationTestBase
     }
 
     @Test
-    public void testAllocateDirectory() throws Exception
-    {
-        File dir = new File("D:\\tmp-data-source");
-        Assert.assertTrue(dir.mkdir());
-        FatFileAllocator.allocateDirectory("D:\\tmp-data-source", 256);
-    }
-
-    @Test
     public void testAllocateDirectoryMaxSize() throws Exception
     {
         String directoryPath = temporize("AllocateDirectoryMaxSize");
         File dir = new File(directoryPath);
         Assert.assertTrue(dir.mkdir());
-        FatFileAllocator.allocateDirectory(directoryPath, 256, 4 * 1024 * 1024 * 1024L, false);
+        FatFileAllocator.allocateDirectory(directoryPath, 5, 30 * 1024 * 1024, false);
     }
 }

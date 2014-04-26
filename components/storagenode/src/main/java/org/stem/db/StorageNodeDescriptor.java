@@ -44,7 +44,7 @@ public class StorageNodeDescriptor
         loadConfig();
     }
 
-    static void loadConfig()
+    public static void loadConfig()
     {
         URL url = getConfigUrl();
         logger.info("Loading settings from " + url);
@@ -80,6 +80,7 @@ public class StorageNodeDescriptor
         }
         catch (Exception e)
         {
+            System.out.println("#### " + System.getProperty("user.dir"));
             throw new RuntimeException("Cannot load " + configPath);
         }
         return url;

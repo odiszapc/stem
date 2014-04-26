@@ -20,6 +20,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.stem.api.request.JoinRequest;
 import org.stem.client.StorageNodeClient;
@@ -35,6 +36,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.*;
 
+@Ignore
 public class StreamingTest extends IntegrationTestBase
 {
     private int portIndex = 1;

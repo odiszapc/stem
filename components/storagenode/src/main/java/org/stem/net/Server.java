@@ -18,10 +18,7 @@ package org.stem.net;
 
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -44,6 +41,7 @@ public class Server
     MessageEncoder messageEncoder = new MessageEncoder();
     MessageDispatcher dispatcher = new MessageDispatcher();
     private ChannelFuture future;
+    private Channel channel;
 
     public Server(String host, int port)
     {
@@ -82,7 +80,10 @@ public class Server
         {
             future = bootstrap.bind(socket).sync();
             logger.info("Starting listening for clients on {}...", socket);
-            //future.channel().closeFuture().sync();
+            channel = future.channel();
+
+            // Wait until server socket is closed.
+            // channel.closeFuture().sync();
         }
         catch (InterruptedException e)
         {
@@ -94,6 +95,7 @@ public class Server
 
     public void stop()
     {
-        future.awaitUninterruptibly();
+        channel.close();
+        //future.awaitUninterruptibly();
     }
 }

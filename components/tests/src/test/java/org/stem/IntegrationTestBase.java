@@ -36,7 +36,10 @@ import org.stem.db.StorageService;
 import org.stem.service.StemDaemon;
 import org.stem.transport.ops.WriteBlobMessage;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -58,14 +61,16 @@ public class IntegrationTestBase
         setupEnvironment();
         cleanupDataDirectories();
 
-        startZookeeperEmbedded();
         startCassandraEmbedded();
         loadSchema();
+
+        startZookeeperEmbedded();
         startBlobManagerEmbedded();
         waitForBlobManager();
         blobManagerClient = BlobManagerClient
                 .create("http://localhost:9997");
         initCluster();
+
         startStorageNodeEmbedded();
     }
 
@@ -73,33 +78,26 @@ public class IntegrationTestBase
     @After
     public void tearDown() throws Exception
     {
-//  TODO: turn off tear down for a while
-//        stopStorageNodeEmbedded();
-//        cleanupDataDirectories();
-//        stopBlobManagerEmbedded();
-//        stopCassandraEmbedded();
-//        stopZookeeperEmbedded();
+        stopStorageNodeEmbedded();
+        cleanupDataDirectories();
+
+        stopBlobManagerEmbedded();
+        //stopCassandraEmbedded();
+        stopZookeeperEmbedded();
     }
 
     private void loadSchema()
     {
-        try
-        {
-            File file = new File("docs/schema.cql");
-            FileInputStream inputStream = new FileInputStream(file);
-            List<String> lines = getLines(inputStream);
-            List<String> statements = linesToCQLStatements(lines);
+        cassandraTestSession.execute("DROP KEYSPACE IF EXISTS stem");
+        InputStream inputStream = ClassLoader.getSystemResourceAsStream("schema.cql");
+        if (null == inputStream)
+            throw new NullPointerException("Input stream for Schema file can not be null");
+        List<String> lines = getLines(inputStream);
+        List<String> statements = linesToCQLStatements(lines);
 
-            for (String statement : statements)
-            {
-                cassandraTestSession.execute(statement);
-            }
-
-            //Thread.sleep(10000000);
-        }
-        catch (FileNotFoundException e)
+        for (String statement : statements)
         {
-            e.printStackTrace();
+            cassandraTestSession.execute(statement);
         }
     }
 
@@ -271,11 +269,6 @@ public class IntegrationTestBase
         cassandraTestSession.close();
     }
 
-    private void stopStorageNodeEmbedded()
-    {
-        StemDaemon.instance.stop();
-    }
-
     private void cleanupDataDirectories() throws IOException
     {
         String[] paths = StorageNodeDescriptor.getBlobMountPoints();
@@ -289,7 +282,13 @@ public class IntegrationTestBase
 
     private void startStorageNodeEmbedded()
     {
+        StorageNodeDescriptor.loadConfig(); // must be called explicitly
         StemDaemon.instance.start();
+    }
+
+    private void stopStorageNodeEmbedded()
+    {
+        StemDaemon.instance.stop();
     }
 
     private String setupEnvironment()
@@ -367,6 +366,29 @@ public class IntegrationTestBase
 
     protected String getStorageNodeConfigPath()
     {
-        return "components/storagenode/src/test/resources/stem.yaml";
+        String tmpDir = TestUtil.getDirInTmp("storagenode");
+        String tmpDataDir = TestUtil.getDirInTmp("storagenode/data");
+        YamlConfigurator yamlConfigurator = YamlConfigurator.open(getStorageNodeConfigName());
+
+        yamlConfigurator
+                .setBlobMountPoints(tmpDataDir)
+                .setFatFileSizeInMb(5)
+                .setMaxSpaceAllocationInMb(30);
+
+        customStorageNodeConfiguration(yamlConfigurator);
+
+        return yamlConfigurator
+                .saveTo(tmpDir);
+        //return "./components/storagenode/src/test/resources/stem.yaml";
+    }
+
+    protected void customStorageNodeConfiguration(YamlConfigurator yamlConfigurator)
+    {
+
+    }
+
+    protected String getStorageNodeConfigName()
+    {
+        return "stem.yaml";
     }
 }

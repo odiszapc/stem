@@ -43,6 +43,11 @@ public class ZookeeperClient
         client.start();
     }
 
+    public void close()
+    {
+        client.close();
+    }
+
     public void listenChildren(String path, ZNodeEventHandler handler) throws Exception
     {
         PathChildrenCache cache = new PathChildrenCache(client, path, true);

@@ -18,13 +18,20 @@ package org.stem;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class TestUtil
 {
-    public static final String TMP_DATA_DIR = "tmp-io";
+    public static final String TMP_DATA_DIR_NAME = "tmp-io";
+    public static final String TMP_DATA_DIR;
+
+    static {
+        String resourceRoot = TestUtil.class.getResource("/").getPath();
+        TMP_DATA_DIR = resourceRoot + TMP_DATA_DIR_NAME;
+    }
 
     public static String temporize(String path)
     {
@@ -54,12 +61,28 @@ public class TestUtil
         }
     }
 
-    public static void createDir(String path) throws IOException
+    public static String getDirInTmp(String path)
+    {
+        String temporized = temporize(path);
+        File dir = new File(temporized);
+        if (!dir.exists())
+            createDir(temporized);
+        return temporized;
+    }
+
+    public static String createDirInTmp(String path)
+    {
+        String temporized = temporize(path);
+        createDir(path);
+        return temporized;
+    }
+
+    public static void createDir(String path)
     {
         File dir = new File(path);
         if (!dir.mkdirs())
         {
-            throw new IOException("Can not create directory: " + path);
+            throw new RuntimeException("Can not create directory: " + path);
         }
     }
 

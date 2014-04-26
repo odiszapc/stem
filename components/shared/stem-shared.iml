@@ -17,7 +17,7 @@
     <orderEntry type="library" name="Maven: com.datastax.cassandra:cassandra-driver-core:2.0.1" level="project" />
     <orderEntry type="library" name="Maven: io.netty:netty:3.9.0.Final" level="project" />
     <orderEntry type="library" name="Maven: com.codahale.metrics:metrics-core:3.0.2" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.cassandra:cassandra-all:2.0.6" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.cassandra:cassandra-all:2.0.7" level="project" />
     <orderEntry type="library" name="Maven: org.xerial.snappy:snappy-java:1.0.5" level="project" />
     <orderEntry type="library" name="Maven: net.jpountz.lz4:lz4:1.2.0" level="project" />
     <orderEntry type="library" name="Maven: com.ning:compress-lzf:0.8.4" level="project" />
@@ -52,7 +52,7 @@
     <orderEntry type="library" name="Maven: log4j:log4j:1.2.16" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.11" level="project" />
     <orderEntry type="library" name="Maven: net.sf.supercsv:super-csv:2.1.0" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.cassandra:cassandra-thrift:2.0.6" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.cassandra:cassandra-thrift:2.0.7" level="project" />
     <orderEntry type="library" name="Maven: com.github.stephenc:jamm:0.2.5" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.2.3" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.2.3" level="project" />
