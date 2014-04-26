@@ -21,6 +21,7 @@ import com.google.common.collect.Lists;
 import org.stem.coordination.StemZooConstants;
 import org.stem.coordination.TopoMapping;
 import org.stem.coordination.ZookeeperClient;
+import org.stem.coordination.ZookeeperClientFactory;
 import org.stem.domain.ArrayBalancer;
 import org.stem.domain.ExtendedBlobDescriptor;
 import org.stem.transport.Message;
@@ -46,7 +47,7 @@ public class StemClient implements TopoMapSubscriber
         mappingListener = new TopoMapListener();
         mappingListener.listen(this);
         metaClient = new MetaStoreClient();
-        zooClient = new ZookeeperClient();
+        zooClient = ZookeeperClientFactory.create();
     }
 
     public void start()

@@ -19,6 +19,7 @@ package org.stem.coordination;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.framework.recipes.cache.NodeCache;
 import org.apache.curator.framework.recipes.cache.NodeCacheListener;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
@@ -32,10 +33,33 @@ public class ZookeeperClient
 {
     CuratorFramework client;
 
-    // TODO: Zookeeper endpoint should be configurable
+    private static final String HOST_DEFAULT = "localhost";
+    private static final int PORT_DEFAULT = 2181;
+
     public ZookeeperClient()
     {
-        client = CuratorFrameworkFactory.newClient("localhost:2181", new ExponentialBackoffRetry(1000, 3));
+        client = createClient(HOST_DEFAULT, PORT_DEFAULT);
+    }
+
+    public ZookeeperClient(String host, int port)
+    {
+        client = createClient(host, port);
+    }
+
+    public ZookeeperClient(String endpoint)
+    {
+        client = createClient(endpoint);
+    }
+
+    private static CuratorFramework createClient(String host, int port)
+    {
+        String endpoint = host + ":" + port;
+        return createClient(endpoint);
+    }
+
+    private static CuratorFramework createClient(String endpoint)
+    {
+        return CuratorFrameworkFactory.newClient("localhost:2181", new ExponentialBackoffRetry(1000, 3));
     }
 
     public void start()
@@ -134,16 +158,30 @@ public class ZookeeperClient
 
     public void createNode(String path, byte[] data) throws Exception
     {
-        client.create().creatingParentsIfNeeded().forPath(path, data);
+        if (isRunning())
+        {
+            client.create().creatingParentsIfNeeded().forPath(path, data);
+        }
     }
 
     public void updateNode(String path, byte[] data) throws Exception
     {
-        client.setData().forPath(path, data);
+        if (isRunning())
+        {
+            client.setData().forPath(path, data);
+        }
     }
 
     public void removeNode(String path) throws Exception
     {
-        client.delete().forPath(path);
+        if (isRunning())
+        {
+            client.delete().forPath(path);
+        }
+    }
+
+    public boolean isRunning()
+    {
+        return CuratorFrameworkState.STARTED == client.getState();
     }
 }

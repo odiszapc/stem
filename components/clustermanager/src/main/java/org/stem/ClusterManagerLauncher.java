@@ -33,6 +33,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.stem.coordination.StemZooConstants;
 import org.stem.coordination.StorageStatListener;
 import org.stem.coordination.ZookeeperClient;
+import org.stem.coordination.ZookeeperClientFactory;
 import org.stem.domain.Cluster;
 import org.stem.exceptions.DefaultExceptionMapper;
 import org.stem.exceptions.StemExceptionMapper;
@@ -111,7 +112,7 @@ public class ClusterManagerLauncher
 
     private void initZookeeper()
     {
-        ZookeeperClient client = new ZookeeperClient();
+        ZookeeperClient client = ZookeeperClientFactory.create();
         client.start();
         try
         {

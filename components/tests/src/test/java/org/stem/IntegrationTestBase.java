@@ -17,6 +17,7 @@
 package org.stem;
 
 import com.datastax.driver.core.Session;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
 import org.apache.commons.codec.binary.Hex;
@@ -29,6 +30,7 @@ import org.junit.Before;
 import org.stem.api.ClusterManagerClient;
 import org.stem.api.response.StemResponse;
 import org.stem.client.StemClient;
+import org.stem.coordination.ZookeeperClientFactory;
 import org.stem.db.Layout;
 import org.stem.db.MountPoint;
 import org.stem.db.StorageNodeDescriptor;
@@ -83,7 +85,14 @@ public class IntegrationTestBase
 
         stopClusterManagerEmbedded();
         //stopCassandraEmbedded();
+        shoutDownZookeeperClients();
         stopZookeeperEmbedded();
+    }
+
+    @VisibleForTesting
+    private void shoutDownZookeeperClients() throws InterruptedException
+    {
+        ZookeeperClientFactory.closeAll();
     }
 
     private void loadSchema()

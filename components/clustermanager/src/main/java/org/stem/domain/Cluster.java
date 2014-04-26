@@ -28,7 +28,7 @@ import java.util.List;
 public class Cluster
 {
     protected static Cluster instance = new Cluster();
-    private ZookeeperClient client = new ZookeeperClient();
+    private ZookeeperClient client = ZookeeperClientFactory.create();
 
     public static Cluster getInstance()
     {
