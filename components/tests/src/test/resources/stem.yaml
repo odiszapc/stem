@@ -15,10 +15,13 @@
 #
 
 auto_allocate: true
-blob_manager_endpoint: http://localhost:9997
+cluster_manager_endpoint: http://localhost:9997
 
 node_listen: localhost
 node_port: 9999
+
+# meta_store_host: localhost
+# meta_store_port:
 
 # Each mount point is handled separately. For 5 mount points there are 5 thread pools
 # are created, RW operations are performed simultaneously.
@@ -32,7 +35,7 @@ blob_mount_points:
 
 # The size of each fat file be allocated on disk.
 # Default: 256MB
-fat_file_size_in_mb: 5
+fat_file_size_in_mb: 256
 
 # Set first and last bytes to zeroes after allocatind fat file has been finished
 # It seems all bytes are always zeroes so this procedure is not needed yet
@@ -40,7 +43,7 @@ mark_on_allocate: false
 
 # How many space will be provided for allocation
 # Default: entire mount point
-max_space_allocation_in_mb: 100
+max_space_allocation_in_mb:
 
 # Percent of data on disk marked for deletion that must be exceeded
 # for compaction process to be started

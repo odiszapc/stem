@@ -28,7 +28,7 @@ import java.util.List;
 public class Cluster
 {
     protected static Cluster instance = new Cluster();
-    private ZookeeperClient client = new ZookeeperClient();
+    private ZookeeperClient client = ZookeeperClientFactory.create();
 
     public static Cluster getInstance()
     {
@@ -136,6 +136,14 @@ public class Cluster
         }
 
         return instance;
+    }
+
+    public static void destroy()
+    {
+        instance.name = null;
+        instance.vBuckets = 0;
+        instance.rf = 0;
+        instance.client.close();
     }
 
     private void initZookeeper() throws Exception

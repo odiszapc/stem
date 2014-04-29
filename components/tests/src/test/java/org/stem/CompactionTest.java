@@ -24,6 +24,7 @@ import org.stem.client.StemClient;
 import org.stem.db.*;
 import org.stem.db.compaction.CompactionManager;
 import org.stem.db.compaction.FFScanner;
+import org.stem.domain.StorageNode;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,19 +37,19 @@ public class CompactionTest extends IntegrationTestBase
     final int port = 9999;
 
 
-    @Override
+
     @Before
     public void setUp() throws IOException
     {
         super.setUp();
-        blobManagerClient.computeMapping();
+        clusterManagerClient.computeMapping();
         client.start();
     }
 
     @Test
     public void testScanner() throws Exception
     {
-        final int BLOBS_NUM = 4092 + 1;
+        final int BLOBS_NUM = 256 + 1;
 
         generateRandomLoad(BLOBS_NUM);
 
@@ -68,7 +69,7 @@ public class CompactionTest extends IntegrationTestBase
     @Test
     public void testCompaction() throws Exception
     {
-        blobManagerClient.computeMapping();
+        clusterManagerClient.computeMapping();
         StemClient client = new StemClient();
         client.start();
 
@@ -190,8 +191,17 @@ public class CompactionTest extends IntegrationTestBase
     }
 
     @Override
-    protected String getStorageNodeConfigPath()
+    protected void customStorageNodeConfiguration(YamlConfigurator yamlConfigurator)
     {
-        return "components/storagenode/src/test/resources/stem.small_ff.yaml";
+        yamlConfigurator
+                .setFatFileSizeInMb(5)
+                .setMaxSpaceAllocationInMb(100)
+                .setCompactionThreshold(0.1f);
+    }
+
+    @Override
+    protected String getStorageNodeConfigName()
+    {
+        return "stem.small_ff.yaml";
     }
 }

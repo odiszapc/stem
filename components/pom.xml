@@ -32,7 +32,7 @@
   <name>stem-components</name>
 
   <modules>
-    <module>blobmanager</module>
+    <module>clustermanager</module>
     <module>frontend</module>
     <module>storagenode</module>
     <module>shared</module>

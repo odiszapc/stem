@@ -21,6 +21,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.stem.client.StemClient;
 import org.stem.client.StorageNodeClient;
@@ -51,18 +52,11 @@ public class ProtocolTest extends IntegrationTestBase
     @Test
     public void testConnect() throws Exception
     {
-
         final String host = "localhost";
-        final int port = 9998;
+        final int port = 9999;
 
         StorageNodeClient client = new StorageNodeClient(host, port);
         client.start();
-
-//        ReadBlobMessage op = new ReadBlobMessage();
-//        op.disk = 1;
-//        op.offset = 2;
-//        op.length = 3;
-//        client.executeSimple(op);
     }
 
     @Test
@@ -112,7 +106,7 @@ public class ProtocolTest extends IntegrationTestBase
     @Test
     public void testDelete() throws Exception
     {
-        blobManagerClient.computeMapping();
+        clusterManagerClient.computeMapping();
 
         StemClient client = new StemClient();
         client.start();
@@ -133,6 +127,7 @@ public class ProtocolTest extends IntegrationTestBase
     }
 
     @Test
+    @Ignore // TODO: it's ignored because it's ran endlessly
     public void testStorageNodeWritePerformance() throws Exception
     {
         StorageNodeClient client = new StorageNodeClient(host, port);
@@ -166,11 +161,12 @@ public class ProtocolTest extends IntegrationTestBase
     }
 
     @Test
+    @Ignore // TODO: it's ignored because it's ran endlessly
     public void testClusterWritePerformance() throws Exception
     {
         Logger.getLogger("io.netty").setLevel(Level.OFF);
 
-        blobManagerClient.computeMapping();
+        clusterManagerClient.computeMapping();
 
         StemClient client = new StemClient();
         client.start();
@@ -201,7 +197,7 @@ public class ProtocolTest extends IntegrationTestBase
     @Test
     public void testClusterWrite() throws Exception
     {
-        blobManagerClient.computeMapping();
+        clusterManagerClient.computeMapping();
 
         StemClient client = new StemClient();
         client.start();
@@ -214,21 +210,20 @@ public class ProtocolTest extends IntegrationTestBase
 
         // STEM is not a random generator, but storage, so data before and after must be equal
         Assert.assertArrayEquals(out, in);
-
-        Thread.sleep(100000000);
     }
 
     @Test
+    @Ignore // TODO: it's ignored because it's ran endlessly
     public void testClusterMultiThreadWrite() throws Exception
     {
-        blobManagerClient.computeMapping();
+        clusterManagerClient.computeMapping();
         MultiSourcesExecutor executor = new MultiSourcesExecutor();
         executor.submitWriters(4);
         executor.shutdown();
-
     }
 
     @Test
+    @Ignore // TODO: it's ignored because it's ran endlessly
     public void testMultiSourcesWritePerformance() throws Exception
     {
         StorageNodeClient client = new StorageNodeClient(host, port);

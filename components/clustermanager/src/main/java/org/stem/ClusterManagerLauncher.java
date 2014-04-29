@@ -33,6 +33,8 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.stem.coordination.StemZooConstants;
 import org.stem.coordination.StorageStatListener;
 import org.stem.coordination.ZookeeperClient;
+import org.stem.coordination.ZookeeperClientFactory;
+import org.stem.domain.Cluster;
 import org.stem.exceptions.DefaultExceptionMapper;
 import org.stem.exceptions.StemExceptionMapper;
 import org.stem.net.CLStaticByPassHttpHandler;
@@ -41,14 +43,15 @@ import java.io.IOException;
 import java.net.URI;
 
 
-public class BlobManagerLauncher
+public class ClusterManagerLauncher
 {
     HttpServer server;
 
-    public static void main(String[] args)
+    public static void main(String[] args) throws InterruptedException
     {
-        BlobManagerLauncher launcher = new BlobManagerLauncher();
+        ClusterManagerLauncher launcher = new ClusterManagerLauncher();
         launcher.start();
+        Thread.currentThread().join();
     }
 
     public void start()
@@ -86,8 +89,6 @@ public class BlobManagerLauncher
                     return super.handleRead(ctx);
                 }
             });
-
-            Thread.currentThread().join();
         }
         catch (Exception e)
         {
@@ -97,7 +98,10 @@ public class BlobManagerLauncher
 
     public void stop()
     {
-        server.shutdownNow();
+        if (null != server) // TODO: why this may happen
+            server.shutdownNow();
+
+        Cluster.destroy();
     }
 
     private void configureStaticResources(HttpServer server, ResourceConfig resourceCfg)
@@ -108,7 +112,7 @@ public class BlobManagerLauncher
 
     private void initZookeeper()
     {
-        ZookeeperClient client = new ZookeeperClient();
+        ZookeeperClient client = ZookeeperClientFactory.create();
         client.start();
         try
         {

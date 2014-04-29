@@ -35,7 +35,5 @@ public class BalancerTest
         hash = "00000000000000000000000000000001";
         token = balancer.getToken(hash);
         Assert.assertEquals(1, token.longValue());
-
-
     }
 }

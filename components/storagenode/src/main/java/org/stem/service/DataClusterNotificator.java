@@ -18,10 +18,7 @@ package org.stem.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stem.coordination.DiskStat;
-import org.stem.coordination.StemZooConstants;
-import org.stem.coordination.StorageStat;
-import org.stem.coordination.ZookeeperClient;
+import org.stem.coordination.*;
 import org.stem.db.Layout;
 import org.stem.db.MountPoint;
 import org.stem.db.StorageNodeDescriptor;
@@ -35,7 +32,7 @@ public class DataClusterNotificator implements Runnable
 
     public DataClusterNotificator()
     {
-        client = new ZookeeperClient();
+        client = ZookeeperClientFactory.create();
         client.start();
     }
 

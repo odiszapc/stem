@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.stem.coordination.StemZooConstants;
 import org.stem.coordination.StemZooEventHandler;
 import org.stem.coordination.ZookeeperClient;
+import org.stem.coordination.ZookeeperClientFactory;
 import org.stem.db.DataTracker;
 import org.stem.db.Layout;
 import org.stem.db.StorageNodeDescriptor;
@@ -40,7 +41,7 @@ public class StreamManager
 
     public StreamManager()
     {
-        client = new ZookeeperClient();
+        client = ZookeeperClientFactory.create();
         client.start();
     }
 

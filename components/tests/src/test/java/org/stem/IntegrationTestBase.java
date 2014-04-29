@@ -17,6 +17,7 @@
 package org.stem;
 
 import com.datastax.driver.core.Session;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
 import org.apache.commons.codec.binary.Hex;
@@ -26,9 +27,10 @@ import org.apache.curator.test.TestingServer;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.stem.api.BlobManagerClient;
+import org.stem.api.ClusterManagerClient;
 import org.stem.api.response.StemResponse;
 import org.stem.client.StemClient;
+import org.stem.coordination.ZookeeperClientFactory;
 import org.stem.db.Layout;
 import org.stem.db.MountPoint;
 import org.stem.db.StorageNodeDescriptor;
@@ -36,16 +38,19 @@ import org.stem.db.StorageService;
 import org.stem.service.StemDaemon;
 import org.stem.transport.ops.WriteBlobMessage;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 public class IntegrationTestBase
 {
-    BlobManagerLauncher blobManagerInstance;
+    ClusterManagerLauncher clusterManagerInstance;
     private TestingServer zookeeperInstance;
-    protected BlobManagerClient blobManagerClient;
+    protected ClusterManagerClient clusterManagerClient;
     protected Session cassandraTestSession;
     protected StemClient client = new StemClient();
 
@@ -58,14 +63,16 @@ public class IntegrationTestBase
         setupEnvironment();
         cleanupDataDirectories();
 
-        startZookeeperEmbedded();
         startCassandraEmbedded();
         loadSchema();
-        startBlobManagerEmbedded();
-        waitForBlobManager();
-        blobManagerClient = BlobManagerClient
+
+        startZookeeperEmbedded();
+        startClusterManagerEmbedded();
+        waitForClusterManager();
+        clusterManagerClient = ClusterManagerClient
                 .create("http://localhost:9997");
         initCluster();
+
         startStorageNodeEmbedded();
     }
 
@@ -73,33 +80,33 @@ public class IntegrationTestBase
     @After
     public void tearDown() throws Exception
     {
-//  TODO: turn off tear down for a while
-//        stopStorageNodeEmbedded();
-//        cleanupDataDirectories();
-//        stopBlobManagerEmbedded();
-//        stopCassandraEmbedded();
-//        stopZookeeperEmbedded();
+        stopStorageNodeEmbedded();
+        cleanupDataDirectories();
+
+        stopClusterManagerEmbedded();
+        //stopCassandraEmbedded();
+        shoutDownZookeeperClients();
+        stopZookeeperEmbedded();
+    }
+
+    @VisibleForTesting
+    private void shoutDownZookeeperClients() throws InterruptedException
+    {
+        ZookeeperClientFactory.closeAll();
     }
 
     private void loadSchema()
     {
-        try
-        {
-            File file = new File("docs/schema.cql");
-            FileInputStream inputStream = new FileInputStream(file);
-            List<String> lines = getLines(inputStream);
-            List<String> statements = linesToCQLStatements(lines);
+        cassandraTestSession.execute("DROP KEYSPACE IF EXISTS stem");
+        InputStream inputStream = ClassLoader.getSystemResourceAsStream("schema.cql");
+        if (null == inputStream)
+            throw new NullPointerException("Input stream for Schema file can not be null");
+        List<String> lines = getLines(inputStream);
+        List<String> statements = linesToCQLStatements(lines);
 
-            for (String statement : statements)
-            {
-                cassandraTestSession.execute(statement);
-            }
-
-            //Thread.sleep(10000000);
-        }
-        catch (FileNotFoundException e)
+        for (String statement : statements)
         {
-            e.printStackTrace();
+            cassandraTestSession.execute(statement);
         }
     }
 
@@ -154,7 +161,7 @@ public class IntegrationTestBase
 
     private void initCluster()
     {
-        blobManagerClient.initCluster("Test cluster", getVBuckets(), getRF());
+        clusterManagerClient.initCluster("Test cluster", getVBuckets(), getRF());
     }
 
     protected int getVBuckets()
@@ -167,7 +174,7 @@ public class IntegrationTestBase
         return 1;
     }
 
-    private void waitForBlobManager()
+    private void waitForClusterManager()
     {
         try
         {
@@ -176,7 +183,7 @@ public class IntegrationTestBase
             int count = 0;
             while (!connected && count < maxCount)
             {
-                connected = tryBlobManager();
+                connected = tryClusterManager();
                 if (!connected)
                 {
                     Thread.sleep(500);
@@ -194,11 +201,11 @@ public class IntegrationTestBase
         }
     }
 
-    private boolean tryBlobManager() throws InterruptedException
+    private boolean tryClusterManager() throws InterruptedException
     {
         try
         {
-            StemResponse info = BlobManagerClient
+            StemResponse info = ClusterManagerClient
                     .create("http://localhost:9997")
                     .info();
         }
@@ -234,23 +241,23 @@ public class IntegrationTestBase
         }
     }
 
-    private void startBlobManagerEmbedded()
+    private void startClusterManagerEmbedded()
     {
-        Thread blobManagerThread = new Thread()
+        Thread clusterManagerThread = new Thread()
         {
             @Override
             public void run()
             {
-                blobManagerInstance = new BlobManagerLauncher();
-                blobManagerInstance.start();
+                clusterManagerInstance = new ClusterManagerLauncher();
+                clusterManagerInstance.start();
             }
         };
-        blobManagerThread.start();
+        clusterManagerThread.start();
     }
 
-    private void stopBlobManagerEmbedded()
+    private void stopClusterManagerEmbedded()
     {
-        blobManagerInstance.stop();
+        clusterManagerInstance.stop();
     }
 
     private void startCassandraEmbedded()
@@ -271,11 +278,6 @@ public class IntegrationTestBase
         cassandraTestSession.close();
     }
 
-    private void stopStorageNodeEmbedded()
-    {
-        StemDaemon.instance.stop();
-    }
-
     private void cleanupDataDirectories() throws IOException
     {
         String[] paths = StorageNodeDescriptor.getBlobMountPoints();
@@ -289,7 +291,13 @@ public class IntegrationTestBase
 
     private void startStorageNodeEmbedded()
     {
+        StorageNodeDescriptor.loadConfig(); // must be called explicitly
         StemDaemon.instance.start();
+    }
+
+    private void stopStorageNodeEmbedded()
+    {
+        StemDaemon.instance.stop();
     }
 
     private String setupEnvironment()
@@ -367,6 +375,29 @@ public class IntegrationTestBase
 
     protected String getStorageNodeConfigPath()
     {
-        return "components/storagenode/src/test/resources/stem.yaml";
+        String tmpDir = TestUtil.getDirInTmp("storagenode");
+        String tmpDataDir = TestUtil.getDirInTmp("storagenode/data");
+        YamlConfigurator yamlConfigurator = YamlConfigurator.open(getStorageNodeConfigName());
+
+        yamlConfigurator
+                .setBlobMountPoints(tmpDataDir)
+                .setFatFileSizeInMb(5)
+                .setMaxSpaceAllocationInMb(30);
+
+        customStorageNodeConfiguration(yamlConfigurator);
+
+        return yamlConfigurator
+                .saveTo(tmpDir);
+        //return "./components/storagenode/src/test/resources/stem.yaml";
+    }
+
+    protected void customStorageNodeConfiguration(YamlConfigurator yamlConfigurator)
+    {
+
+    }
+
+    protected String getStorageNodeConfigName()
+    {
+        return "stem.yaml";
     }
 }

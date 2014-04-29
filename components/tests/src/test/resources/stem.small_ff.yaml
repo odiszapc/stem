@@ -18,16 +18,17 @@ auto_allocate: true
 cluster_manager_endpoint: http://localhost:9997
 
 node_listen: localhost
-node_port: 10000
+node_port: 9999
 
 # Each mount point is handled separately. For 5 mount points there are 5 thread pools
 # are created, RW operations are performed simultaneously.
 # Mount points must be attached to separate physical devices
 # to accomplish advantage of parallel I/O operations.
 blob_mount_points:
-  - E:\stem\2\data
-# - /var/stem/data-2
-# - D:\stem\data-2
+  - D:\stem\test\data
+#  - E:\stem\test\data
+#  - G:\stem\test\data
+#  - H:\stem\test\data
 
 # The size of each fat file be allocated on disk.
 # Default: 256MB

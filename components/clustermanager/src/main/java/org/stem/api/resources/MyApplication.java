@@ -14,9 +14,21 @@
  * limitations under the License.
  */
 
-package org.stem.api.request;
+package org.stem.api.resources;
 
+import org.glassfish.jersey.server.ResourceConfig;
+import org.stem.ClusterManagerLauncher;
 
-public class BlobManagerRequest
+public class MyApplication extends ResourceConfig
 {
+
+    public MyApplication()
+    {
+        // Resources.
+        register(RootResource.class);
+        register(TopologyResource.class);
+        register(ClusterResource.class);
+        register(ClusterManagerLauncher.getJsonProvider());
+
+    }
 }

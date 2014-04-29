@@ -20,12 +20,11 @@ public class Config
 {
     public Boolean auto_allocate = false;
     public String[] blob_mount_points;
-    public String blob_manager_endpoint;
+    public String cluster_manager_endpoint;
     public String node_listen = "0.0.0.0";
     public Integer node_port = 9998;
-    public int fat_file_size_in_mb = 256;
-    public boolean mark_on_allocate = true;
+    public Integer fat_file_size_in_mb = 256;
+    public Boolean mark_on_allocate = true;
     public Integer max_space_allocation_in_mb;
     public Float compaction_threshold = 0.3f;
-
 }

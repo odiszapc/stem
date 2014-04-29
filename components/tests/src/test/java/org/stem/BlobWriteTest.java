@@ -27,7 +27,7 @@ public class BlobWriteTest extends IntegrationTestBase
     @Test
     public void testWriteSingleBlob() throws Exception
     {
-        String path = TestUtil.temporize("000001.db");
+        String path = TestUtil.temporize("stem-ff-000001.db");
         FatFileAllocator.allocateFile(path, 4);
 
         FatFile fatFile = FatFile.open(path, new DataTracker(10));
@@ -42,7 +42,6 @@ public class BlobWriteTest extends IntegrationTestBase
         }
         fatFile.writeIndex();
         fatFile.writeFullMarker();
-
     }
 
     private byte[] createBlob(int size)

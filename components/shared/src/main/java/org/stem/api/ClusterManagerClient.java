@@ -26,14 +26,14 @@ import org.stem.api.response.StemResponse;
 
 import java.net.URI;
 
-public class BlobManagerClient extends BaseHttpClient
+public class ClusterManagerClient extends BaseHttpClient
 {
-    public static BlobManagerClient create(String uri)
+    public static ClusterManagerClient create(String uri)
     {
-        return new BlobManagerClient(uri);
+        return new ClusterManagerClient(uri);
     }
 
-    public BlobManagerClient(String uri)
+    public ClusterManagerClient(String uri)
     {
         super(uri);
     }
@@ -50,7 +50,7 @@ public class BlobManagerClient extends BaseHttpClient
         }
         catch (Exception e)
         {
-            throw new RuntimeException("Can't join cluster, BlobManager response: " + e.getMessage());
+            throw new RuntimeException("Can't join cluster, ClusterManager response: " + e.getMessage());
         }
     }
 
