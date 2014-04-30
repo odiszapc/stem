@@ -17,6 +17,7 @@
 package org.stem.domain;
 
 
+import org.apache.zookeeper.KeeperException;
 import org.stem.coordination.*;
 import org.stem.exceptions.StemException;
 import org.stem.streaming.StreamSession;
@@ -27,8 +28,9 @@ import java.util.List;
 
 public class Cluster
 {
-    protected static Cluster instance = new Cluster();
-    private ZookeeperClient client = ZookeeperClientFactory.create();
+    protected static Cluster instance = null;
+    private final ClusterDescriptor descriptor;
+    private static ZookeeperClient client;
 
     public static Cluster getInstance()
     {
@@ -37,64 +39,75 @@ public class Cluster
         return instance;
     }
 
-    String name;
-    int vBuckets;
-    int rf;
-
     Topology topology;
 
     protected Cluster(String name, int vBuckets, int rf)
     {
-        this();
-        this.name = name;
-        this.vBuckets = vBuckets;
-        this.rf = rf;
+        this.descriptor = new ClusterDescriptor(name, vBuckets, rf);
         topology = new Topology(name, rf);
     }
 
-    public Cluster()
-    {
-        client.start();
-    }
 
     public String getName()
     {
-        return name;
-    }
-
-    public void setName(String name)
-    {
-        this.name = name;
+        return descriptor.getName();
     }
 
     public int getvBuckets()
     {
-        return vBuckets;
-    }
-
-    public void setvBuckets(int vBuckets)
-    {
-        this.vBuckets = vBuckets;
+        return descriptor.getvBuckets();
     }
 
     public int getRf()
     {
-        return rf;
+        return descriptor.getRf();
     }
 
-    public void setRf(int rf)
+    public static Cluster init()
     {
-        this.rf = rf;
-    }
-
-    public static Cluster load()
-    {
+        try
+        {
+            zookeeperClientSafeStart();
+            ClusterDescriptor descriptor = client.readZNodeData(ZooConstants.CLUSTER_DESCRIPTOR_PATH, ClusterDescriptor.class);
+            if (null != descriptor)
+            {
+                init(descriptor.getName(), descriptor.getvBuckets(), descriptor.getRf());
+            }
+            int a = 1;
+        }
+        catch (Exception e)
+        {
+            throw new StemException("Can't load cluster configuration", e);
+        }
         return null; // TODO: load cluster topology from zookeeper
     }
 
-    public static Cluster save()
+    public void save()  // TODO: make static
     {
-        return null; // TODO: save cluster topology to zookeeper
+        try
+        {
+            zookeeperClientSafeStart();
+            client.createNode(ZooConstants.CLUSTER, descriptor);
+        }
+        catch (Exception e)
+        {
+            throw new StemException("Can't save cluster configuration", e);
+        }
+    }
+
+    private static void zookeeperClientSafeStart()
+    {
+        if (null == client) {
+            client = ZookeeperClientFactory.create();
+        }
+
+        if (client.isUninitialized())
+            client.start();
+        else {
+            client.close();
+            client = ZookeeperClientFactory.create();
+            client.start();
+        }
     }
 
     public static Cluster init(String name, int vBuckets, int rf)
@@ -140,22 +153,23 @@ public class Cluster
 
     public static void destroy()
     {
-        instance.name = null;
-        instance.vBuckets = 0;
-        instance.rf = 0;
-        instance.client.close();
+        if (null != instance)
+        {
+            client.close();
+            instance = null;
+        }
     }
 
     private void initZookeeper() throws Exception
     {
-        //client.createIfNotExists(StemZooConstants.TOPOLOGY + "/" + StemZooConstants.TOPO_MAP);
-        client.createNodeIfNotExists(StemZooConstants.TOPOLOGY, new TopoMapping());
-        client.createIfNotExists(StemZooConstants.OUT_SESSIONS);
+        //client.createIfNotExists(ZooConstants.TOPOLOGY + "/" + ZooConstants.TOPO_MAP);
+        client.createNodeIfNotExists(ZooConstants.TOPOLOGY, new TopoMapping());
+        client.createIfNotExists(ZooConstants.OUT_SESSIONS);
     }
 
     public static boolean initialized()
     {
-        return null != instance.name && 0 != instance.vBuckets;
+        return null != instance;
     }
 
     public synchronized void addStorageIfNotExist(StorageNode storage)  // replace synchronized with Lock
@@ -178,7 +192,7 @@ public class Cluster
 
             try
             {
-                client.createNodeIfNotExists(StemZooConstants.CLUSTER, nodeStat);
+                client.createNodeIfNotExists(ZooConstants.CLUSTER, nodeStat);
             }
             catch (Exception e)
             {
@@ -219,16 +233,16 @@ public class Cluster
     {
         try
         {
-            topology.computeMappings(vBuckets);
+            topology.computeMappings(descriptor.getvBuckets());
             TopoMapping topoMap = TopologyUtils.buildTopoMap(topology);
-            client.updateNode(StemZooConstants.TOPOLOGY, topoMap);
+            client.updateNode(ZooConstants.TOPOLOGY, topoMap);
 
             List<StreamSession> sessions = topology.computeStreamingSessions();
 
             // TODO: Anything below is not a part og this method, it should be passed to somewhere like SessionManager
             for (StreamSession s : sessions)
             {
-                client.createNodeIfNotExists(StemZooConstants.OUT_SESSIONS, s);
+                client.createNodeIfNotExists(ZooConstants.OUT_SESSIONS, s);
             }
 
         }

@@ -140,7 +140,7 @@ public class StreamingTest extends IntegrationTestBase
         UUID uuid = UUID.randomUUID();
         mountPoints.put(
                 uuid,
-                new MountPoint(uuid, "/tmp/mp", (10l * 1024 * 1024 * 1024), new DataTracker(getVBuckets()))
+                new MountPoint(uuid, "/tmp/mp", (10l * 1024 * 1024 * 1024), new DataTracker(getvBucketsNum()))
         );
 
 

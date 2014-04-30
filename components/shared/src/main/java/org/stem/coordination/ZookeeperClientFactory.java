@@ -50,6 +50,8 @@ public class ZookeeperClientFactory
         {
             client.close();
         }
+
+        // TODO: clear the list?
     }
 
     private static void saveToRegistry(ZookeeperClient client)

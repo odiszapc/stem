@@ -119,6 +119,13 @@
     </dependency>
 
     <dependency>
+      <groupId>org.easytesting</groupId>
+      <artifactId>fest-assert-core</artifactId>
+      <version>${fest.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
       <version>${commons-codec.version}</version>
@@ -173,6 +180,7 @@
 
   <properties>
     <junit.version>4.11</junit.version>
+    <fest.version>2.0M10</fest.version>
     <guava.version>16.0.1</guava.version>
     <httpclient.version>4.3.3</httpclient.version>
     <curator.version>2.4.1</curator.version>

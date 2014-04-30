@@ -26,6 +26,7 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.utils.ZKPaths;
+import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.Stat;
 import org.stem.util.JsonUtils;
 
@@ -59,12 +60,27 @@ public class ZookeeperClient
 
     private static CuratorFramework createClient(String endpoint)
     {
-        return CuratorFrameworkFactory.newClient("localhost:2181", new ExponentialBackoffRetry(1000, 3));
+        return CuratorFrameworkFactory.newClient(endpoint, new ExponentialBackoffRetry(1000, 3));
     }
 
     public void start()
     {
         client.start();
+    }
+
+    public boolean isStarted()
+    {
+        return client.getState() == CuratorFrameworkState.STARTED;
+    }
+
+    public boolean isUninitialized()
+    {
+        return client.getState() == CuratorFrameworkState.LATENT;
+    }
+
+    public boolean isStopped()
+    {
+        return client.getState() == CuratorFrameworkState.STOPPED;
     }
 
     public void close()
@@ -117,7 +133,7 @@ public class ZookeeperClient
             Stat stat = client.checkExists().forPath(path);
             if (null == stat)
             {
-                client.create().creatingParentsIfNeeded().forPath(path);
+                client.create().creatingParentsIfNeeded().forPath(path, new byte[]{});
             }
         }
         catch (Exception e)
@@ -150,10 +166,21 @@ public class ZookeeperClient
         updateNode(path, znode.encode());
     }
 
-    public <T extends ZNode> T readZNode(String path, Class<T> clazz) throws Exception
+    public <T extends ZNode> T readZNodeData(String path, Class<T> clazz) throws Exception
     {
-        byte[] data = client.getData().forPath(path);
-        return JsonUtils.decode(data, clazz);
+        try
+        {
+            byte[] data = client.getData().forPath(path);
+            if (0 == data.length)
+            {
+                return null;
+            }
+            return JsonUtils.decode(data, clazz);
+        }
+        catch (KeeperException.NoNodeException e)
+        {
+            return null;
+        }
     }
 
     public void createNode(String path, byte[] data) throws Exception

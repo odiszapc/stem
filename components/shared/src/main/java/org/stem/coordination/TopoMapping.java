@@ -44,7 +44,7 @@ public class TopoMapping extends ZNodeAbstract
     @Override
     public String nodeName()
     {
-        return StemZooConstants.TOPO_MAP;
+        return ZooConstants.TOPO_MAP;
     }
 
     public TopoMapping()

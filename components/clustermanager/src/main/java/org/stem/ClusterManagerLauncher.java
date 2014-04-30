@@ -30,7 +30,7 @@ import org.glassfish.grizzly.http.server.*;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.stem.coordination.StemZooConstants;
+import org.stem.coordination.ZooConstants;
 import org.stem.coordination.StorageStatListener;
 import org.stem.coordination.ZookeeperClient;
 import org.stem.coordination.ZookeeperClientFactory;
@@ -41,6 +41,7 @@ import org.stem.net.CLStaticByPassHttpHandler;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 
 public class ClusterManagerLauncher
@@ -58,42 +59,55 @@ public class ClusterManagerLauncher
     {
         try
         {
-            URI uri = new URI("http://0.0.0.0:9997");
-            ResourceConfig resourceCfg = new ResourceConfig();
-            setupJsonSerialization(resourceCfg);
-            resourceCfg.packages("org.stem.api.resources");
-            resourceCfg.registerClasses(StemExceptionMapper.class);
-            resourceCfg.registerClasses(DefaultExceptionMapper.class);
-
-            initZookeeper(); // TODO: this should be a first action
-
-            server = createServer(uri, resourceCfg);
-            configureStaticResources(server, resourceCfg);
-
-            server.start();
-            server.getListener("grizzly").getFileCache().setEnabled(false);
-            server.getListener("grizzly").getFilterChain().add(2, new HttpBaseFilter() // TODO: indexOfType
-            {
-                @Override
-                public NextAction handleRead(FilterChainContext ctx) throws IOException
-                {
-                    HttpContent message = ctx.getMessage();
-                    HttpRequestPacket httpHeader = (HttpRequestPacket) message.getHttpHeader();
-                    String uri = httpHeader.getRequestURI();
-                    if (uri.equals("/"))
-                    {
-                        uri = "/admin";
-                        httpHeader.getRequestURIRef().init(uri.getBytes(), 0, uri.getBytes().length);
-                    }
-
-                    return super.handleRead(ctx);
-                }
-            });
+            initZookeeperPaths();
+            loadClusterConfiguration();
+            configureWebServer();
+            startWebServer();
         }
         catch (Exception e)
         {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error while starting Cluster Manager web server", e);
         }
+    }
+
+    private void loadClusterConfiguration()
+    {
+        Cluster.init();
+    }
+
+    private void configureWebServer() throws URISyntaxException, IOException
+    {
+        URI uri = new URI("http://0.0.0.0:9997");
+        ResourceConfig resourceCfg = new ResourceConfig();
+        setupJsonSerialization(resourceCfg);
+        resourceCfg.packages("org.stem.api.resources");
+        resourceCfg.registerClasses(StemExceptionMapper.class);
+        resourceCfg.registerClasses(DefaultExceptionMapper.class);
+        server = createServer(uri, resourceCfg);
+        configureStaticResources(server, resourceCfg);
+    }
+
+    private void startWebServer() throws IOException
+    {
+        server.start();
+        server.getListener("grizzly").getFileCache().setEnabled(false);
+        server.getListener("grizzly").getFilterChain().add(2, new HttpBaseFilter() // TODO: indexOfType
+        {
+            @Override
+            public NextAction handleRead(FilterChainContext ctx) throws IOException
+            {
+                HttpContent message = ctx.getMessage();
+                HttpRequestPacket httpHeader = (HttpRequestPacket) message.getHttpHeader();
+                String uri = httpHeader.getRequestURI();
+                if (uri.equals("/"))
+                {
+                    uri = "/admin";
+                    httpHeader.getRequestURIRef().init(uri.getBytes(), 0, uri.getBytes().length);
+                }
+
+                return super.handleRead(ctx);
+            }
+        });
     }
 
     public void stop()
@@ -110,14 +124,15 @@ public class ClusterManagerLauncher
         server.getServerConfiguration().addHttpHandler(handler, "/admin", "/static");
     }
 
-    private void initZookeeper()
+    private void initZookeeperPaths()
     {
         ZookeeperClient client = ZookeeperClientFactory.create();
         client.start();
         try
         {
-            client.createIfNotExists(StemZooConstants.CLUSTER); // TODO: express path as constant
-            client.listenForChildren(StemZooConstants.CLUSTER, new StorageStatListener());
+            client.createIfNotExists(ZooConstants.CLUSTER);
+            client.listenForChildren(ZooConstants.CLUSTER, new StorageStatListener());
+            //client.createIfNotExists(ZooConstants.CLUSTER_DESCRIPTOR_PATH);
         }
         catch (Exception e)
         {

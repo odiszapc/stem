@@ -18,7 +18,7 @@ package org.stem.streaming;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stem.coordination.StemZooConstants;
+import org.stem.coordination.ZooConstants;
 import org.stem.coordination.StemZooEventHandler;
 import org.stem.coordination.ZookeeperClient;
 import org.stem.coordination.ZookeeperClientFactory;
@@ -49,7 +49,7 @@ public class StreamManager
     {
         try
         {
-            client.listenForChildren(StemZooConstants.OUT_SESSIONS, new NewSessionsListener());
+            client.listenForChildren(ZooConstants.OUT_SESSIONS, new NewSessionsListener());
         }
         catch (Exception e)
         {

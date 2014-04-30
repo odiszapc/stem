@@ -43,6 +43,8 @@ public class ClusterResource
     public Response init(InitClusterRequest request)
     {
         Cluster.init(request.getName(), request.getvBuckets(), request.getRf());
+        Cluster.getInstance().save();
+
         return RestUtils.ok();
     }
 

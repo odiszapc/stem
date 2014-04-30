@@ -90,7 +90,7 @@ public class IntegrationTestBase
     }
 
     @VisibleForTesting
-    private void shoutDownZookeeperClients() throws InterruptedException
+    protected void shoutDownZookeeperClients()
     {
         ZookeeperClientFactory.closeAll();
     }
@@ -159,12 +159,17 @@ public class IntegrationTestBase
         }
     }
 
-    private void initCluster()
+    protected void initCluster()
     {
-        clusterManagerClient.initCluster("Test cluster", getVBuckets(), getRF());
+        clusterManagerClient.initCluster(getClusterName(), getvBucketsNum(), getRF());
     }
 
-    protected int getVBuckets()
+    protected String getClusterName()
+    {
+        return "Test cluster";
+    }
+
+    protected int getvBucketsNum()
     {
         return 1000;
     }
@@ -174,7 +179,7 @@ public class IntegrationTestBase
         return 1;
     }
 
-    private void waitForClusterManager()
+    protected void waitForClusterManager()
     {
         try
         {
@@ -216,7 +221,7 @@ public class IntegrationTestBase
         return true;
     }
 
-    private void startZookeeperEmbedded()
+    protected void startZookeeperEmbedded()
     {
         try
         {
@@ -229,7 +234,7 @@ public class IntegrationTestBase
     }
 
 
-    private void stopZookeeperEmbedded()
+    protected void stopZookeeperEmbedded()
     {
         try
         {
@@ -241,7 +246,7 @@ public class IntegrationTestBase
         }
     }
 
-    private void startClusterManagerEmbedded()
+    protected void startClusterManagerEmbedded()
     {
         Thread clusterManagerThread = new Thread()
         {
@@ -255,7 +260,13 @@ public class IntegrationTestBase
         clusterManagerThread.start();
     }
 
-    private void stopClusterManagerEmbedded()
+    protected void restartClusterManagerEmbedded()
+    {
+        stopClusterManagerEmbedded();
+        startClusterManagerEmbedded();
+    }
+
+    protected void stopClusterManagerEmbedded()
     {
         clusterManagerInstance.stop();
     }

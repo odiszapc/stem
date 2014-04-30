@@ -18,7 +18,7 @@ package org.stem.client;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
-import org.stem.coordination.StemZooConstants;
+import org.stem.coordination.ZooConstants;
 import org.stem.coordination.TopoMapping;
 import org.stem.coordination.ZookeeperClient;
 import org.stem.coordination.ZookeeperClientFactory;
@@ -57,10 +57,10 @@ public class StemClient implements TopoMapSubscriber
             metaClient.start();
             zooClient.start();
             // TODO: get mappings directly
-            mapping = zooClient.readZNode(StemZooConstants.TOPOLOGY + "/" + StemZooConstants.TOPO_MAP, TopoMapping.class);
+            mapping = zooClient.readZNodeData(ZooConstants.TOPOLOGY + "/" + ZooConstants.TOPO_MAP, TopoMapping.class);
             mappingChanged(mapping);
 
-            zooClient.listenForZNode(StemZooConstants.TOPOLOGY + "/" + StemZooConstants.TOPO_MAP, mappingListener);
+            zooClient.listenForZNode(ZooConstants.TOPOLOGY + "/" + ZooConstants.TOPO_MAP, mappingListener);
         }
         catch (Exception e)
         {
