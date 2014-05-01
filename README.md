@@ -14,17 +14,17 @@ With Stem you can store tens of terabytes of data on each machine in cluster.
 - Replication (x3 by default)
 - Automated cluster re-balancing logic
 - Tolerance for disk fragmentation by pre-allocating disk space
-- Sequential writes
+- True sequential writes
 - Adjustable consistency on reads
-- Coordinate and monitoring of data movement with Zookeeper
+- Coordination and monitoring of data movement with Zookeeper
 - Uses Cassandra as a  meta data registry
 - Cluster Management UI
 - Hierarchical cluster topology
-- Data distribution is controlled with CRUSH algorithm
+- Data distribution is controlled using CRUSH algorithm
 - REST API (PUT, GET, DELETE)
 
 #### Use cases
-Stem can act as a base for a wide variety of services:
+Stem can act as a general component for a wide variety of services:
 - File storage backend
 - Storage for a huge amount of small blocks of data
 - Core engine for image hosting
