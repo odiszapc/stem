@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.stem;
+package org.stem.utils;
 
 
 import org.stem.config.Config;
@@ -178,9 +178,14 @@ public class YamlConfigurator
 
     public void save(String configPath)
     {
+        File newFile = new File(configPath);
+        save(newFile);
+    }
+
+    public void save(File newFile)
+    {
         try
         {
-            File newFile = new File(configPath);
             Yaml yamlDumper = new Yaml();
             FileWriter writer = new FileWriter(newFile);
             yamlDumper.dump(config, writer);
@@ -195,7 +200,7 @@ public class YamlConfigurator
     {
         try
         {
-            URL url = ClassLoader.getSystemResource(configPath);
+            URL url = Thread.currentThread().getContextClassLoader().getResource(configPath);
             if (null == url)
                 throw new Exception(configPath + " can not be found");
             return url;

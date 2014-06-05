@@ -31,6 +31,7 @@ import org.stem.domain.BlobDescriptor;
 import org.stem.transport.Message;
 import org.stem.transport.ops.DeleteBlobMessage;
 import org.stem.transport.ops.WriteBlobMessage;
+import org.stem.utils.TestUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;

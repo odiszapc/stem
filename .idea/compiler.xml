@@ -26,6 +26,7 @@
         <processorPath useClasspath="true" />
         <module name="stem-clustermanager" />
         <module name="stem-frontend" />
+        <module name="stem-maven-plugin" />
         <module name="stem-shared" />
         <module name="stem-storagenode" />
         <module name="stem-tests" />

@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/components/clustermanager/stem-clustermanager.iml" filepath="$PROJECT_DIR$/components/clustermanager/stem-clustermanager.iml" />
       <module fileurl="file://$PROJECT_DIR$/components/stem-components.iml" filepath="$PROJECT_DIR$/components/stem-components.iml" />
       <module fileurl="file://$PROJECT_DIR$/components/frontend/stem-frontend.iml" filepath="$PROJECT_DIR$/components/frontend/stem-frontend.iml" />
+      <module fileurl="file://$PROJECT_DIR$/extras/stem-maven-plugin/stem-maven-plugin.iml" filepath="$PROJECT_DIR$/extras/stem-maven-plugin/stem-maven-plugin.iml" />
       <module fileurl="file://$PROJECT_DIR$/stem-project.iml" filepath="$PROJECT_DIR$/stem-project.iml" />
       <module fileurl="file://$PROJECT_DIR$/components/shared/stem-shared.iml" filepath="$PROJECT_DIR$/components/shared/stem-shared.iml" />
       <module fileurl="file://$PROJECT_DIR$/components/storagenode/stem-storagenode.iml" filepath="$PROJECT_DIR$/components/storagenode/stem-storagenode.iml" />

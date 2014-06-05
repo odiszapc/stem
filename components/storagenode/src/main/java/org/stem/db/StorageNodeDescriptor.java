@@ -80,7 +80,6 @@ public class StorageNodeDescriptor
         }
         catch (Exception e)
         {
-            System.out.println("#### " + System.getProperty("user.dir"));
             throw new RuntimeException("Cannot load " + configPath);
         }
         return url;

@@ -129,6 +129,12 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <groupId>org.stem</groupId>
+        <artifactId>stem-maven-plugin</artifactId>
+        <version>1.0-SNAPSHOT</version>
+      </plugin>
     </plugins>
   </build>
 </project>

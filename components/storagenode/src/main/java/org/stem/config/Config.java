@@ -25,6 +25,6 @@ public class Config
     public Integer node_port = 9998;
     public Integer fat_file_size_in_mb = 256;
     public Boolean mark_on_allocate = true;
-    public Integer max_space_allocation_in_mb;
+    public Integer max_space_allocation_in_mb = 0;
     public Float compaction_threshold = 0.3f;
 }
