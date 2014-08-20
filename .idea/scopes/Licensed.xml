@@ -1,3 +1,0 @@
-<component name="DependencyValidationManager">
-  <scope name="Licensed" pattern="!file[stem-blobmanager]:src/main/resources/static/media/bootstrap-3.0.3/css//*||file[stem-project]:extras/stem-maven-plugin/*" />
-</component>
