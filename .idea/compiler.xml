@@ -26,6 +26,7 @@
         <processorPath useClasspath="true" />
         <module name="stem-clustermanager" />
         <module name="stem-frontend" />
+        <module name="stem-integration-tests" />
         <module name="stem-maven-plugin" />
         <module name="stem-shared" />
         <module name="stem-storagenode" />
@@ -36,6 +37,7 @@
       <module name="stem-clustermanager" target="1.7" />
       <module name="stem-components" target="1.7" />
       <module name="stem-frontend" target="1.7" />
+      <module name="stem-integration-tests" target="1.7" />
       <module name="stem-project" target="1.7" />
       <module name="stem-shared" target="1.7" />
       <module name="stem-storagenode" target="1.7" />

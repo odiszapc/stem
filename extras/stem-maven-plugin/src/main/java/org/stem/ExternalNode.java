@@ -101,7 +101,14 @@ public class ExternalNode
             exec.setStreamHandler(streamHandler);
 
             exec.execute(commandLine, env, execHandler);
-
+//            try
+//            {
+//                execHandler.waitFor();
+//            }
+//            catch (InterruptedException e)
+//            {
+//                e.printStackTrace();
+//            }
             return execHandler;
         }
         catch (IOException e)
