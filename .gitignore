@@ -17,10 +17,9 @@ hs_err_pid*
 .settings/
 
 # Intellij
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/dictionaries
+.idea/
 *.iws
+*.iml
 
 # Mac
 .DS_Store

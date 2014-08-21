@@ -22,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.stem.api.ClusterManagerClient;
 import org.stem.api.response.ClusterResponse;
+import org.stem.utils.TestUtil;
 
 import java.io.IOException;
 

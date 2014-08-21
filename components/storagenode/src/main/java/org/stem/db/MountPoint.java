@@ -109,7 +109,7 @@ public class MountPoint
             writeIdent();
 
 
-            long maxAllocation = null != StorageNodeDescriptor.getMaxAllocationInMb()
+            long maxAllocation = 0 != StorageNodeDescriptor.getMaxAllocationInMb()
                     ? StorageNodeDescriptor.getMaxAllocationInMb() * 1024 * 1024
                     : totalSpace;
 

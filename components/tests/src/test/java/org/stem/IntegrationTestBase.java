@@ -37,6 +37,8 @@ import org.stem.db.StorageNodeDescriptor;
 import org.stem.db.StorageService;
 import org.stem.service.StemDaemon;
 import org.stem.transport.ops.WriteBlobMessage;
+import org.stem.utils.TestUtil;
+import org.stem.utils.YamlConfigurator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -399,7 +401,6 @@ public class IntegrationTestBase
 
         return yamlConfigurator
                 .saveTo(tmpDir);
-        //return "./components/storagenode/src/test/resources/stem.yaml";
     }
 
     protected void customStorageNodeConfiguration(YamlConfigurator yamlConfigurator)

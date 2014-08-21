@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.stem.db.DataTracker;
 import org.stem.db.FatFile;
 import org.stem.db.FatFileAllocator;
+import org.stem.utils.TestUtil;
 
 public class BlobWriteTest extends IntegrationTestBase
 {

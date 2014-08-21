@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-package org.stem.config;
+package org.stem.utils;
 
-public class Config
+
+
+public class Utils
 {
-    public Boolean auto_allocate = false;
-    public String[] blob_mount_points;
-    public String cluster_manager_endpoint;
-    public String node_listen = "0.0.0.0";
-    public Integer node_port = 9998;
-    public Integer fat_file_size_in_mb = 256;
-    public Boolean mark_on_allocate = true;
-    public Integer max_space_allocation_in_mb = 0;
-    public Float compaction_threshold = 0.3f;
+
+    public void startStorageNode() throws Exception
+    {
+//        Executor exec = new DefaultExecutor();
+//        DefaultExecuteResultHandler execHandler = new DefaultExecuteResultHandler();
+//        exec.setProcessDestroyer(new ShutdownHookProcessDestroyer());
+//        exec.setStreamHandler(new PumpStreamHandler(System.out));
+//        exec.execute()
+
+
+    }
 }

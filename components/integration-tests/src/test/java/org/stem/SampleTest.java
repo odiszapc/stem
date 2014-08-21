@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package org.stem.config;
+package org.stem;
 
-public class Config
+import org.junit.Test;
+
+public class SampleTest
 {
-    public Boolean auto_allocate = false;
-    public String[] blob_mount_points;
-    public String cluster_manager_endpoint;
-    public String node_listen = "0.0.0.0";
-    public Integer node_port = 9998;
-    public Integer fat_file_size_in_mb = 256;
-    public Boolean mark_on_allocate = true;
-    public Integer max_space_allocation_in_mb = 0;
-    public Float compaction_threshold = 0.3f;
+    @Test
+    public void testName() throws Exception
+    {
+
+
+    }
 }

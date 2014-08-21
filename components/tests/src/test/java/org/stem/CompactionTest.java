@@ -24,7 +24,7 @@ import org.stem.client.StemClient;
 import org.stem.db.*;
 import org.stem.db.compaction.CompactionManager;
 import org.stem.db.compaction.FFScanner;
-import org.stem.domain.StorageNode;
+import org.stem.utils.YamlConfigurator;
 
 import java.io.IOException;
 import java.util.ArrayList;
