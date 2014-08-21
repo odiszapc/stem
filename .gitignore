@@ -27,3 +27,8 @@ hs_err_pid*
 # Maven
 log/
 target/.idea/*
+
+components/clustermanager/target/*
+components/storagenode/target/*
+components/tests/target/*
+target/*
