@@ -156,7 +156,7 @@ public class ClusterManagerLauncher
         {
             config.addHttpHandler(handler, uri.getPath());
         }
-        return server;
+        return HttpServer.createSimpleServer();
     }
 
     private void setupJsonSerialization(ResourceConfig cfg)
