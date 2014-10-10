@@ -29,7 +29,7 @@ STEM can be a common component in the following kind of services:
 - Storage for a large amount of small blocks of data
 - Core engine for image hosting
 
-Stem Object Storage will allow you to install as many disks to a storage node as you want. Index is placed in a separate cluster; you don't need to worry about running out of RAM — meta- and binary- clusters can be scaled out separately.
+Stem Object Storage will allow you to install as many disks to storage node as you want. Indexes are located in a separate cluster; you don't need to worry about running out of RAM — meta- and binary- clusters can be scaled out separately.
 
 #### Resources
 Web site: http://stemstorage.org
