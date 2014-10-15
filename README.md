@@ -38,7 +38,7 @@ Web site: http://stemstorage.org
 Issue tracker: http://tracker.stemstorage.org (JIRA)
 
 #### Authors
-Alexey Plotnik (odiszapc@gmail.com, http://twitter.com/odiszapc) I do it just because I like it.
+Alexey Plotnik (odiszapc@gmail.com, http://twitter.com/odiszapc)
 
 #### License
 Apache 2.0
