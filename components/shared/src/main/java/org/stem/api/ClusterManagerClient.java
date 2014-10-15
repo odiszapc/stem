@@ -85,8 +85,7 @@ public class ClusterManagerClient extends BaseHttpClient
     public StemResponse computeMapping()
     {
         URI uri = getURI(RESTConstants.Api.Topology.Build.URI);
-        HttpPost request = new HttpPost(uri);
-        return send(request, StemResponse.class);
+        return send(new HttpPost(uri), StemResponse.class);
     }
 
 }
