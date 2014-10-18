@@ -17,11 +17,16 @@
 package org.stem.client.v2;
 
 import com.google.common.util.concurrent.AbstractFuture;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.HashedWheelTimer;
+import io.netty.util.Timeout;
+import io.netty.util.Timer;
+import io.netty.util.TimerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.exceptions.ClientTransportException;
@@ -31,6 +36,9 @@ import org.stem.transport.*;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Connection
@@ -71,6 +79,22 @@ public class Connection
         close().force();
 
         return e;
+    }
+
+    public Future write(Message.Request request)
+    {
+        Future future = new Future(request);
+        write(future);
+        return future;
+    }
+
+    private ResponseHandler write(ResponseCallback callback)
+    {
+        Message.Request request = callback.request();
+        ResponseHandler responseHandler = new ResponseHandler(this, callback);
+        dispatcher.addHandler(responseHandler);
+
+        return null;
     }
 
     public CloseFuture close()
@@ -121,12 +145,22 @@ public class Connection
             pipeline.addLast("messageDecoder", messageDecoder);
             pipeline.addLast("messageEncoder", messageEncoder);
             pipeline.addLast("dispatcher", connection.dispatcher);
-
         }
     }
 
+    /**
+     *
+     */
     public static class Factory
     {
+        private final Configuration configuration;
+        public final Timer timer = new HashedWheelTimer(new ThreadFactoryBuilder().setNameFormat("Timeouter-%d").build());
+
+        public Factory(Configuration configuration)
+        {
+            this.configuration = configuration;
+        }
+
         public Bootstrap createNewBootstrap()
         {
             Bootstrap bootstrap = new Bootstrap();
@@ -142,9 +176,29 @@ public class Connection
         }
     }
 
+    /**
+     *
+     */
     private class Dispatcher extends SimpleChannelInboundHandler<Message.Response>
     {
         private final ConcurrentMap<Integer, ResponseHandler> pending = new ConcurrentHashMap<Integer, ResponseHandler>();
+        public final StreamIdGenerator streamIdGenerator = new StreamIdGenerator();
+
+
+        public void addHandler(ResponseHandler handler)
+        {
+            ResponseHandler oldHandler = pending.put(handler.streamId, handler);
+            assert null == oldHandler;
+        }
+
+        public void removeHandler(int streamId, boolean release)
+        {
+            ResponseHandler removed = pending.remove(streamId);
+            if (null != removed) {
+                removed.cancelTimeout();
+            }
+        }
+
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Message.Response message) throws Exception
         {
@@ -169,14 +223,48 @@ public class Connection
         {
             logger.info("Channel closed");
         }
+
+
     }
 
-    static class Future extends AbstractFuture<Message.Response> implements RequestHandler.Callback {
+    /**
+     *
+     */
+    private class StreamIdGenerator
+    {
+        static final int MAX_STREAMS = 128;
+        private final AtomicIntegerArray streamsIds = new AtomicIntegerArray(MAX_STREAMS);
+        private final AtomicInteger marked = new AtomicInteger(0);
 
-        @Override
-        public void onSet(Connection connection, Message.Response response, ExecutionInfo info, long latency)
+        private StreamIdGenerator()
         {
+            for (int i = 0; i < streamsIds.length(); i++) {
+                streamsIds.set(i, -1);
+            }
+        }
 
+        // TODO: resue of streams support
+        private AtomicInteger currentId = new AtomicInteger(0);
+
+        public int generate()
+        {
+            currentId.compareAndSet(Integer.MAX_VALUE, 0);
+            iter
+            return currentId.incrementAndGet();
+        }
+    }
+
+    /**
+     *
+     */
+    static class Future extends AbstractFuture<Message.Response> implements RequestHandler.Callback
+    {
+        private final Message.Request request;
+        private volatile InetSocketAddress address;
+
+        Future(Message.Request request)
+        {
+            this.request = request;
         }
 
         @Override
@@ -186,38 +274,106 @@ public class Connection
         }
 
         @Override
+        public void onSet(Connection connection, Message.Response response, ExecutionInfo info, long latency)
+        {
+            onSet(connection, response, latency)
+        }
+
+        @Override
+        public void onSet(Connection connection, Message.Response response, long latency)
+        {
+            this.address = connection.address;
+            super.set(response); // AbstractFuture
+        }
+
+        @Override
         public Message.Request request()
         {
             return null;
         }
 
         @Override
-        public void onSet(Connection connection, Message.Response response, long latency)
-        {
-
-        }
-
-        @Override
         public void onException(Connection connection, Exception exception, long latency)
         {
-
+            super.setException(exception); // AbstractFuture
         }
 
         @Override
         public void onTimeout(Connection connection, long latency)
         {
+            assert connection != null;
+            this.address = connection.address;
+            super.setException(new ConnectionException(connection.address, "Operation timed out"));
+        }
 
+        public InetSocketAddress getAddress()
+        {
+            return address;
         }
     }
 
-    interface ResponseCallback {
+    /**
+     *
+     */
+    interface ResponseCallback
+    {
         public Message.Request request();
+
         public void onSet(Connection connection, Message.Response response, long latency);
+
         public void onException(Connection connection, Exception exception, long latency);
+
         public void onTimeout(Connection connection, long latency);
     }
 
+    /**
+     *
+     */
     static class ResponseHandler
     {
+        public final Connection connection;
+        public final ResponseCallback callback;
+        public final int streamId;
+
+        private final Timeout timeout;
+        private final long startedAt;
+
+        ResponseHandler(Connection connection, ResponseCallback callback)
+        {
+            this.connection = connection;
+            this.callback = callback;
+            this.streamId = connection.dispatcher.streamIdGenerator.generate();
+
+            long timeoutMs = connection.factory.configuration.getTimeoutMs();
+            this.timeout = connection.factory.timer.newTimeout(newTimeoutTask(), timeoutMs, TimeUnit.MILLISECONDS);
+
+            this.startedAt = System.nanoTime();
+        }
+
+        /**
+         * Invoked by Dispatcher
+         */
+        void cancelTimeout()
+        {
+            if (null != timeout)
+                timeout.cancel();
+        }
+
+        public void cancelHandler()
+        {
+            connection.dispatcher.remove(streamId, false);
+        }
+
+        private TimerTask newTimeoutTask()
+        {
+            return new TimerTask()
+            {
+                @Override
+                public void run(Timeout timeout) throws Exception
+                {
+
+                }
+            }
+        }
     }
 }
