@@ -1,6 +1,6 @@
 # Stem Object Storage
 
-STEM is a distributed object storage based on top of Netty, Grizzly and Zookeeper.
+STEM is a distributed scalable storage for immutable objects of arbitary sizes. STEM is based on top of Netty, Grizzly and Zookeeper.
 
 STEM is designed as a cheap solution for cloud storage hosting providers and can be easily be deployed on commodity hardware. STEM does not need any vendor specific staff like RAID or SAN, plain formatted disks are used to store binary data.
 
