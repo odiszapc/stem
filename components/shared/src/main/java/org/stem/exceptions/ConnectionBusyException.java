@@ -16,7 +16,7 @@
 
 package org.stem.exceptions;
 
-public class ConnectionBusyException
+public class ConnectionBusyException extends Exception
 {
     public ConnectionBusyException()
     {

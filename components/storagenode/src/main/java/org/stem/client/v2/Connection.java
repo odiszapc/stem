@@ -30,6 +30,7 @@ import io.netty.util.TimerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.exceptions.ClientTransportException;
+import org.stem.exceptions.ConnectionBusyException;
 import org.stem.exceptions.ConnectionException;
 import org.stem.transport.*;
 
@@ -37,8 +38,6 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Connection
@@ -81,14 +80,14 @@ public class Connection
         return e;
     }
 
-    public Future write(Message.Request request)
+    public Future write(Message.Request request) throws ConnectionBusyException
     {
         Future future = new Future(request);
         write(future);
         return future;
     }
 
-    private ResponseHandler write(ResponseCallback callback)
+    private ResponseHandler write(ResponseCallback callback) throws ConnectionBusyException
     {
         Message.Request request = callback.request();
         ResponseHandler responseHandler = new ResponseHandler(this, callback);
@@ -182,7 +181,7 @@ public class Connection
     private class Dispatcher extends SimpleChannelInboundHandler<Message.Response>
     {
         private final ConcurrentMap<Integer, ResponseHandler> pending = new ConcurrentHashMap<Integer, ResponseHandler>();
-        public final StreamIdGenerator streamIdGenerator = new StreamIdGenerator();
+        public final StreamIdPool streamIdPool = new StreamIdPool();
 
 
         public void addHandler(ResponseHandler handler)
@@ -230,33 +229,6 @@ public class Connection
     /**
      *
      */
-    private class StreamIdGenerator
-    {
-        static final int MAX_STREAMS = 128;
-        private final AtomicIntegerArray streamsIds = new AtomicIntegerArray(MAX_STREAMS);
-        private final AtomicInteger marked = new AtomicInteger(0);
-
-        private StreamIdGenerator()
-        {
-            for (int i = 0; i < streamsIds.length(); i++) {
-                streamsIds.set(i, -1);
-            }
-        }
-
-        // TODO: resue of streams support
-        private AtomicInteger currentId = new AtomicInteger(0);
-
-        public int generate()
-        {
-            currentId.compareAndSet(Integer.MAX_VALUE, 0);
-            iter
-            return currentId.incrementAndGet();
-        }
-    }
-
-    /**
-     *
-     */
     static class Future extends AbstractFuture<Message.Response> implements RequestHandler.Callback
     {
         private final Message.Request request;
@@ -276,7 +248,7 @@ public class Connection
         @Override
         public void onSet(Connection connection, Message.Response response, ExecutionInfo info, long latency)
         {
-            onSet(connection, response, latency)
+            onSet(connection, response, latency);
         }
 
         @Override
@@ -338,11 +310,11 @@ public class Connection
         private final Timeout timeout;
         private final long startedAt;
 
-        ResponseHandler(Connection connection, ResponseCallback callback)
+        ResponseHandler(Connection connection, ResponseCallback callback) throws ConnectionBusyException
         {
             this.connection = connection;
             this.callback = callback;
-            this.streamId = connection.dispatcher.streamIdGenerator.generate();
+            this.streamId = connection.dispatcher.streamIdPool.borrow();
 
             long timeoutMs = connection.factory.configuration.getTimeoutMs();
             this.timeout = connection.factory.timer.newTimeout(newTimeoutTask(), timeoutMs, TimeUnit.MILLISECONDS);
@@ -361,7 +333,7 @@ public class Connection
 
         public void cancelHandler()
         {
-            connection.dispatcher.remove(streamId, false);
+            connection.dispatcher.removeHandler(streamId, false);
         }
 
         private TimerTask newTimeoutTask()
@@ -373,7 +345,7 @@ public class Connection
                 {
 
                 }
-            }
+            };
         }
     }
 }
