@@ -92,6 +92,7 @@ public class Connection
         Message.Request request = callback.request();
         ResponseHandler responseHandler = new ResponseHandler(this, callback);
         dispatcher.addHandler(responseHandler);
+        request.setStreamId(responseHandler.streamId);
 
         return null;
     }
@@ -261,7 +262,7 @@ public class Connection
         @Override
         public Message.Request request()
         {
-            return null;
+            return request;
         }
 
         @Override
