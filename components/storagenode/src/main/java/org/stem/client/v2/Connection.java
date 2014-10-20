@@ -35,9 +35,11 @@ import org.stem.exceptions.ConnectionException;
 import org.stem.transport.*;
 
 import java.net.InetSocketAddress;
+import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Connection
@@ -48,8 +50,9 @@ public class Connection
     protected Channel channel;
     private final Dispatcher dispatcher = new Dispatcher();
     private volatile boolean isReady;
-    private volatile boolean isDisconnecting;
+    private volatile boolean isDeactivated;
     private final AtomicReference<ConnectionCloseFuture> closeFutureRef = new AtomicReference<>();
+    private final AtomicInteger writeCounter = new AtomicInteger(0);
 
     public Connection(InetSocketAddress address, Factory factory) throws ConnectionException
     {
@@ -66,35 +69,68 @@ public class Connection
         this.channel = future.awaitUninterruptibly().channel();
         if (!future.isSuccess())
         {
-            throw disconnecting(new ClientTransportException(address, "Can't connect", future.cause()));
+            throw deactivate(new ClientTransportException(address, "Can't connect", future.cause()));
         }
         isReady = true;
     }
 
-    private <E extends Exception> E disconnecting(E e)
+    private <E extends Exception> E deactivate(E e)
     {
-        isDisconnecting = true;
+        isDeactivated = true;
 
         close().force();
 
         return e;
     }
 
-    public Future write(Message.Request request) throws ConnectionBusyException
+    public Future write(Message.Request request) throws ConnectionBusyException, ConnectionException
     {
         Future future = new Future(request);
         write(future);
         return future;
     }
 
-    private ResponseHandler write(ResponseCallback callback) throws ConnectionBusyException
+    private ResponseHandler write(ResponseCallback callback) throws ConnectionBusyException, ConnectionException
     {
         Message.Request request = callback.request();
         ResponseHandler responseHandler = new ResponseHandler(this, callback);
         dispatcher.addHandler(responseHandler);
         request.setStreamId(responseHandler.streamId);
 
-        return null;
+        if (isDeactivated) {
+            dispatcher.removeHandler(responseHandler.streamId, true);
+            throw new ConnectionException(address, "Writing on deactivated connection");
+        }
+
+        if (isClosed()) {
+            dispatcher.removeHandler(responseHandler.streamId, true);
+            throw new ConnectionException(address, "Connection has been closed");
+        }
+
+        writeCounter.incrementAndGet();
+        channel.write(request).addListener(writeHandler(request, responseHandler));
+        return responseHandler;
+    }
+
+    private ChannelFutureListener writeHandler(final Message.Request request, final ResponseHandler handler) {
+        return new ChannelFutureListener()
+        {
+            @Override
+            public void operationComplete(ChannelFuture future) throws Exception
+            {
+                writeCounter.decrementAndGet();
+                if (!future.isSuccess()) {
+                    dispatcher.removeHandler(handler.streamId, true);
+                    ConnectionException e;
+                    if (future.cause() instanceof ClosedChannelException) {
+                        e = new ClientTransportException(address, "Error writing to closed channel");
+                    } else {
+                        e = new ClientTransportException(address, "Error writing", future.cause());
+                    }
+                    handler.callback.onException(Connection.this, deactivate(e), System.nanoTime() - handler.startedAt);
+                }
+            }
+        };
     }
 
     public CloseFuture close()
@@ -107,9 +143,13 @@ public class Connection
 
         logger.debug("Closing connection");
 
-        //if (dispatcher.pending.isEmpty())
-        //    future.force();
+        if (dispatcher.pending.isEmpty())
+            future.force();
         return future;
+    }
+
+    public boolean isClosed() {
+        return closeFutureRef.get() != null;
     }
 
     private class ConnectionCloseFuture extends CloseFuture
@@ -209,7 +249,7 @@ public class Connection
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable e) throws Exception
         {
             logger.info("Unexpected exception caught {}", e);
-            disconnecting(new ClientTransportException(address, String.format("Unexpected exception %s", e.getCause()), e.getCause()));
+            deactivate(new ClientTransportException(address, String.format("Unexpected exception %s", e.getCause()), e.getCause()));
         }
 
         @Override
@@ -262,7 +302,7 @@ public class Connection
         @Override
         public Message.Request request()
         {
-            return request;
+            return null;
         }
 
         @Override
