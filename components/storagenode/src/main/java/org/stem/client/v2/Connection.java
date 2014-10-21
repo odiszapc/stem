@@ -74,6 +74,10 @@ public class Connection
         isReady = true;
     }
 
+    public int maxAvailableStreams() {
+            return dispatcher.streamIdPool.maxAvailableStreams();
+        }
+
     private <E extends Exception> E deactivate(E e)
     {
         isDeactivated = true;
