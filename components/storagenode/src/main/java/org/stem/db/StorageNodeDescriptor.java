@@ -127,7 +127,9 @@ public class StorageNodeDescriptor
 
     public static Integer getMaxAllocationInMb()
     {
-        return config.max_space_allocation_in_mb;
+        return null == config.max_space_allocation_in_mb
+                ? 0
+                : config.max_space_allocation_in_mb;
     }
 
     public static MetaStoreClient getMetaStoreClient()

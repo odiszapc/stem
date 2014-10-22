@@ -17,7 +17,10 @@
 package org.stem;
 
 import org.junit.Test;
+import org.stem.client.v2.Configuration;
 import org.stem.client.v2.Connection;
+import org.stem.transport.Message;
+import org.stem.transport.ops.WriteBlobMessage;
 
 import java.net.InetSocketAddress;
 
@@ -27,10 +30,11 @@ public class NewClientTest //extends IntegrationTestBase
     public void testName() throws Exception
     {
         Connection connection = new Connection(
-                new InetSocketAddress("127.0.0.1", 9998),
-                new Connection.Factory());
+                new InetSocketAddress("127.0.0.1", 9998), new Connection.Factory(new Configuration()));
 
-        Thread.sleep(100000);
+        connection.write()
+        //new WriteBlobMessage()
+        //Thread.sleep(100000);
 
         connection.close();
     }
