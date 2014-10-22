@@ -16,29 +16,18 @@
 
 package org.stem.client.v2;
 
-public class Configuration
+public class ProtocolOpts
 {
-    SocketOpts socketOpts;
-    ProtocolOpts protocolOpts;
+    public static final int DEFAULT_PORT = 9998;
+    private final int port;
 
-    public Configuration()
+    public ProtocolOpts()
     {
-        this(new SocketOpts(), new ProtocolOpts());
+        this(DEFAULT_PORT);
     }
 
-    public Configuration(SocketOpts socketOpts, ProtocolOpts protocolOpts)
+    public ProtocolOpts(int port)
     {
-        this.socketOpts = socketOpts;
-        this.protocolOpts = protocolOpts;
-    }
-
-    public SocketOpts getSocketOpts()
-    {
-        return socketOpts;
-    }
-
-    public ProtocolOpts getProtocolOpts()
-    {
-        return protocolOpts;
+        this.port = port;
     }
 }
