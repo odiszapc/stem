@@ -333,7 +333,6 @@ public class Connection
                 return;
             }
             handler.cancelTimeout();
-            ;
             handler.callback.onSet(Connection.this, response, System.nanoTime() - handler.startedAt);
 
             if (isClosed())
