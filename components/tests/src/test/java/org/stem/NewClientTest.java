@@ -23,6 +23,7 @@ import org.stem.transport.Message;
 import org.stem.transport.ops.WriteBlobMessage;
 
 import java.net.InetSocketAddress;
+import java.util.UUID;
 
 public class NewClientTest //extends IntegrationTestBase
 {
@@ -32,7 +33,7 @@ public class NewClientTest //extends IntegrationTestBase
         Connection connection = new Connection(
                 new InetSocketAddress("127.0.0.1", 9998), new Connection.Factory(new Configuration()));
 
-        connection.write()
+        WriteBlobMessage req = new WriteBlobMessage(UUID.fromString("53860d16-b255-4d28-9fb1-40d8e5e94ab0"), "key".getBytes(), "value".getBytes());
         //new WriteBlobMessage()
         //Thread.sleep(100000);
 
