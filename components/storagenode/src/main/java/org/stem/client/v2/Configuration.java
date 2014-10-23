@@ -16,7 +16,7 @@
 
 package org.stem.client.v2;
 
-import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
 public class Configuration
 {
@@ -24,8 +24,8 @@ public class Configuration
     ProtocolOpts protocolOpts;
     PoolingOpts poolingOpts;
 
-    InetAddress clusterManagerHost;
-    InetAddress zookeeperHost;
+    InetSocketAddress clusterManagerHost;
+    InetSocketAddress zookeeperHost;
 
     public Configuration()
     {
