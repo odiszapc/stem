@@ -20,6 +20,8 @@ import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -27,6 +29,10 @@ import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timeout;
 import io.netty.util.Timer;
 import io.netty.util.TimerTask;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import io.netty.util.concurrent.EventExecutor;
+import org.jboss.netty.channel.ChannelFactory;
+import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.exceptions.ClientTransportException;
@@ -34,18 +40,18 @@ import org.stem.exceptions.ConnectionBusyException;
 import org.stem.exceptions.ConnectionException;
 import org.stem.transport.*;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.channels.ClosedChannelException;
 import java.util.Iterator;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Connection
 {
     private static final Logger logger = LoggerFactory.getLogger(Connection.class);
+    private String name;
     private InetSocketAddress address;
     private Factory factory;
     protected Channel channel;
@@ -57,22 +63,28 @@ public class Connection
 
     private final Object terminationLock = new Object();
 
-    public Connection(InetSocketAddress address, Factory factory) throws ConnectionException
+    public Connection(String name, InetSocketAddress address, Factory factory) throws ConnectionException
     {
+        this.name = name;
         this.address = address;
         this.factory = factory;
 
         Bootstrap bootstrap = factory.createNewBootstrap();
-        bootstrap
-                .group(new NioEventLoopGroup())
-                .channel(NioSocketChannel.class)
-                .handler(new ChannelHandler(this));
+        bootstrap.handler(new ChannelHandler(this));
 
         ChannelFuture future = bootstrap.connect(address);
-        this.channel = future.awaitUninterruptibly().channel();
-        if (!future.isSuccess())
+        writeCounter.incrementAndGet();
+        try
         {
-            throw deactivate(new ClientTransportException(address, "Can't connect", future.cause()));
+            this.channel = future.awaitUninterruptibly().channel();
+            if (!future.isSuccess())
+            {
+                throw deactivate(new ClientTransportException(address, "Can't connect", future.cause()));
+            }
+        }
+        finally
+        {
+            writeCounter.decrementAndGet();
         }
         isReady = true;
     }
@@ -231,12 +243,39 @@ public class Connection
      */
     public static class Factory
     {
+        EventLoopGroup workerGroup = new NioEventLoopGroup();
+
         private final Configuration configuration;
         public final Timer timer = new HashedWheelTimer(new ThreadFactoryBuilder().setNameFormat("Timeouter-%d").build());
+        private volatile boolean isShutdown;
+        private InetSocketAddress address;
+
+        private final ConcurrentMap<Host, AtomicInteger> idGenerators = new ConcurrentHashMap<>();
 
         public Factory(Configuration configuration)
         {
             this.configuration = configuration;
+        }
+
+        public Connection open(Host host) throws ConnectionException
+        {
+            address = host.getSocketAddress();
+            if (isShutdown)
+                throw new ConnectionException(address, "Connection factory is shut down");
+
+            String name = address.toString() + '-' + getIdGenerator(host).getAndIncrement();
+            return new Connection(name, address, this);
+        }
+
+        public PooledConnection open(ConnectionPool pool) throws ConnectionException
+        {
+            InetSocketAddress address = pool.host.getSocketAddress();
+
+            if (isShutdown)
+                throw new ConnectionException(address, "Connection factory is shut down");
+
+            String name = address.toString() + '-' + getIdGenerator(pool.host).getAndIncrement();
+            return new PooledConnection(name, address, this, pool);
         }
 
         public Bootstrap createNewBootstrap()
@@ -244,6 +283,11 @@ public class Connection
             SocketOpts opt = this.configuration.getSocketOpts();
 
             Bootstrap bootstrap = new Bootstrap();
+
+            bootstrap
+                    .group(workerGroup)
+                    .channel(NioSocketChannel.class);
+
             bootstrap
                     .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, opt.getConnectTimeoutMs());
 
@@ -274,9 +318,29 @@ public class Connection
             return bootstrap;
         }
 
+        public void shutdown()
+        {
+            isShutdown = true;
+            workerGroup.shutdownGracefully().awaitUninterruptibly();
+            timer.stop();
+        }
+
         public int getReadTimeoutMs()
         {
             return configuration.getSocketOpts().getReadTimeoutMs();
+        }
+
+        private AtomicInteger getIdGenerator(Host host)
+        {
+            AtomicInteger g = idGenerators.get(host);
+            if (g == null)
+            {
+                g = new AtomicInteger(1);
+                AtomicInteger old = idGenerators.putIfAbsent(host, g);
+                if (old != null)
+                    g = old;
+            }
+            return g;
         }
     }
 

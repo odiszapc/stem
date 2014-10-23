@@ -16,28 +16,17 @@
 
 package org.stem.client.v2;
 
-import com.datastax.driver.core.Host;
+import org.stem.exceptions.ConnectionException;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.net.InetSocketAddress;
 
-public class Session
+public class PooledConnection extends Connection
 {
-    final StemCluster cluster;
-    final ConcurrentMap<Host, ConnectionPool> pools;
+    private ConnectionPool pool;
 
-    public Session(StemCluster cluster)
+    public PooledConnection(String name, InetSocketAddress address, Factory factory, ConnectionPool pool) throws ConnectionException
     {
-        this.cluster = cluster;
-        this.pools = new ConcurrentHashMap<>();
+        super(name, address, factory);
+        this.pool = pool;
     }
-
-
-    Configuration configuration() {
-        return cluster.manager.configuration;
-    }
-
-    Connection.Factory connectionFactory() {
-            return cluster.manager.connectionFactory;
-        }
 }

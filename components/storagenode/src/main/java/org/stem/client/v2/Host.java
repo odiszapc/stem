@@ -16,28 +16,19 @@
 
 package org.stem.client.v2;
 
-import com.datastax.driver.core.Host;
+import java.net.InetSocketAddress;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-public class Session
+public class Host
 {
-    final StemCluster cluster;
-    final ConcurrentMap<Host, ConnectionPool> pools;
+    private InetSocketAddress socketAddress;
 
-    public Session(StemCluster cluster)
+    public Host(InetSocketAddress socketAddress)
     {
-        this.cluster = cluster;
-        this.pools = new ConcurrentHashMap<>();
+        this.socketAddress = socketAddress;
     }
 
-
-    Configuration configuration() {
-        return cluster.manager.configuration;
+    public InetSocketAddress getSocketAddress()
+    {
+        return socketAddress;
     }
-
-    Connection.Factory connectionFactory() {
-            return cluster.manager.connectionFactory;
-        }
 }

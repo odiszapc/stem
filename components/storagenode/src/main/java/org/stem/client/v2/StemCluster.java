@@ -16,28 +16,29 @@
 
 package org.stem.client.v2;
 
-import com.datastax.driver.core.Host;
-
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-public class Session
+public class StemCluster
 {
-    final StemCluster cluster;
-    final ConcurrentMap<Host, ConnectionPool> pools;
+    final Manager manager;
 
-    public Session(StemCluster cluster)
+    public StemCluster(Configuration configuration)
     {
-        this.cluster = cluster;
-        this.pools = new ConcurrentHashMap<>();
+        manager = new Manager(configuration);
     }
 
+    class Manager
+    {
+        Configuration configuration;
+        final Connection.Factory connectionFactory;
 
-    Configuration configuration() {
-        return cluster.manager.configuration;
-    }
-
-    Connection.Factory connectionFactory() {
-            return cluster.manager.connectionFactory;
+        public Manager(Configuration configuration)
+        {
+            this.configuration = configuration;
+            connectionFactory = new Connection.Factory(configuration);
         }
+
+        public Connection.Factory getConnectionFactory()
+        {
+            return connectionFactory;
+        }
+    }
 }
