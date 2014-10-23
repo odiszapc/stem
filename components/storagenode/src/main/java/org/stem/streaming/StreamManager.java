@@ -18,8 +18,8 @@ package org.stem.streaming;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stem.coordination.ZooConstants;
 import org.stem.coordination.StemZooEventHandler;
+import org.stem.coordination.ZooConstants;
 import org.stem.coordination.ZookeeperClient;
 import org.stem.coordination.ZookeeperClientFactory;
 import org.stem.db.DataTracker;

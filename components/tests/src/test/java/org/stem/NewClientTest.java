@@ -19,7 +19,6 @@ package org.stem;
 import org.junit.Test;
 import org.stem.client.v2.Configuration;
 import org.stem.client.v2.Connection;
-import org.stem.transport.Message;
 import org.stem.transport.ops.WriteBlobMessage;
 
 import java.net.InetSocketAddress;

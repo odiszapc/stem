@@ -18,8 +18,8 @@ package org.stem.client;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
-import org.stem.coordination.ZooConstants;
 import org.stem.coordination.TopoMapping;
+import org.stem.coordination.ZooConstants;
 import org.stem.coordination.ZookeeperClient;
 import org.stem.coordination.ZookeeperClientFactory;
 import org.stem.domain.ArrayBalancer;
