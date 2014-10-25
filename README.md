@@ -1,8 +1,8 @@
-# Stem Object Storage
+# STEM Object Storage
 
-STEM is a distributed scalable storage of immutable binary objects of arbitary sizes. STEM is based on top of Netty, Grizzly and Zookeeper.
+STEM is a distributed scalable storage of immutable binary objects of arbitary sizes. STEM is based on top of Netty, Grizzly and Zookeeper. STEM has its own data storage format.
 
-STEM is designed as a cheap solution for cloud storage hosting providers and can be easily be deployed on commodity hardware. STEM does not need any vendor specific staff like RAID or SAN, plain formatted disks are used to store binary data.
+STEM is designed as a cheap solution for cloud hosting providers and can easily be deployed on commodity hardware. STEM does not need any vendor specific staff like RAID or SAN, it uses plain formatted disks to store binary data.
 
 With STEM you can persist up to 100-200TB+ of binary data on each machine in cluster.
 
@@ -24,13 +24,13 @@ With STEM you can persist up to 100-200TB+ of binary data on each machine in clu
 - REST API (PUT, GET, DELETE)
 
 #### Use cases
-STEM can be a key component in the following kind of services:
+STEM can be a key component in following types of services:
 - File storage backend
 - Storage for a large amount of small blocks of data
 - Core engine for image hosting
 - Video hosting back-end
 
-Stem Object Storage will allow you to install as many disks to storage node as you want. Indexes are located in a separate cluster; you don't need to worry about running out of RAM — meta- and binary- clusters can be scaled out separately.
+STEM Object Storage will allow you to install as many disks to storage node as you want. Indexes are located in a separate cluster; you don't need to worry about running out of RAM — meta- and binary- clusters can be scaled out separately.
 
 #### Resources
 Web site: http://stemstorage.org
