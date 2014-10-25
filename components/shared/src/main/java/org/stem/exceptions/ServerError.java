@@ -16,21 +16,17 @@
 
 package org.stem.exceptions;
 
-public class ServerError extends RuntimeException implements TransportException
-{
-    public ServerError(Throwable e)
-    {
+public class ServerError extends RuntimeException implements TransportException {
+    public ServerError(Throwable e) {
         super(e.toString());
     }
 
-    public ServerError(String msg)
-    {
+    public ServerError(String msg) {
         super(msg);
     }
 
     @Override
-    public ErrorCode code()
-    {
+    public ErrorCode code() {
         return ErrorCode.SERVER_ERROR;
     }
 }

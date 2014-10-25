@@ -23,11 +23,9 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 @Provider
-public class DefaultExceptionMapper implements ExceptionMapper<Exception>
-{
+public class DefaultExceptionMapper implements ExceptionMapper<Exception> {
     @Override
-    public Response toResponse(Exception exception)
-    {
+    public Response toResponse(Exception exception) {
         ErrorResponse resp = new ErrorResponse();
         resp.setError(String.format("Server internal error"));
         resp.setErrorCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());

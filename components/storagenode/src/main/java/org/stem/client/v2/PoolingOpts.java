@@ -16,8 +16,7 @@
 
 package org.stem.client.v2;
 
-public class PoolingOpts
-{
+public class PoolingOpts {
     private static final int START_CONNECTIONS_PER_HOST = 1;
     private static final int MAX_CONNECTIONS_PER_HOST = 5;
     private static final int MIN_REQUESTS_DEFAULT = 10;
@@ -28,46 +27,38 @@ public class PoolingOpts
     private int minSimultaneousRequestsPerConnection = MIN_REQUESTS_DEFAULT;
     private int maxSimultaneousRequestsPerConnection = MAX_REQUESTS_DEFAULT;
 
-    public int getStartConnectionsPerHost()
-    {
+    public int getStartConnectionsPerHost() {
         return startConnectionsPerHost;
     }
 
-    public synchronized PoolingOpts setStartConnectionsPerHost(int startConnectionsPerHost)
-    {
+    public synchronized PoolingOpts setStartConnectionsPerHost(int startConnectionsPerHost) {
         this.startConnectionsPerHost = startConnectionsPerHost;
         return this;
     }
 
-    public int getMaxConnectionsPerHost()
-    {
+    public int getMaxConnectionsPerHost() {
         return maxConnectionsPerHost;
     }
 
-    public synchronized PoolingOpts setMaxConnectionsPerHost(int maxConnectionsPerHost)
-    {
+    public synchronized PoolingOpts setMaxConnectionsPerHost(int maxConnectionsPerHost) {
         this.maxConnectionsPerHost = maxConnectionsPerHost;
         return this;
     }
 
-    public int getMinSimultaneousRequestsPerConnection()
-    {
+    public int getMinSimultaneousRequestsPerConnection() {
         return minSimultaneousRequestsPerConnection;
     }
 
-    public synchronized PoolingOpts setMinSimultaneousRequestsPerConnection(int minSimultaneousRequestsPerConnection)
-    {
+    public synchronized PoolingOpts setMinSimultaneousRequestsPerConnection(int minSimultaneousRequestsPerConnection) {
         this.minSimultaneousRequestsPerConnection = minSimultaneousRequestsPerConnection;
         return this;
     }
 
-    public int getMaxSimultaneousRequestsPerConnection()
-    {
+    public int getMaxSimultaneousRequestsPerConnection() {
         return maxSimultaneousRequestsPerConnection;
     }
 
-    public synchronized PoolingOpts setMaxSimultaneousRequestsPerConnection(int maxSimultaneousRequestsPerConnection)
-    {
+    public synchronized PoolingOpts setMaxSimultaneousRequestsPerConnection(int maxSimultaneousRequestsPerConnection) {
         this.maxSimultaneousRequestsPerConnection = maxSimultaneousRequestsPerConnection;
         return this;
     }

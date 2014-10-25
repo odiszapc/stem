@@ -22,13 +22,11 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class Session
-{
+public class Session {
     final StemCluster cluster;
     final ConcurrentMap<Host, ConnectionPool> pools;
 
-    public Session(StemCluster cluster)
-    {
+    public Session(StemCluster cluster) {
         this.cluster = cluster;
         this.pools = new ConcurrentHashMap<>();
     }
@@ -39,8 +37,8 @@ public class Session
     }
 
     Connection.Factory connectionFactory() {
-            return cluster.manager.connectionFactory;
-        }
+        return cluster.manager.connectionFactory;
+    }
 
     ListeningExecutorService blockingExecutor() {
         return cluster.manager.blockingExecutor;

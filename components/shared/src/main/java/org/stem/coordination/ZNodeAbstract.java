@@ -18,17 +18,14 @@ package org.stem.coordination;
 
 import org.stem.util.JsonUtils;
 
-public abstract class ZNodeAbstract implements ZNode
-{
+public abstract class ZNodeAbstract implements ZNode {
     // TODO: Make these methods static
     @Override
-    public byte[] encode()
-    {
+    public byte[] encode() {
         return JsonUtils.encodeBytes(formingEntity());
     }
 
-    protected Object formingEntity()
-    {
+    protected Object formingEntity() {
         return this;
     }
 }

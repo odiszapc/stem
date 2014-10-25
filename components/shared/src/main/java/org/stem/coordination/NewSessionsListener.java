@@ -18,17 +18,14 @@ package org.stem.coordination;
 
 import org.stem.streaming.StreamSession;
 
-public class NewSessionsListener extends StemZooEventHandler<StreamSession>
-{
+public class NewSessionsListener extends StemZooEventHandler<StreamSession> {
     @Override
-    public Class<? extends StreamSession> getBaseClass()
-    {
+    public Class<? extends StreamSession> getBaseClass() {
         return StreamSession.class;
     }
 
     @Override
-    protected void onChildAdded(StreamSession session)
-    {
+    protected void onChildAdded(StreamSession session) {
         super.onChildAdded(session);
     }
 }

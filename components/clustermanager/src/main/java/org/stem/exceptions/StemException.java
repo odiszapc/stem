@@ -16,20 +16,16 @@
 
 package org.stem.exceptions;
 
-public class StemException extends RuntimeException
-{
-    public StemException(String message)
-    {
+public class StemException extends RuntimeException {
+    public StemException(String message) {
         super(message);
     }
 
-    public StemException(Throwable cause)
-    {
+    public StemException(Throwable cause) {
         super(cause);
     }
 
-    public StemException(String message, Throwable cause)
-    {
+    public StemException(String message, Throwable cause) {
         super(message, cause);
     }
 }

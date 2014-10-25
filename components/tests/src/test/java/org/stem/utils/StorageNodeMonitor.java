@@ -16,8 +16,7 @@
 
 package org.stem.utils;
 
-public class StorageNodeMonitor
-{
+public class StorageNodeMonitor {
     public static void main(String[] args) {
 
     }

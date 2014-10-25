@@ -24,18 +24,15 @@ import org.stem.transport.Message;
 
 import java.util.UUID;
 
-public class WriteBlobMessage extends Message.Request
-{
+public class WriteBlobMessage extends Message.Request {
     public UUID disk;
     public byte[] key;
     public byte[] blob;
 
 
-    public static final Codec<WriteBlobMessage> codec = new Codec<WriteBlobMessage>()
-    {
+    public static final Codec<WriteBlobMessage> codec = new Codec<WriteBlobMessage>() {
         @Override
-        public ByteBuf encode(WriteBlobMessage op)
-        {
+        public ByteBuf encode(WriteBlobMessage op) {
             ByteBuf buf = Unpooled.buffer();
             buf.writeBytes(op.disk.toString().getBytes());
             buf.writeBytes(op.key);
@@ -45,8 +42,7 @@ public class WriteBlobMessage extends Message.Request
         }
 
         @Override
-        public WriteBlobMessage decode(ByteBuf buf)
-        {
+        public WriteBlobMessage decode(ByteBuf buf) {
             WriteBlobMessage op = new WriteBlobMessage();
             byte[] diskBytes = new byte[36];
             buf.readBytes(diskBytes);
@@ -64,36 +60,30 @@ public class WriteBlobMessage extends Message.Request
         }
     };
 
-    public int getBlobSize()
-    {
+    public int getBlobSize() {
         return blob.length;
     }
 
-    public WriteBlobMessage(UUID disk, byte[] key, byte[] blob)
-    {
+    public WriteBlobMessage(UUID disk, byte[] key, byte[] blob) {
         this();
         this.disk = disk;
         this.key = key;
         this.blob = blob;
     }
 
-    public WriteBlobMessage()
-    {
+    public WriteBlobMessage() {
         super(Type.WRITE_BLOB);
     }
 
 
     @Override
-    public ByteBuf encode()
-    {
+    public ByteBuf encode() {
         return codec.encode(this);
     }
 
     @Override
-    public Response execute()
-    {
-        try
-        {
+    public Response execute() {
+        try {
             //Thread.sleep(2000);
 
             BlobDescriptor desc = StorageService.instance.write(this);
@@ -103,8 +93,7 @@ public class WriteBlobMessage extends Message.Request
                     desc.getBodyOffset());
 
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             return ErrorMessage.fromException(e);
         }
     }

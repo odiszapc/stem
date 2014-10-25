@@ -22,27 +22,22 @@ import org.stem.coordination.TopoMapping;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TopoMapListener extends StemZooEventHandler<TopoMapping>
-{
+public class TopoMapListener extends StemZooEventHandler<TopoMapping> {
     List<TopoMapSubscriber> subscribers = new ArrayList<TopoMapSubscriber>();
 
     @Override
-    public Class<? extends TopoMapping> getBaseClass()
-    {
+    public Class<? extends TopoMapping> getBaseClass() {
         return TopoMapping.class;
     }
 
     @Override
-    protected synchronized void onNodeUpdated(TopoMapping mapping)
-    {
-        for (TopoMapSubscriber subscriber : subscribers)
-        {
+    protected synchronized void onNodeUpdated(TopoMapping mapping) {
+        for (TopoMapSubscriber subscriber : subscribers) {
             subscriber.mappingChanged(mapping);
         }
     }
 
-    public void listen(TopoMapSubscriber subscriber)
-    {
+    public void listen(TopoMapSubscriber subscriber) {
         subscribers.add(subscriber);
     }
 }

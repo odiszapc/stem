@@ -22,59 +22,49 @@ import org.stem.coordination.ZNodeAbstract;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
-public abstract class AbstractSession extends ZNodeAbstract
-{
+public abstract class AbstractSession extends ZNodeAbstract {
     protected final UUID sessionId;
     protected final AtomicLong completed;
     protected final AtomicLong total;
 
-    protected AbstractSession()
-    {
+    protected AbstractSession() {
         sessionId = UUID.randomUUID();
         completed = new AtomicLong(-1);
         total = new AtomicLong(-1);
     }
 
-    protected AbstractSession(UUID sessionId, AtomicLong total)
-    {
+    protected AbstractSession(UUID sessionId, AtomicLong total) {
         this.sessionId = sessionId;
         this.total = total;
         completed = new AtomicLong();
     }
 
     @JsonIgnore
-    public boolean isInitialized()
-    {
+    public boolean isInitialized() {
         return completed.get() != -1 && total.get() != -1;
     }
 
-    public void progress(long delta)
-    {
+    public void progress(long delta) {
         completed.addAndGet(delta);
     }
 
-    public void setProgress(long value)
-    {
+    public void setProgress(long value) {
         completed.set(value);
     }
 
-    public long getCompleted()
-    {
+    public long getCompleted() {
         return completed.get();
     }
 
-    public long getTotal()
-    {
+    public long getTotal() {
         return total.get();
     }
 
-    public void setTotal(long value)
-    {
+    public void setTotal(long value) {
         total.set(value);
     }
 
-    public void addTotal(long value)
-    {
+    public void addTotal(long value) {
         total.addAndGet(value);
     }
 }

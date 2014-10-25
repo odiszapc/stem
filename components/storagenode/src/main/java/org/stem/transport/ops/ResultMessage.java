@@ -20,10 +20,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.stem.transport.Message;
 
-public abstract class ResultMessage extends Message.Response
-{
-    public enum Kind
-    {
+public abstract class ResultMessage extends Message.Response {
+    public enum Kind {
         VOID(1, Void.subcodec),
         WRITE_BLOB(2, WriteBlob.subcodec),
         READ_BLOB(3, ReadBlob.subcodec);
@@ -34,25 +32,21 @@ public abstract class ResultMessage extends Message.Response
 
         private static Kind[] values;
 
-        static
-        {
+        static {
             int maxValue = -1;
             for (Kind type : Kind.values())
                 maxValue = Math.max(type.value, maxValue);
             values = new Kind[maxValue + 1];
-            for (Kind type : Kind.values())
-            {
+            for (Kind type : Kind.values()) {
                 values[type.value] = type;
             }
         }
 
-        public static Kind fromValue(int value)
-        {
+        public static Kind fromValue(int value) {
             return values[value];
         }
 
-        Kind(int value, Codec<ResultMessage> codec)
-        {
+        Kind(int value, Codec<ResultMessage> codec) {
             this.value = value;
             this.subcodec = codec;
         }
@@ -60,8 +54,7 @@ public abstract class ResultMessage extends Message.Response
 
     public final Kind kind;
 
-    protected ResultMessage(Kind kind)
-    {
+    protected ResultMessage(Kind kind) {
         super(Message.Type.RESULT);
         this.kind = kind;
     }
@@ -69,31 +62,25 @@ public abstract class ResultMessage extends Message.Response
     /**
      * Empty message
      */
-    public static class Void extends ResultMessage
-    {
-        public static final Message.Codec<ResultMessage> subcodec = new Message.Codec<ResultMessage>()
-        {
+    public static class Void extends ResultMessage {
+        public static final Message.Codec<ResultMessage> subcodec = new Message.Codec<ResultMessage>() {
             @Override
-            public ByteBuf encode(ResultMessage op)
-            {
+            public ByteBuf encode(ResultMessage op) {
                 return Unpooled.EMPTY_BUFFER;
             }
 
             @Override
-            public ResultMessage decode(ByteBuf buf)
-            {
+            public ResultMessage decode(ByteBuf buf) {
                 return new Void();
             }
         };
 
-        public Void()
-        {
+        public Void() {
             super(Kind.VOID);
         }
 
         @Override
-        public ByteBuf encodeBody()
-        {
+        public ByteBuf encodeBody() {
             return subcodec.encode(this);
         }
     }
@@ -101,16 +88,13 @@ public abstract class ResultMessage extends Message.Response
     /**
      * Read blob result message
      */
-    public static class ReadBlob extends ResultMessage
-    {
+    public static class ReadBlob extends ResultMessage {
 
         final byte[] data;
 
-        public static final Message.Codec<ResultMessage> subcodec = new Message.Codec<ResultMessage>()
-        {
+        public static final Message.Codec<ResultMessage> subcodec = new Message.Codec<ResultMessage>() {
             @Override
-            public ByteBuf encode(ResultMessage op)
-            {
+            public ByteBuf encode(ResultMessage op) {
                 ReadBlob readBlobResult = (ReadBlob) op;
                 ByteBuf buf = Unpooled.buffer(readBlobResult.data.length);
                 buf.writeBytes(readBlobResult.data);
@@ -118,28 +102,24 @@ public abstract class ResultMessage extends Message.Response
             }
 
             @Override
-            public ResultMessage decode(ByteBuf buf)
-            {
+            public ResultMessage decode(ByteBuf buf) {
                 byte[] data = new byte[buf.readableBytes()];
                 buf.readBytes(data);
                 return new ReadBlob(data);
             }
         };
 
-        public ReadBlob(byte[] data)
-        {
+        public ReadBlob(byte[] data) {
             super(Kind.READ_BLOB);
             this.data = data;
         }
 
         @Override
-        public ByteBuf encodeBody()
-        {
+        public ByteBuf encodeBody() {
             return subcodec.encode(this);
         }
 
-        public byte[] getData()
-        {
+        public byte[] getData() {
             return data;
         }
     }
@@ -147,16 +127,13 @@ public abstract class ResultMessage extends Message.Response
     /**
      * Write blob result message
      */
-    public static class WriteBlob extends ResultMessage
-    {
+    public static class WriteBlob extends ResultMessage {
         final int fatFileIndex;
         final int offset;
 
-        public static final Message.Codec<ResultMessage> subcodec = new Message.Codec<ResultMessage>()
-        {
+        public static final Message.Codec<ResultMessage> subcodec = new Message.Codec<ResultMessage>() {
             @Override
-            public ByteBuf encode(ResultMessage op)
-            {
+            public ByteBuf encode(ResultMessage op) {
                 WriteBlob writeBlobResult = (WriteBlob) op;
                 ByteBuf buf = Unpooled.buffer(4);
                 buf.writeInt(writeBlobResult.fatFileIndex);
@@ -166,34 +143,29 @@ public abstract class ResultMessage extends Message.Response
             }
 
             @Override
-            public ResultMessage decode(ByteBuf buf)
-            {
+            public ResultMessage decode(ByteBuf buf) {
                 int fatFileIndex = buf.readInt();
                 int offset = buf.readInt();
                 return new WriteBlob(fatFileIndex, offset);
             }
         };
 
-        public WriteBlob(int fatFileIndex, int offset)
-        {
+        public WriteBlob(int fatFileIndex, int offset) {
             super(Kind.WRITE_BLOB);
             this.fatFileIndex = fatFileIndex;
             this.offset = offset;
         }
 
         @Override
-        public ByteBuf encodeBody()
-        {
+        public ByteBuf encodeBody() {
             return subcodec.encode(this);
         }
 
-        public int getFatFileIndex()
-        {
+        public int getFatFileIndex() {
             return fatFileIndex;
         }
 
-        public int getOffset()
-        {
+        public int getOffset() {
             return offset;
         }
     }
@@ -201,11 +173,9 @@ public abstract class ResultMessage extends Message.Response
     /**
      * Codec
      */
-    public static final Codec<ResultMessage> codec = new Codec<ResultMessage>()
-    {
+    public static final Codec<ResultMessage> codec = new Codec<ResultMessage>() {
         @Override
-        public ByteBuf encode(ResultMessage message)
-        {
+        public ByteBuf encode(ResultMessage message) {
             ByteBuf kbuf = Unpooled.buffer(12);
             kbuf.writeInt(message.kind.value);
 
@@ -214,16 +184,14 @@ public abstract class ResultMessage extends Message.Response
         }
 
         @Override
-        public ResultMessage decode(ByteBuf buf)
-        {
+        public ResultMessage decode(ByteBuf buf) {
             Kind kind = Kind.fromValue(buf.readInt());
             return kind.subcodec.decode(buf);
         }
     };
 
     @Override
-    public ByteBuf encode()
-    {
+    public ByteBuf encode() {
         return codec.encode(this);
     }
 

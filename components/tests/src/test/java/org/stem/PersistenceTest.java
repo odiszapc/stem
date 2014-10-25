@@ -26,33 +26,29 @@ import org.stem.utils.TestUtil;
 
 import java.io.IOException;
 
-public class PersistenceTest extends IntegrationTestBase
-{
+public class PersistenceTest extends IntegrationTestBase {
 
     @Override
     @Before
-    public void setUp() throws IOException
-    {
+    public void setUp() throws IOException {
         TestUtil.cleanupTempDir();
         TestUtil.createTempDir();
         startZookeeperEmbedded();
         startClusterManagerEmbedded();
         waitForClusterManager();
         clusterManagerClient = ClusterManagerClient
-                        .create("http://localhost:9997");
+                .create("http://localhost:9997");
     }
 
     @After
-    public void tearDown() throws InterruptedException
-    {
+    public void tearDown() throws InterruptedException {
         stopClusterManagerEmbedded();
         shoutDownZookeeperClients();
         stopZookeeperEmbedded();
     }
 
     @Test
-    public void clusterStateShouldBeSavedBetweenRestarts()
-    {
+    public void clusterStateShouldBeSavedBetweenRestarts() {
         initCluster();
 
         ClusterResponse clusterResponse = clusterManagerClient.describeCluster();
@@ -65,8 +61,7 @@ public class PersistenceTest extends IntegrationTestBase
         assertClusterState(clusterResponse);
     }
 
-    private void assertClusterState(ClusterResponse clusterResponse)
-    {
+    private void assertClusterState(ClusterResponse clusterResponse) {
         Assertions.assertThat(clusterResponse.getCluster().getName()).isEqualTo(getClusterName());
         Assertions.assertThat(clusterResponse.getCluster().getRf()).isEqualTo(getRF());
         Assertions.assertThat(clusterResponse.getCluster().getvBucketsNum()).isEqualTo(getvBucketsNum());

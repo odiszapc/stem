@@ -27,13 +27,11 @@ import javax.ws.rs.core.Response;
 
 @Path(RESTConstants.Api.BASE)
 @Produces(MediaType.APPLICATION_JSON)
-public class RootResource
-{
+public class RootResource {
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response root()
-    {
+    public Response root() {
         return RestUtils.ok();
     }
 

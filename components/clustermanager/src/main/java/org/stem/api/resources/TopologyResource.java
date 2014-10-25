@@ -30,8 +30,7 @@ import javax.ws.rs.core.Response;
 
 @Path(RESTConstants.Api.Topology.URI)
 @Produces(MediaType.APPLICATION_JSON)
-public class TopologyResource
-{
+public class TopologyResource {
     @PUT
     @Path(RESTConstants.Api.Topology.Hello.BASE)
     public Response hello(JoinRequest request) // TODO: remove this bullshit
@@ -41,8 +40,7 @@ public class TopologyResource
 
     @POST
     @Path(RESTConstants.Api.Topology.Build.BASE)
-    public Response build()
-    {
+    public Response build() {
         Cluster.getInstance().computeMapping();
         return RestUtils.ok();
     }

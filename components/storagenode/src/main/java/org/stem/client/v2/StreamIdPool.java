@@ -21,63 +21,50 @@ import org.stem.exceptions.ConnectionBusyException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
-public class StreamIdPool
-{
+public class StreamIdPool {
     static final int MAX_STREAMS = 128;
     private final AtomicIntegerArray streamsIds = new AtomicIntegerArray(MAX_STREAMS);
     private final AtomicInteger marked = new AtomicInteger(0);
     private final int HOLD = 1;
     private final int FREE = 0;
 
-    public StreamIdPool()
-    {
-        for (int i = 0; i < streamsIds.length(); i++)
-        {
+    public StreamIdPool() {
+        for (int i = 0; i < streamsIds.length(); i++) {
             streamsIds.set(i, FREE);
         }
     }
 
-    public int borrow() throws ConnectionBusyException
-    {
-        while (true)
-        {
+    public int borrow() throws ConnectionBusyException {
+        while (true) {
             int id = getFirstVacant();
-            if (-1 == id)
-            {
+            if (-1 == id) {
                 throw new ConnectionBusyException();
             }
-            if (streamsIds.compareAndSet(id, FREE, HOLD))
-            {
+            if (streamsIds.compareAndSet(id, FREE, HOLD)) {
                 return id;
             }
         }
     }
 
-    public void release(int id)
-    {
+    public void release(int id) {
         assert id < MAX_STREAMS;
         streamsIds.set(id, FREE);
     }
 
-    public void mark()
-    {
+    public void mark() {
         marked.incrementAndGet();
     }
 
-    public void unmark()
-    {
+    public void unmark() {
         marked.decrementAndGet();
     }
 
-    public int maxAvailableStreams()
-    {
+    public int maxAvailableStreams() {
         return MAX_STREAMS - marked.get();
     }
 
-    private int getFirstVacant()
-    {
-        for (int i = 0; i < streamsIds.length(); i++)
-        {
+    private int getFirstVacant() {
+        for (int i = 0; i < streamsIds.length(); i++) {
             int state = streamsIds.get(i);
             if (0 == state)
                 return i;

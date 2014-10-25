@@ -18,8 +18,7 @@ package org.stem.coordination;
 
 import org.apache.zookeeper.data.Stat;
 
-public interface ZNodeEventHandler
-{
+public interface ZNodeEventHandler {
     void onChildAdded(String path, byte[] data, Stat stat);
 
     void onChildUpdated(String path, byte[] data, Stat stat);

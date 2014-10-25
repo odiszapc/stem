@@ -31,8 +31,7 @@ import org.stem.transport.ops.WriteBlobMessage;
 
 import java.util.*;
 
-public class StemClient implements TopoMapSubscriber
-{
+public class StemClient implements TopoMapSubscriber {
     private MetaStoreClient metaClient;
     private ZookeeperClient zooClient;
     private TopoMapListener mappingListener; // Updated from Zookeeper size by ClusterManager
@@ -41,8 +40,7 @@ public class StemClient implements TopoMapSubscriber
 
     StorageNodeClient nodeClient = new StorageNodeClient("localhost:9999");
 
-    public StemClient()
-    {
+    public StemClient() {
         dht = new ArrayBalancer(1);
         mappingListener = new TopoMapListener();
         mappingListener.listen(this);
@@ -50,10 +48,8 @@ public class StemClient implements TopoMapSubscriber
         zooClient = ZookeeperClientFactory.create();
     }
 
-    public void start()
-    {
-        try
-        {
+    public void start() {
+        try {
             metaClient.start();
             zooClient.start();
             // TODO: get mappings directly
@@ -62,40 +58,33 @@ public class StemClient implements TopoMapSubscriber
 
             zooClient.listenForZNode(ZooConstants.TOPOLOGY + "/" + ZooConstants.TOPO_MAP, mappingListener);
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             throw new RuntimeException("Can't start Stem client", e);
         }
     }
 
-    public TopoMapping getMapping()
-    {
+    public TopoMapping getMapping() {
         return mapping;
     }
 
-    private List<UUID> getDisks(Integer vBucket)
-    {
+    private List<UUID> getDisks(Integer vBucket) {
         return mapping.getDisks(vBucket.longValue());
     }
 
-    private String getStorageNodeEntpoint(UUID diskId)
-    {
+    private String getStorageNodeEntpoint(UUID diskId) {
         return mapping.getStorageNodeEntpoint(diskId);
     }
 
     @Override
-    public void mappingChanged(TopoMapping newMapping)
-    {
+    public void mappingChanged(TopoMapping newMapping) {
         mapping = newMapping;
 
-        if (dht.size() != newMapping.CRUSHMapSize())
-        {
+        if (dht.size() != newMapping.CRUSHMapSize()) {
             dht = new ArrayBalancer(mapping.CRUSHMapSize());
         }
     }
 
-    public void put(byte[] key, byte[] blob)
-    {
+    public void put(byte[] key, byte[] blob) {
         assert 16 == key.length;
         // TODO: max-size of blob check
 
@@ -105,13 +94,11 @@ public class StemClient implements TopoMapSubscriber
         put(key, blob, disks);
     }
 
-    public void put(byte[] key, byte[] blob, UUID disk)
-    {
+    public void put(byte[] key, byte[] blob, UUID disk) {
         put(key, blob, Lists.newArrayList(disk));
     }
 
-    public void put(byte[] key, byte[] blob, List<UUID> disks)
-    {
+    public void put(byte[] key, byte[] blob, List<UUID> disks) {
         assert 16 == key.length;
         // TODO: max-size of blob check
 
@@ -126,12 +113,10 @@ public class StemClient implements TopoMapSubscriber
         metaClient.writeMeta(success.values());
     }
 
-    private Map<String, ExtendedBlobDescriptor> writeToStorageNodes(byte[] key, byte[] blob, List<UUID> disks)
-    {
+    private Map<String, ExtendedBlobDescriptor> writeToStorageNodes(byte[] key, byte[] blob, List<UUID> disks) {
         Map<String, RequestFuture> futures = new HashMap<String, RequestFuture>();
         Map<String, WriteBlobMessage> requestsMap = new HashMap<String, WriteBlobMessage>();
-        for (UUID diskId : disks)
-        {
+        for (UUID diskId : disks) {
             String endpoint = getStorageNodeEntpoint(diskId);
             StorageNodeClient nodeClient = new StorageNodeClient(endpoint); // TODO: this is valid but very slow to create instance each time
 
@@ -143,8 +128,7 @@ public class StemClient implements TopoMapSubscriber
 
         // Wait for results
         Map<String, Message.Response> writeResults = new HashMap<String, Message.Response>();
-        for (Map.Entry<String, RequestFuture> entry : futures.entrySet())
-        {
+        for (Map.Entry<String, RequestFuture> entry : futures.entrySet()) {
             String endpoint = entry.getKey();
             RequestFuture future = entry.getValue();
 
@@ -154,12 +138,10 @@ public class StemClient implements TopoMapSubscriber
 
         // Collect results
         Map<String, ExtendedBlobDescriptor> success = new HashMap<String, ExtendedBlobDescriptor>(); // There is something like List<ExtendedBlobDescriptor>
-        for (Map.Entry<String, Message.Response> entry : writeResults.entrySet())
-        {
+        for (Map.Entry<String, Message.Response> entry : writeResults.entrySet()) {
             String endpoint = entry.getKey();
             Message.Response resp = entry.getValue();
-            if (resp.isSuccess())
-            {
+            if (resp.isSuccess()) {
                 ResultMessage.WriteBlob writeResp = (ResultMessage.WriteBlob) resp;
                 ExtendedBlobDescriptor result = new ExtendedBlobDescriptor(
                         requestsMap.get(endpoint).key,
@@ -175,8 +157,7 @@ public class StemClient implements TopoMapSubscriber
         return success;
     }
 
-    public byte[] get(byte[] key)
-    {
+    public byte[] get(byte[] key) {
         List<ExtendedBlobDescriptor> metaResults = metaClient.readMeta(key);
         if (0 == metaResults.size())
             return null;
@@ -201,22 +182,19 @@ public class StemClient implements TopoMapSubscriber
     }
 
     @VisibleForTesting
-    public String getFirstEndpointForKey(byte[] key)
-    {
+    public String getFirstEndpointForKey(byte[] key) {
         List<ExtendedBlobDescriptor> metaResults = metaClient.readMeta(key);
         ExtendedBlobDescriptor selectedMeta = metaResults.get(0);
         return getStorageNodeEntpoint(selectedMeta.getDisk());
     }
 
     @VisibleForTesting
-    public ExtendedBlobDescriptor getFirstDescriptorForKey(byte[] key)
-    {
+    public ExtendedBlobDescriptor getFirstDescriptorForKey(byte[] key) {
         List<ExtendedBlobDescriptor> metaResults = metaClient.readMeta(key);
         return metaResults.get(0);
     }
 
-    public void delete(byte[] key)
-    {
+    public void delete(byte[] key) {
         assert 16 == key.length;
         // TODO: max-size of blob check
 
@@ -229,12 +207,10 @@ public class StemClient implements TopoMapSubscriber
         Map<String, ResultMessage.Void> responses = deleteFromStorageNodes(metaResults);
     }
 
-    private Map<String, ResultMessage.Void> deleteFromStorageNodes(List<ExtendedBlobDescriptor> metaResults)
-    {
+    private Map<String, ResultMessage.Void> deleteFromStorageNodes(List<ExtendedBlobDescriptor> metaResults) {
         Map<String, RequestFuture> futures = new HashMap<String, RequestFuture>();
         Map<String, DeleteBlobMessage> requestsMap = new HashMap<String, DeleteBlobMessage>();
-        for (ExtendedBlobDescriptor meta : metaResults)
-        {
+        for (ExtendedBlobDescriptor meta : metaResults) {
             String endpoint = getStorageNodeEntpoint(meta.getDisk());
             StorageNodeClient nodeClient = new StorageNodeClient(endpoint); // TODO: this is valid but very slow to create instance each time
 
@@ -246,8 +222,7 @@ public class StemClient implements TopoMapSubscriber
 
         // Wait for results
         Map<String, Message.Response> writeResults = new HashMap<String, Message.Response>();
-        for (Map.Entry<String, RequestFuture> entry : futures.entrySet())
-        {
+        for (Map.Entry<String, RequestFuture> entry : futures.entrySet()) {
             String endpoint = entry.getKey();
             RequestFuture future = entry.getValue();
 
@@ -257,12 +232,10 @@ public class StemClient implements TopoMapSubscriber
 
         // Collect results
         Map<String, ResultMessage.Void> success = new HashMap<String, ResultMessage.Void>(); // There is something like List<ExtendedBlobDescriptor>
-        for (Map.Entry<String, Message.Response> entry : writeResults.entrySet())
-        {
+        for (Map.Entry<String, Message.Response> entry : writeResults.entrySet()) {
             String endpoint = entry.getKey();
             Message.Response resp = entry.getValue();
-            if (resp.isSuccess())
-            {
+            if (resp.isSuccess()) {
                 ResultMessage.Void writeResp = (ResultMessage.Void) resp;
                 success.put(endpoint, writeResp);
             }
@@ -271,8 +244,7 @@ public class StemClient implements TopoMapSubscriber
         return success;
     }
 
-    public void removeReplica(byte[] key, UUID diskId)
-    {
+    public void removeReplica(byte[] key, UUID diskId) {
         metaClient.deleteReplica(key, diskId);
     }
 }

@@ -22,12 +22,10 @@ import org.junit.Test;
 import org.stem.client.v2.StreamIdPool;
 import org.stem.exceptions.ConnectionBusyException;
 
-public class StreamIdPoolTest
-{
+public class StreamIdPoolTest {
 
     @Test
-    public void test() throws Exception
-    {
+    public void test() throws Exception {
         StreamIdPool pool = new StreamIdPool();
         Assert.assertEquals(pool.borrow(), 0);
         Assert.assertEquals(pool.borrow(), 1);
@@ -45,14 +43,12 @@ public class StreamIdPoolTest
         pool.release(100);
         Assert.assertEquals(pool.borrow(), 100);
 
-        try
-        {
+        try {
             pool.borrow(); // Should throw busy error
 
             throw new AssertionError("No more IDs should be available");
         }
-        catch (ConnectionBusyException e)
-        {
+        catch (ConnectionBusyException e) {
         }
     }
 }

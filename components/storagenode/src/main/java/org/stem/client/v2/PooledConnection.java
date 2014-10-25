@@ -20,12 +20,10 @@ import org.stem.exceptions.ConnectionException;
 
 import java.net.InetSocketAddress;
 
-public class PooledConnection extends Connection
-{
+public class PooledConnection extends Connection {
     private ConnectionPool pool;
 
-    public PooledConnection(String name, InetSocketAddress address, Factory factory, ConnectionPool pool) throws ConnectionException
-    {
+    public PooledConnection(String name, InetSocketAddress address, Factory factory, ConnectionPool pool) throws ConnectionException {
         super(name, address, factory);
         this.pool = pool;
     }

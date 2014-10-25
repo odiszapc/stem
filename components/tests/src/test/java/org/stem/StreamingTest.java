@@ -37,26 +37,22 @@ import java.net.InetAddress;
 import java.util.*;
 
 @Ignore
-public class StreamingTest extends IntegrationTestBase
-{
+public class StreamingTest extends IntegrationTestBase {
     private int portIndex = 1;
 
     @Override
-    protected String getStorageNodeConfigPath()
-    {
+    protected String getStorageNodeConfigPath() {
         return "../stem-storagenode/src/test/resources/stem.small_ff.yaml";
     }
 
     @Override
     @Before
-    public void setUp() throws IOException
-    {
+    public void setUp() throws IOException {
         super.setUp();
     }
 
     @Test
-    public void test() throws Exception
-    {
+    public void test() throws Exception {
         clusterManagerClient.computeMapping(); // first version of CRUSHmap
         client.start();
         List<byte[]> keysGenerated = generateStaticLoad(300);
@@ -73,20 +69,17 @@ public class StreamingTest extends IntegrationTestBase
         checkDataAvailability(keysGenerated);
     }
 
-    private void checkDataAvailability(List<byte[]> keysGenerated)
-    {
+    private void checkDataAvailability(List<byte[]> keysGenerated) {
         int i = 1;
         int broken = 0;
         List<ExtendedBlobDescriptor> brokenDescriptors = new ArrayList<ExtendedBlobDescriptor>();
-        for (byte[] keyOrig : keysGenerated)
-        {
+        for (byte[] keyOrig : keysGenerated) {
             String endpoint = client.getFirstEndpointForKey(keyOrig);
             ExtendedBlobDescriptor descriptor = client.getFirstDescriptorForKey(keyOrig);
             byte[] data = client.get(keyOrig);
             byte[] keyActual = DigestUtils.md5(data);
 
-            if (keyActual[0] != keyOrig[0])
-            {
+            if (keyActual[0] != keyOrig[0]) {
                 broken++;
                 brokenDescriptors.add(descriptor);
             }
@@ -99,10 +92,8 @@ public class StreamingTest extends IntegrationTestBase
 //        }
     }
 
-    private void debugKeysPositions(List<byte[]> keysGenerated, String prefix)
-    {
-        for (byte[] key : keysGenerated)
-        {
+    private void debugKeysPositions(List<byte[]> keysGenerated, String prefix) {
+        for (byte[] key : keysGenerated) {
             String endpoint = client.getFirstEndpointForKey(key);
             ExtendedBlobDescriptor descriptor = client.getFirstDescriptorForKey(key);
             System.out.println(String.format("%s 0x%s, disk=%s, ff=%s, offset=%s, size=%s",
@@ -115,26 +106,21 @@ public class StreamingTest extends IntegrationTestBase
         }
     }
 
-    private void waitForExternalStorageNode(String endpoint) throws Exception
-    {
+    private void waitForExternalStorageNode(String endpoint) throws Exception {
         StorageNodeClient client = new StorageNodeClient(endpoint);
-        while (true)
-        {
-            try
-            {
+        while (true) {
+            try {
                 client.start();
                 break;
             }
-            catch (IOException e)
-            {
+            catch (IOException e) {
                 System.out.println(String.format("Node %s has not started yet", endpoint));
                 Thread.sleep(100);
             }
         }
     }
 
-    private void joinPseudoNode()
-    {
+    private void joinPseudoNode() {
         List<InetAddress> ipAddresses = Utils.getIpAddresses();
         Map<UUID, MountPoint> mountPoints = new HashMap<UUID, MountPoint>();
         UUID uuid = UUID.randomUUID();
@@ -148,13 +134,11 @@ public class StreamingTest extends IntegrationTestBase
         req.setHost(StorageNodeDescriptor.getNodeListen());
         req.setPort(StorageNodeDescriptor.getNodePort() + portIndex++);
 
-        for (InetAddress ipAddress : ipAddresses)
-        {
+        for (InetAddress ipAddress : ipAddresses) {
             req.getIpAddresses().add(ipAddress.toString());
         }
 
-        for (MountPoint mp : mountPoints.values())
-        {
+        for (MountPoint mp : mountPoints.values()) {
             JoinRequest.Disk disk = new JoinRequest.Disk(
                     mp.uuid.toString(),
                     mp.getPath(),

@@ -25,44 +25,36 @@ import org.stem.streaming.StreamManager;
 
 import java.io.IOException;
 
-public class StemDaemon
-{
+public class StemDaemon {
     public static final StemDaemon instance = new StemDaemon();
 
     private static final Logger logger = LoggerFactory.getLogger(StemDaemon.class);
 
     private Server server;
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         instance.start();
     }
 
-    public void start()
-    {
-        try
-        {
+    public void start() {
+        try {
             setup();
             startService();
         }
-        catch (Throwable e)
-        {
+        catch (Throwable e) {
             e.printStackTrace();
             System.out.println("Error occurred during startup: " + e.getMessage());
             System.exit(3);
         }
     }
 
-    private void setup()
-    {
+    private void setup() {
         logger.info("Starting Storage Node daemon");
         logger.info("Heap size: {}/{}", Runtime.getRuntime().totalMemory(), Runtime.getRuntime().maxMemory());
         logger.info("Classpath: {}", System.getProperty("java.class.path"));
 
-        try
-        {
-            if (StorageNodeDescriptor.getAutoAllocate())
-            {
+        try {
+            if (StorageNodeDescriptor.getAutoAllocate()) {
                 logger.warn("Auto-allocation of fat files is turned on.");
             }
 
@@ -73,8 +65,7 @@ public class StemDaemon
             StreamManager.instance.listenForSessions();
 
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             logger.error("Error during initialization", e);
             e.printStackTrace();
             System.exit(100);
@@ -85,13 +76,11 @@ public class StemDaemon
                 StorageNodeDescriptor.getNodePort());
     }
 
-    private void startService()
-    {
+    private void startService() {
         server.start();
     }
 
-    public void stop()
-    {
+    public void stop() {
         server.stop();
         StorageNodeDescriptor.detachLayout();
     }

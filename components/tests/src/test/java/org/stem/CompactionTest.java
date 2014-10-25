@@ -31,24 +31,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class CompactionTest extends IntegrationTestBase
-{
+public class CompactionTest extends IntegrationTestBase {
     final String host = "localhost";
     final int port = 9999;
 
 
-
     @Before
-    public void setUp() throws IOException
-    {
+    public void setUp() throws IOException {
         super.setUp();
         clusterManagerClient.computeMapping();
         client.start();
     }
 
     @Test
-    public void testScanner() throws Exception
-    {
+    public void testScanner() throws Exception {
         final int BLOBS_NUM = 256 + 1;
 
         generateRandomLoad(BLOBS_NUM);
@@ -59,16 +55,14 @@ public class CompactionTest extends IntegrationTestBase
         FFScanner scanner = new FFScanner(fatFile);
 
         List<byte[]> retrievedKeys = new ArrayList<byte[]>(BLOBS_NUM);
-        while (scanner.hasNext())
-        {
+        while (scanner.hasNext()) {
             Blob blob = scanner.next();
             retrievedKeys.add(blob.getHeader().key);
         }
     }
 
     @Test
-    public void testCompaction() throws Exception
-    {
+    public void testCompaction() throws Exception {
         clusterManagerClient.computeMapping();
         StemClient client = new StemClient();
         client.start();
@@ -172,12 +166,10 @@ public class CompactionTest extends IntegrationTestBase
 
 
         // Control validation. Read all the dataset we put
-        for (int i = 0; i < BLOBS_NUM; i++)
-        {
+        for (int i = 0; i < BLOBS_NUM; i++) {
             byte[] keyOrig = keysGenerated.get(i);
             byte[] data = client.get(keyOrig);
-            if (i < deletes)
-            {
+            if (i < deletes) {
                 assert data == null;
                 continue;
             }
@@ -191,8 +183,7 @@ public class CompactionTest extends IntegrationTestBase
     }
 
     @Override
-    protected void customStorageNodeConfiguration(YamlConfigurator yamlConfigurator)
-    {
+    protected void customStorageNodeConfiguration(YamlConfigurator yamlConfigurator) {
         yamlConfigurator
                 .setFatFileSizeInMb(5)
                 .setMaxSpaceAllocationInMb(100)
@@ -200,8 +191,7 @@ public class CompactionTest extends IntegrationTestBase
     }
 
     @Override
-    protected String getStorageNodeConfigName()
-    {
+    protected String getStorageNodeConfigName() {
         return "stem.small_ff.yaml";
     }
 }

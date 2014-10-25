@@ -21,22 +21,18 @@ import org.stem.db.Blob;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public class ConsequentWriter extends RandomAccessReader
-{
-    public ConsequentWriter(String name) throws IOException
-    {
+public class ConsequentWriter extends RandomAccessReader {
+    public ConsequentWriter(String name) throws IOException {
         this(name, 0);
     }
 
-    public ConsequentWriter(String name, long pos) throws IOException
-    {
+    public ConsequentWriter(String name, long pos) throws IOException {
         super(name, "rw");
         this.
                 seek(pos);
     }
 
-    public void write(Blob.Header header) throws IOException
-    {
+    public void write(Blob.Header header) throws IOException {
         ByteBuffer buf = header.serialize();
         write(buf.array());
     }

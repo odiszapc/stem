@@ -18,8 +18,7 @@ package org.stem.streaming;
 
 import java.util.UUID;
 
-public class BucketStreamingPart
-{
+public class BucketStreamingPart {
     long vBucket;
     String endpoint; // Node to stream to
     UUID diskId; // Particular disk to stream to
@@ -28,17 +27,14 @@ public class BucketStreamingPart
     long completed;
     long total;
 
-    public BucketStreamingPart()
-    {
+    public BucketStreamingPart() {
     }
 
-    public BucketStreamingPart(long vBucket, String endpoint, UUID diskId)
-    {
+    public BucketStreamingPart(long vBucket, String endpoint, UUID diskId) {
         this(vBucket, endpoint, diskId, -1, -1);
     }
 
-    public BucketStreamingPart(long vBucket, String endpoint, UUID diskId, long completed, long total)
-    {
+    public BucketStreamingPart(long vBucket, String endpoint, UUID diskId, long completed, long total) {
         this.vBucket = vBucket;
         this.endpoint = endpoint;
         this.diskId = diskId;
@@ -46,28 +42,23 @@ public class BucketStreamingPart
         this.total = total;
     }
 
-    public long getvBucket()
-    {
+    public long getvBucket() {
         return vBucket;
     }
 
-    public String getEndpoint()
-    {
+    public String getEndpoint() {
         return endpoint;
     }
 
-    public UUID getDiskId()
-    {
+    public UUID getDiskId() {
         return diskId;
     }
 
-    public long getCompleted()
-    {
+    public long getCompleted() {
         return completed;
     }
 
-    public long getTotal()
-    {
+    public long getTotal() {
         return total;
     }
 }

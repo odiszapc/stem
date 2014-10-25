@@ -22,8 +22,7 @@ import org.stem.util.TopologyUtils;
 
 import java.util.*;
 
-public class DiskMovementMap
-{
+public class DiskMovementMap {
     /**
      * {
      * "src_disk_UUID": {
@@ -38,27 +37,23 @@ public class DiskMovementMap
         this.diskMovementMap = diskMovementMap;
     }
 
-    public Map<String, Map<Long, String>> getMap()
-    {
+    public Map<String, Map<Long, String>> getMap() {
         return diskMovementMap;
     }
 
     public DiskMovementMap(Map<Long, List<MappingDiff.Value<Node>>> mappingDiff) // TODO: translate to factory method
     {
-        for (Map.Entry<Long, List<MappingDiff.Value<Node>>> entry : mappingDiff.entrySet())
-        {
+        for (Map.Entry<Long, List<MappingDiff.Value<Node>>> entry : mappingDiff.entrySet()) {
             Long vBucket = entry.getKey();
             List<MappingDiff.Value<Node>> diffs = entry.getValue();
 
             List<String> disksOut = new ArrayList<String>(); // disks we are going stream from
             List<String> disksIn = new ArrayList<String>(); // the endpoints of streams
 
-            for (MappingDiff.Value<Node> diff : diffs)
-            {
+            for (MappingDiff.Value<Node> diff : diffs) {
                 String diskId = TopologyUtils.extractDiskUUID(diff.get().getName());
 
-                switch (diff.getDifferenceType())
-                {
+                switch (diff.getDifferenceType()) {
                     case ADDED:
                         disksIn.add(diskId);
                         break;
@@ -72,14 +67,12 @@ public class DiskMovementMap
             if (disksIn.size() != disksOut.size())
                 throw new RuntimeException("Number of disks removed is not equal to added ones");
 
-            for (int i = 0; i < disksOut.size(); i++)
-            {
+            for (int i = 0; i < disksOut.size(); i++) {
                 String out = disksOut.get(i);
                 String in = disksIn.get(i);
 
                 Map<Long, String> movementInfo = diskMovementMap.get(out);
-                if (null == movementInfo)
-                {
+                if (null == movementInfo) {
                     movementInfo = new HashMap<Long, String>();
                     diskMovementMap.put(out, movementInfo);
                 }
@@ -88,18 +81,15 @@ public class DiskMovementMap
         }
     }
 
-    public int getDisksInvolved()
-    {
+    public int getDisksInvolved() {
         return diskMovementMap.size();
     }
 
-    public int size()
-    {
+    public int size() {
         return diskMovementMap.size();
     }
 
-    public long getVBucketsNumber(UUID diskId)
-    {
+    public long getVBucketsNumber(UUID diskId) {
         Map<Long, String> buckets = diskMovementMap.get(diskId.toString());
         if (null == buckets)
             return 0;
@@ -107,8 +97,7 @@ public class DiskMovementMap
         return buckets.size();
     }
 
-    public int getReceiversNumber(UUID diskId)
-    {
+    public int getReceiversNumber(UUID diskId) {
         Map<Long, String> buckets = diskMovementMap.get(diskId.toString());
         if (null == buckets)
             return 0;
@@ -117,18 +106,15 @@ public class DiskMovementMap
         return receivers.size();
     }
 
-    public DiskMovementMap getSlice(List<UUID> disksIds)
-    {
+    public DiskMovementMap getSlice(List<UUID> disksIds) {
         Set<UUID> ids = new HashSet<UUID>(disksIds);
 
         Map<String, Map<Long, String>> slice = new HashMap<String, Map<Long, String>>();
-        for (Map.Entry<String, Map<Long, String>> entry : diskMovementMap.entrySet())
-        {
+        for (Map.Entry<String, Map<Long, String>> entry : diskMovementMap.entrySet()) {
             String srcDisk = entry.getKey();
             Map<Long, String> dst = entry.getValue();
 
-            if (ids.contains(UUID.fromString(srcDisk)))
-            {
+            if (ids.contains(UUID.fromString(srcDisk))) {
                 slice.put(srcDisk, dst);
             }
         }

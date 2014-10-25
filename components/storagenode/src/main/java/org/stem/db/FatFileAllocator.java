@@ -26,59 +26,50 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-public class FatFileAllocator
-{
+public class FatFileAllocator {
     private static final Logger logger = LoggerFactory.getLogger(MountPoint.class);
 
     private static final String FAT_FILE_NAME_TEMPLATE = "stem-ff-%06d.db";
     public static final String FAT_FILE_NAME_REGEX = "stem-ff-([0-9]{6}).db";
 
-    public static void allocateFile(String filePath, long sizeInMB) throws IOException
-    {
+    public static void allocateFile(String filePath, long sizeInMB) throws IOException {
         allocateFile(filePath, sizeInMB, false);
     }
 
-    public static FatFile create(String filePath, long sizeInMB) throws IOException
-    {
+    public static FatFile create(String filePath, long sizeInMB) throws IOException {
         allocateFile(filePath, sizeInMB, true);
         return FatFile.open(filePath, new DataTracker(StorageNodeDescriptor.getCluster().getvBucketsNum()));
     }
 
-    public static void allocateFile(String filePath, long sizeInMB, boolean mark) throws IOException
-    {
+    public static void allocateFile(String filePath, long sizeInMB, boolean mark) throws IOException {
         long started = System.currentTimeMillis();
 
         Closer closer = Closer.create();
-        try
-        {
+        try {
             File file = new File(filePath);
             if (file.exists())
                 throw new IOException(String.format("File already exists: %s", filePath));
 
             RandomAccessFile rw = closer.register(new RandomAccessFile(file, "rw"));
             rw.setLength(sizeInMB * 1024 * 1024);
-            if (mark)
-            {
+            if (mark) {
                 rw.seek(0);
                 rw.writeByte(FatFile.MARKER_BLANK);
                 rw.seek(rw.length() - 1);
                 rw.writeByte(FatFile.MARKER_BLANK);
             }
         }
-        catch (Throwable e)
-        {
+        catch (Throwable e) {
             throw closer.rethrow(e);
         }
-        finally
-        {
+        finally {
             closer.close();
             logger.debug("{} was allocated in {} ms", filePath, System.currentTimeMillis() - started);
         }
     }
 
 
-    public static void allocateDirectory(String directoryPath, long sizeInMB, long maxSize, boolean mark) throws IOException
-    {
+    public static void allocateDirectory(String directoryPath, long sizeInMB, long maxSize, boolean mark) throws IOException {
         long started = System.currentTimeMillis();
         File dir = BBUtils.getDirectory(directoryPath);
         // TODO: empty check
@@ -87,8 +78,7 @@ public class FatFileAllocator
         int fatFileIndex = 0;
 
         //while (FileSystemUtils.freeSpaceKb(directoryPath)/1024 > sizeInMB)
-        while (maxSize >= allocated)
-        {
+        while (maxSize >= allocated) {
             String fatFilePath = dir.getAbsolutePath() + File.separator + buildFileName(fatFileIndex);
             allocateFile(fatFilePath, sizeInMB, mark);
             allocated += sizeInMB * 1024 * 1024;
@@ -114,14 +104,12 @@ public class FatFileAllocator
      * @param sizeInMB
      * @throws IOException
      */
-    public static void allocateDirectory(String directoryPath, long sizeInMB) throws IOException
-    {
+    public static void allocateDirectory(String directoryPath, long sizeInMB) throws IOException {
         File dir = BBUtils.getDirectory(directoryPath);
         allocateDirectory(directoryPath, sizeInMB, dir.getFreeSpace(), false);
     }
 
-    public static String buildFileName(int fatFileIndex)
-    {
+    public static String buildFileName(int fatFileIndex) {
         return String.format(FAT_FILE_NAME_TEMPLATE, fatFileIndex);
     }
 

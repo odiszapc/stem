@@ -43,8 +43,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class Connection
-{
+public class Connection {
     private static final Logger logger = LoggerFactory.getLogger(Connection.class);
     private String name;
     private InetSocketAddress address;
@@ -60,8 +59,7 @@ public class Connection
 
     private final Object terminationLock = new Object();
 
-    public Connection(String name, InetSocketAddress address, Factory factory) throws ConnectionException
-    {
+    public Connection(String name, InetSocketAddress address, Factory factory) throws ConnectionException {
         this.name = name;
         this.address = address;
         this.factory = factory;
@@ -71,28 +69,23 @@ public class Connection
 
         ChannelFuture future = bootstrap.connect(address);
         writeCounter.incrementAndGet();
-        try
-        {
+        try {
             this.channel = future.awaitUninterruptibly().channel();
-            if (!future.isSuccess())
-            {
+            if (!future.isSuccess()) {
                 throw deactivate(new ClientTransportException(address, "Can't connect", future.cause()));
             }
         }
-        finally
-        {
+        finally {
             writeCounter.decrementAndGet();
         }
         isReady = true;
     }
 
-    public int maxAvailableStreams()
-    {
+    public int maxAvailableStreams() {
         return dispatcher.streamIdPool.maxAvailableStreams();
     }
 
-    private <E extends Exception> E deactivate(E e)
-    {
+    private <E extends Exception> E deactivate(E e) {
         isDeactivated = true;
 
         close().force();
@@ -100,28 +93,24 @@ public class Connection
         return e;
     }
 
-    public Future write(Message.Request request) throws ConnectionBusyException, ConnectionException
-    {
+    public Future write(Message.Request request) throws ConnectionBusyException, ConnectionException {
         Future future = new Future(request);
         write(future);
         return future;
     }
 
-    private ResponseHandler write(ResponseCallback callback) throws ConnectionBusyException, ConnectionException
-    {
+    private ResponseHandler write(ResponseCallback callback) throws ConnectionBusyException, ConnectionException {
         Message.Request request = callback.request();
         ResponseHandler responseHandler = new ResponseHandler(this, callback);
         dispatcher.addHandler(responseHandler);
         request.setStreamId(responseHandler.streamId);
 
-        if (isDeactivated)
-        {
+        if (isDeactivated) {
             dispatcher.removeHandler(responseHandler.streamId, true);
             throw new ConnectionException(address, "Writing on deactivated connection");
         }
 
-        if (isClosed())
-        {
+        if (isClosed()) {
             dispatcher.removeHandler(responseHandler.streamId, true);
             throw new ConnectionException(address, "Connection has been closed");
         }
@@ -131,23 +120,17 @@ public class Connection
         return responseHandler;
     }
 
-    private ChannelFutureListener writeHandler(final Message.Request request, final ResponseHandler handler)
-    {
-        return new ChannelFutureListener()
-        {
+    private ChannelFutureListener writeHandler(final Message.Request request, final ResponseHandler handler) {
+        return new ChannelFutureListener() {
             @Override
-            public void operationComplete(ChannelFuture future) throws Exception
-            {
+            public void operationComplete(ChannelFuture future) throws Exception {
                 writeCounter.decrementAndGet();
-                if (!future.isSuccess())
-                {
+                if (!future.isSuccess()) {
                     dispatcher.removeHandler(handler.streamId, true);
                     ConnectionException e;
-                    if (future.cause() instanceof ClosedChannelException)
-                    {
+                    if (future.cause() instanceof ClosedChannelException) {
                         e = new ClientTransportException(address, "Error writing to closed channel");
-                    } else
-                    {
+                    } else {
                         e = new ClientTransportException(address, "Error writing", future.cause());
                     }
                     handler.callback.onException(Connection.this, deactivate(e), System.nanoTime() - handler.startedAt);
@@ -156,11 +139,9 @@ public class Connection
         };
     }
 
-    public CloseFuture close()
-    {
+    public CloseFuture close() {
         ConnectionCloseFuture future = new ConnectionCloseFuture();
-        if (!closeFutureRef.compareAndSet(null, future))
-        {
+        if (!closeFutureRef.compareAndSet(null, future)) {
             return closeFutureRef.get();
         }
 
@@ -177,8 +158,7 @@ public class Connection
         return future;
     }
 
-    public boolean isClosed()
-    {
+    public boolean isClosed() {
         return closeFutureRef.get() != null;
     }
 
@@ -187,24 +167,19 @@ public class Connection
         return String.format("Connection[%s, inFlight=%d, closed=%b]", name, inFlight.get(), isClosed());
     }
 
-    private class ConnectionCloseFuture extends CloseFuture
-    {
+    private class ConnectionCloseFuture extends CloseFuture {
 
         @Override
-        public ConnectionCloseFuture force()
-        {
-            if (null == channel)
-            {
+        public ConnectionCloseFuture force() {
+            if (null == channel) {
                 set(null);
                 return this;
             }
 
             ChannelFuture future = channel.close();
-            future.addListener(new ChannelFutureListener()
-            {
+            future.addListener(new ChannelFutureListener() {
                 @Override
-                public void operationComplete(ChannelFuture future) throws Exception
-                {
+                public void operationComplete(ChannelFuture future) throws Exception {
                     if (future.cause() != null)
                         ConnectionCloseFuture.this.setException(future.cause());
                     else
@@ -215,22 +190,19 @@ public class Connection
         }
     }
 
-    public static class ChannelHandler extends ChannelInitializer<SocketChannel>
-    {
+    public static class ChannelHandler extends ChannelInitializer<SocketChannel> {
         private static final PacketDecoder packetDecoder = new PacketDecoder();
         private static final PacketEncoder packetEncoder = new PacketEncoder();
         private static final MessageDecoder messageDecoder = new MessageDecoder();
         private static final MessageEncoder messageEncoder = new MessageEncoder();
         private Connection connection;
 
-        public ChannelHandler(Connection connection)
-        {
+        public ChannelHandler(Connection connection) {
             this.connection = connection;
         }
 
         @Override
-        protected void initChannel(SocketChannel ch) throws Exception
-        {
+        protected void initChannel(SocketChannel ch) throws Exception {
             ChannelPipeline pipeline = ch.pipeline();
             pipeline.addLast("packetDecoder", packetDecoder);
             pipeline.addLast("packetEncoder", packetEncoder);
@@ -243,8 +215,7 @@ public class Connection
     /**
      *
      */
-    public static class Factory
-    {
+    public static class Factory {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
         private final Configuration configuration;
@@ -254,13 +225,11 @@ public class Connection
 
         private final ConcurrentMap<Host, AtomicInteger> idGenerators = new ConcurrentHashMap<>();
 
-        public Factory(Configuration configuration)
-        {
+        public Factory(Configuration configuration) {
             this.configuration = configuration;
         }
 
-        public Connection open(Host host) throws ConnectionException
-        {
+        public Connection open(Host host) throws ConnectionException {
             address = host.getSocketAddress();
             if (isShutdown)
                 throw new ConnectionException(address, "Connection factory is shut down");
@@ -269,8 +238,7 @@ public class Connection
             return new Connection(name, address, this);
         }
 
-        public PooledConnection open(ConnectionPool pool) throws ConnectionException
-        {
+        public PooledConnection open(ConnectionPool pool) throws ConnectionException {
             InetSocketAddress address = pool.host.getSocketAddress();
 
             if (isShutdown)
@@ -280,8 +248,7 @@ public class Connection
             return new PooledConnection(name, address, this, pool);
         }
 
-        public Bootstrap createNewBootstrap()
-        {
+        public Bootstrap createNewBootstrap() {
             SocketOpts opt = this.configuration.getSocketOpts();
 
             Bootstrap bootstrap = new Bootstrap();
@@ -320,23 +287,19 @@ public class Connection
             return bootstrap;
         }
 
-        public void shutdown()
-        {
+        public void shutdown() {
             isShutdown = true;
             workerGroup.shutdownGracefully().awaitUninterruptibly();
             timer.stop();
         }
 
-        public int getReadTimeoutMs()
-        {
+        public int getReadTimeoutMs() {
             return configuration.getSocketOpts().getReadTimeoutMs();
         }
 
-        private AtomicInteger getIdGenerator(Host host)
-        {
+        private AtomicInteger getIdGenerator(Host host) {
             AtomicInteger g = idGenerators.get(host);
-            if (g == null)
-            {
+            if (g == null) {
                 g = new AtomicInteger(1);
                 AtomicInteger old = idGenerators.putIfAbsent(host, g);
                 if (old != null)
@@ -349,28 +312,23 @@ public class Connection
     /**
      *
      */
-    private class Dispatcher extends SimpleChannelInboundHandler<Message.Response>
-    {
+    private class Dispatcher extends SimpleChannelInboundHandler<Message.Response> {
         private final ConcurrentMap<Integer, ResponseHandler> pending = new ConcurrentHashMap<Integer, ResponseHandler>();
         public final StreamIdPool streamIdPool = new StreamIdPool();
 
 
-        public void addHandler(ResponseHandler handler)
-        {
+        public void addHandler(ResponseHandler handler) {
             ResponseHandler oldHandler = pending.put(handler.streamId, handler);
             assert null == oldHandler;
         }
 
-        public void removeHandler(int streamId, boolean releaseStreamId)
-        {
+        public void removeHandler(int streamId, boolean releaseStreamId) {
             ResponseHandler removed = pending.remove(streamId);
-            if (null != removed)
-            {
+            if (null != removed) {
                 removed.cancelTimeout();
             }
 
-            if (releaseStreamId)
-            {
+            if (releaseStreamId) {
                 streamIdPool.release(streamId);
             }
 
@@ -379,13 +337,11 @@ public class Connection
         }
 
         @Override
-        protected void channelRead0(ChannelHandlerContext ctx, Message.Response response) throws Exception
-        {
+        protected void channelRead0(ChannelHandlerContext ctx, Message.Response response) throws Exception {
             int streamId = response.getStreamId();
             logger.trace("{} received: {}", Connection.this, response);
 
-            if (streamId < 0)
-            {
+            if (streamId < 0) {
                 // TODO: Handle server-side streams
                 // factory.defaultHandler.handle(response);
                 return;
@@ -393,8 +349,7 @@ public class Connection
 
             ResponseHandler handler = pending.remove(streamId);
             streamIdPool.release(streamId);
-            if (null == handler)
-            {
+            if (null == handler) {
                 streamIdPool.unmark();
                 return;
             }
@@ -406,8 +361,7 @@ public class Connection
         }
 
         @Override
-        public void exceptionCaught(ChannelHandlerContext ctx, Throwable e) throws Exception
-        {
+        public void exceptionCaught(ChannelHandlerContext ctx, Throwable e) throws Exception {
             logger.debug(String.format("%s connection error", Connection.this), e.getCause());
             if (writeCounter.get() > 0)
                 return;
@@ -415,11 +369,9 @@ public class Connection
             deactivate(new ClientTransportException(address, String.format("Unexpected exception %s", e.getCause()), e.getCause()));
         }
 
-        public void dropAllHandlers(ConnectionException e)
-        {
+        public void dropAllHandlers(ConnectionException e) {
             Iterator<ResponseHandler> it = pending.values().iterator();
-            while (it.hasNext())
-            {
+            while (it.hasNext()) {
                 ResponseHandler handler = it.next();
                 handler.cancelTimeout();
                 handler.callback.onException(Connection.this, e, System.nanoTime() - handler.startedAt);
@@ -428,46 +380,36 @@ public class Connection
         }
 
         @Override
-        public void channelUnregistered(ChannelHandlerContext ctx) throws Exception
-        {
+        public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
             // TODO: Should we do some work here?
             logger.trace("Channel unregistered");
         }
 
         @Override
-        public void channelInactive(ChannelHandlerContext ctx) throws Exception
-        {
+        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             ConnectionException closeException = new ClientTransportException(address, "Channel has been closed");
 
-            if (!isReady || isClosed())
-            {
+            if (!isReady || isClosed()) {
                 dropAllHandlers(closeException);
                 Connection.this.close().force();
-            } else
-            {
+            } else {
                 deactivate(closeException);
             }
 
         }
     }
 
-    private boolean terminate(boolean evenIfPending)
-    {
+    private boolean terminate(boolean evenIfPending) {
         assert isClosed();
         ConnectionCloseFuture future = closeFutureRef.get();
-        if (future.isDone())
-        {
+        if (future.isDone()) {
             return true;
-        } else
-        {
-            synchronized (terminationLock)
-            {
-                if (evenIfPending || dispatcher.pending.isEmpty())
-                {
+        } else {
+            synchronized (terminationLock) {
+                if (evenIfPending || dispatcher.pending.isEmpty()) {
                     future.force();
                     return true;
-                } else
-                {
+                } else {
                     return false;
                 }
             }
@@ -477,57 +419,48 @@ public class Connection
     /**
      *
      */
-    static class Future extends AbstractFuture<Message.Response> implements RequestHandler.Callback
-    {
+    static class Future extends AbstractFuture<Message.Response> implements RequestHandler.Callback {
         private final Message.Request request;
         private volatile InetSocketAddress address;
 
-        Future(Message.Request request)
-        {
+        Future(Message.Request request) {
             this.request = request;
         }
 
         @Override
-        public void register(RequestHandler handler)
-        {
+        public void register(RequestHandler handler) {
 
         }
 
         @Override
-        public void onSet(Connection connection, Message.Response response, ExecutionInfo info, long latency)
-        {
+        public void onSet(Connection connection, Message.Response response, ExecutionInfo info, long latency) {
             onSet(connection, response, latency);
         }
 
         @Override
-        public void onSet(Connection connection, Message.Response response, long latency)
-        {
+        public void onSet(Connection connection, Message.Response response, long latency) {
             this.address = connection.address;
             super.set(response); // AbstractFuture
         }
 
         @Override
-        public Message.Request request()
-        {
+        public Message.Request request() {
             return null;
         }
 
         @Override
-        public void onException(Connection connection, Exception exception, long latency)
-        {
+        public void onException(Connection connection, Exception exception, long latency) {
             super.setException(exception); // AbstractFuture
         }
 
         @Override
-        public void onTimeout(Connection connection, long latency)
-        {
+        public void onTimeout(Connection connection, long latency) {
             assert connection != null;
             this.address = connection.address;
             super.setException(new ConnectionException(connection.address, "Operation timed out"));
         }
 
-        public InetSocketAddress getAddress()
-        {
+        public InetSocketAddress getAddress() {
             return address;
         }
     }
@@ -535,8 +468,7 @@ public class Connection
     /**
      *
      */
-    interface ResponseCallback
-    {
+    interface ResponseCallback {
         public Message.Request request();
 
         public void onSet(Connection connection, Message.Response response, long latency);
@@ -549,8 +481,7 @@ public class Connection
     /**
      *
      */
-    static class ResponseHandler
-    {
+    static class ResponseHandler {
         public final Connection connection;
         public final ResponseCallback callback;
         public final int streamId;
@@ -558,8 +489,7 @@ public class Connection
         private final Timeout timeout;
         private final long startedAt;
 
-        ResponseHandler(Connection connection, ResponseCallback callback) throws ConnectionBusyException
-        {
+        ResponseHandler(Connection connection, ResponseCallback callback) throws ConnectionBusyException {
             this.connection = connection;
             this.callback = callback;
             this.streamId = connection.dispatcher.streamIdPool.borrow();
@@ -573,24 +503,19 @@ public class Connection
         /**
          * Invoked by Dispatcher
          */
-        void cancelTimeout()
-        {
+        void cancelTimeout() {
             if (null != timeout)
                 timeout.cancel();
         }
 
-        public void cancelHandler()
-        {
+        public void cancelHandler() {
             connection.dispatcher.removeHandler(streamId, false);
         }
 
-        private TimerTask newTimeoutTask()
-        {
-            return new TimerTask()
-            {
+        private TimerTask newTimeoutTask() {
+            return new TimerTask() {
                 @Override
-                public void run(Timeout timeout) throws Exception
-                {
+                public void run(Timeout timeout) throws Exception {
 
                 }
             };

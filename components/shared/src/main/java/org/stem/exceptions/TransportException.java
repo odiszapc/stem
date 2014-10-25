@@ -17,8 +17,7 @@
 package org.stem.exceptions;
 
 
-public interface TransportException
-{
+public interface TransportException {
     ErrorCode code();
 
     String getMessage();

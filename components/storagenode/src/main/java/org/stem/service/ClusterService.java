@@ -32,28 +32,24 @@ import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public class ClusterService
-{
+public class ClusterService {
     public static final ClusterService instance = new ClusterService();
     private ClusterManagerClient client = ClusterManagerClient.create(StorageNodeDescriptor.getClusterManagerEndpoint());
     private Executor periodicTasksExecutor = Executors.newFixedThreadPool(5);
 
 
-    public void join()
-    {
+    public void join() {
         List<InetAddress> ipAddresses = Utils.getIpAddresses();
         Map<UUID, MountPoint> mountPoints = Layout.getInstance().getMountPoints();
 
         JoinRequest req = new JoinRequest();
         req.setHost(StorageNodeDescriptor.getNodeListen());
         req.setPort(StorageNodeDescriptor.getNodePort());
-        for (InetAddress ipAddress : ipAddresses)
-        {
+        for (InetAddress ipAddress : ipAddresses) {
             req.getIpAddresses().add(ipAddress.toString());
         }
 
-        for (MountPoint mp : mountPoints.values())
-        {
+        for (MountPoint mp : mountPoints.values()) {
             JoinRequest.Disk disk = new JoinRequest.Disk(
                     mp.uuid.toString(),
                     mp.getPath(),
@@ -65,15 +61,13 @@ public class ClusterService
         client.join(req);
     }
 
-    public ClusterResponse.Cluster describeCluster()
-    {
+    public ClusterResponse.Cluster describeCluster() {
         ClusterResponse resp = client.describeCluster();
         return resp.getCluster();
     }
 
 
-    public void startDataNotificator()
-    {
+    public void startDataNotificator() {
         periodicTasksExecutor.execute(new DataClusterNotificator());
     }
 }

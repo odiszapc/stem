@@ -22,49 +22,40 @@ import org.apache.commons.codec.binary.Hex;
 import java.math.BigInteger;
 import java.util.List;
 
-public class TokenBalancer<T>
-{
+public class TokenBalancer<T> {
 
     private static BigInteger MD5_MAX_VALUE = new BigInteger("2", 10).pow(128);
 
     protected List<T> keySet;
 
-    public TokenBalancer()
-    {
+    public TokenBalancer() {
     }
 
-    public TokenBalancer(List<T> keySet)
-    {
+    public TokenBalancer(List<T> keySet) {
         this.keySet = keySet;
     }
 
-    public int size()
-    {
+    public int size() {
         return keySet.size();
     }
 
-    public T getToken(String key)
-    {
-        try
-        {
+    public T getToken(String key) {
+        try {
             return getToken(Hex.decodeHex(key.toCharArray()));
         }
-        catch (DecoderException e)
-        {
+        catch (DecoderException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public T getToken(byte[] keyBytes)
-    {
+    public T getToken(byte[] keyBytes) {
         BigInteger token = new BigInteger(new String(Hex.encodeHex(keyBytes)), 16);
 
 
         BigInteger delta = MD5_MAX_VALUE.divide(BigInteger.valueOf(keySet.size()));
         int keyIndex = Math.max(token.divide(delta).intValue() - 1, 0);
 
-        if (keyIndex >= keySet.size())
-        {
+        if (keyIndex >= keySet.size()) {
             throw new RuntimeException("Token " + keyBytes + " is out of range");
         }
 

@@ -28,8 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class StorageService
-{
+public class StorageService {
     private static final Logger logger = LoggerFactory.getLogger(StorageService.class);
 
     public static final StorageService instance = new StorageService();
@@ -38,48 +37,40 @@ public class StorageService
     private final Map<UUID, ReadController> rControllers;
 
     @VisibleForTesting
-    public int getWriteCandidates(UUID disk)
-    {
+    public int getWriteCandidates(UUID disk) {
         return wControllers.get(disk).getWriteCandidates();
     }
 
-    public BlobDescriptor write(WriteBlobMessage message)
-    {
-        try
-        {
+    public BlobDescriptor write(WriteBlobMessage message) {
+        try {
             WriteController wc = wControllers.get(message.disk);
             if (null == wc)
                 throw new RuntimeException(String.format("Mount point %s can not be found", message.disk));
 
             return wc.write(message);
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             logger.error("Error writing blob", e);
             throw new RuntimeException(e);
         }
     }
 
-    public byte[] read(ReadBlobMessage message)
-    {
+    public byte[] read(ReadBlobMessage message) {
         ReadController controller = rControllers.get(message.disk); // TODO: if not found?
         return controller.read(message.fatFileIndex, message.offset, message.length);
     }
 
-    public void delete(DeleteBlobMessage message)
-    {
+    public void delete(DeleteBlobMessage message) {
         ReadController controller = rControllers.get(message.disk); // TODO: find by message directly
         controller.delete(message.fatFileIndex, message.offset);
     }
 
-    public StorageService()
-    {
+    public StorageService() {
         wControllers = new HashMap<UUID, WriteController>(Layout.getInstance().getMountPoints().size());
         rControllers = new HashMap<UUID, ReadController>(Layout.getInstance().getMountPoints().size());
     }
 
-    public void submitFF(FatFile ff, MountPoint mp)
-    {
+    public void submitFF(FatFile ff, MountPoint mp) {
         assert ff.isBlank(); // TODO: normal check with Exception throw
         WriteController controller = wControllers.get(mp.uuid);
         if (null == controller)
@@ -88,10 +79,8 @@ public class StorageService
         controller.submitBlankFF(ff);
     }
 
-    public void init()
-    {
-        for (MountPoint mp : Layout.getInstance().getMountPoints().values())
-        {
+    public void init() {
+        for (MountPoint mp : Layout.getInstance().getMountPoints().values()) {
             WriteController wc = new WriteController(mp);
             ReadController rc = new ReadController(mp);
             wControllers.put(mp.uuid, wc);

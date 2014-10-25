@@ -26,43 +26,33 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class NodeSupervisor extends Thread
-{
+public class NodeSupervisor extends Thread {
     private ServerSocket serverSocket;
 
-    public NodeSupervisor() throws IOException
-    {
+    public NodeSupervisor() throws IOException {
         serverSocket = new ServerSocket(19010, 1, InetAddress.getByName("localhost"));
         serverSocket.setReuseAddress(true);
     }
 
     @Override
-    public void run()
-    {
-        while (serverSocket != null)
-        {
+    public void run() {
+        while (serverSocket != null) {
             Socket socket = null;
-            try
-            {
+            try {
                 socket = serverSocket.accept();
                 socket.setSoLinger(false, 0);
                 LineNumberReader lin = new LineNumberReader(new InputStreamReader(socket.getInputStream()));
                 String key = lin.readLine();
             }
-            catch (IOException e)
-            {
+            catch (IOException e) {
                 e.printStackTrace();
             }
-            finally
-            {
-                if (socket != null)
-                {
-                    try
-                    {
+            finally {
+                if (socket != null) {
+                    try {
                         socket.close();
                     }
-                    catch (IOException e)
-                    {
+                    catch (IOException e) {
                         // ignore
                     }
                 }
@@ -71,8 +61,7 @@ public class NodeSupervisor extends Thread
         }
     }
 
-    public static void main(String[] args) throws IOException
-    {
+    public static void main(String[] args) throws IOException {
         NodeSupervisor supervisor = new NodeSupervisor();
         supervisor.setDaemon(true);
         supervisor.start();

@@ -16,32 +16,26 @@
 
 package org.stem.api.response;
 
-public class ErrorResponse extends StemResponse
-{
+public class ErrorResponse extends StemResponse {
     int errorCode;
     String error;
 
-    public ErrorResponse()
-    {
+    public ErrorResponse() {
     }
 
-    public int getErrorCode()
-    {
+    public int getErrorCode() {
         return errorCode;
     }
 
-    public void setErrorCode(int errorCode)
-    {
+    public void setErrorCode(int errorCode) {
         this.errorCode = errorCode;
     }
 
-    public String getError()
-    {
+    public String getError() {
         return error;
     }
 
-    public void setError(String error)
-    {
+    public void setError(String error) {
         this.error = error;
     }
 }

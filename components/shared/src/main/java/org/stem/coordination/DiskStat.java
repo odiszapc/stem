@@ -17,59 +17,48 @@
 package org.stem.coordination;
 
 
-public class DiskStat
-{
+public class DiskStat {
     String id;
     String path;
     long usedBytes;
     long totalBytes;
 
-    public String getId()
-    {
+    public String getId() {
         return id;
     }
 
-    public void setId(String id)
-    {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public String getPath()
-    {
+    public String getPath() {
         return path;
     }
 
-    public void setPath(String path)
-    {
+    public void setPath(String path) {
         this.path = path;
     }
 
-    public long getUsedBytes()
-    {
+    public long getUsedBytes() {
         return usedBytes;
     }
 
-    public void setUsedBytes(long usedBytes)
-    {
+    public void setUsedBytes(long usedBytes) {
         this.usedBytes = usedBytes;
     }
 
-    public long getTotalBytes()
-    {
+    public long getTotalBytes() {
         return totalBytes;
     }
 
-    public void setTotalBytes(long totalBytes)
-    {
+    public void setTotalBytes(long totalBytes) {
         this.totalBytes = totalBytes;
     }
 
-    public DiskStat()
-    {
+    public DiskStat() {
     }
 
-    public DiskStat(String id)
-    {
+    public DiskStat(String id) {
         this.id = id;
     }
 }

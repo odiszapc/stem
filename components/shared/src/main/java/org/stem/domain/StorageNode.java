@@ -23,42 +23,34 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class StorageNode
-{
+public class StorageNode {
     String ipAddress;
     int port;
     List<Disk> disks;
 
-    public String getIpAddress()
-    {
+    public String getIpAddress() {
         return ipAddress;
     }
 
-    public void setIpAddress(String ipAddress)
-    {
+    public void setIpAddress(String ipAddress) {
         this.ipAddress = ipAddress;
     }
 
-    public int getPort()
-    {
+    public int getPort() {
         return port;
     }
 
-    public void setPort(int port)
-    {
+    public void setPort(int port) {
         this.port = port;
     }
 
-    public List<Disk> getDisks()
-    {
+    public List<Disk> getDisks() {
         return disks;
     }
 
-    public void setDisks(List<DiskStat> disks)
-    {
+    public void setDisks(List<DiskStat> disks) {
         List<Disk> newDisks = new ArrayList<Disk>(disks.size());
-        for (DiskStat stat : disks)
-        {
+        for (DiskStat stat : disks) {
             Disk disk = new Disk(stat.getId());
             disk.setPath(stat.getPath());
             disk.setTotalBytes(stat.getTotalBytes());
@@ -68,18 +60,15 @@ public class StorageNode
         this.disks = newDisks;
     }
 
-    public String getEndpoint()
-    {
+    public String getEndpoint() {
         return ipAddress + ":" + port;
     }
 
-    public StorageNode(String ipAddress, int port, List<JoinRequest.Disk> disksFromRequest)
-    {
+    public StorageNode(String ipAddress, int port, List<JoinRequest.Disk> disksFromRequest) {
         this.ipAddress = ipAddress;
         this.port = port;
         this.disks = new ArrayList<Disk>();
-        for (JoinRequest.Disk diskREST : disksFromRequest)
-        {
+        for (JoinRequest.Disk diskREST : disksFromRequest) {
             Disk disk = new Disk(diskREST.getId());
             disk.setPath(diskREST.getPath());
             disk.setUsedBytes(diskREST.getUsedSizeInBytes());
@@ -89,52 +78,42 @@ public class StorageNode
         }
     }
 
-    public StorageNode(JoinRequest req)
-    {
+    public StorageNode(JoinRequest req) {
         this(req.getHost(), req.getPort(), req.getDisks());
     }
 
-    public List<String> getDiskIds()
-    {
+    public List<String> getDiskIds() {
         List<String> ids = new ArrayList<String>();
-        for (Disk disk : disks)
-        {
+        for (Disk disk : disks) {
             ids.add(disk.getId());
         }
         return ids;
     }
 
-    public List<UUID> getDiskUUIDs()
-    {
+    public List<UUID> getDiskUUIDs() {
         List<UUID> ids = new ArrayList<UUID>();
-        for (Disk disk : disks)
-        {
+        for (Disk disk : disks) {
             ids.add(UUID.fromString(disk.getId()));
         }
         return ids;
     }
 
-    public long getUsedBytes()
-    {
+    public long getUsedBytes() {
         long sum = 0;
-        for (Disk disk : disks)
-        {
+        for (Disk disk : disks) {
             sum += disk.getUsedBytes();
         }
         return sum;
     }
 
-    public long getTotalBytes()
-    {
+    public long getTotalBytes() {
         long sum = 0;
-        for (Disk disk : disks)
-        {
+        for (Disk disk : disks) {
             sum += disk.getTotalBytes();
         }
         return sum;
     }
 
-    public StorageNode()
-    {
+    public StorageNode() {
     }
 }

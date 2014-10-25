@@ -20,42 +20,36 @@ import com.google.common.collect.Lists;
 
 import java.util.List;
 
-public class ZookeeperClientFactory
-{
+public class ZookeeperClientFactory {
     private static List<ZookeeperClient> registry = Lists.newArrayList();
 
-    public static ZookeeperClient create()
-    {
+    public static ZookeeperClient create() {
         ZookeeperClient client = new ZookeeperClient();
         saveToRegistry(client);
         return client;
     }
 
-    public static ZookeeperClient create(String host, int port)
-    {
+    public static ZookeeperClient create(String host, int port) {
         ZookeeperClient client = new ZookeeperClient(host, port);
         saveToRegistry(client);
         return client;
     }
 
-    public static ZookeeperClient create(String endpoint)
-    {
+    public static ZookeeperClient create(String endpoint) {
         ZookeeperClient client = new ZookeeperClient(endpoint);
         saveToRegistry(client);
         return client;
     }
 
     public static void closeAll() {
-        for (ZookeeperClient client : registry)
-        {
+        for (ZookeeperClient client : registry) {
             client.close();
         }
 
         // TODO: clear the list?
     }
 
-    private static void saveToRegistry(ZookeeperClient client)
-    {
+    private static void saveToRegistry(ZookeeperClient client) {
         registry.add(client);
     }
 }

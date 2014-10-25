@@ -16,8 +16,7 @@
 
 package org.stem.client.v2;
 
-public class SocketOpts
-{
+public class SocketOpts {
     public static final int DEFAULT_CONNECT_TIMEOUT_MS = 3000;
     public static final int DEFAULT_READ_TIMEOUT_MS = 8000;
 
@@ -30,94 +29,77 @@ public class SocketOpts
     private volatile Integer receiveBufferSize;
     private volatile Integer sendBufferSize;
 
-    public SocketOpts()
-    {
+    public SocketOpts() {
     }
 
-    public int getConnectTimeoutMs()
-    {
+    public int getConnectTimeoutMs() {
         return connectTimeoutMs;
     }
 
-    public SocketOpts setConnectTimeoutMs(int connectTimeoutMs)
-    {
+    public SocketOpts setConnectTimeoutMs(int connectTimeoutMs) {
         this.connectTimeoutMs = connectTimeoutMs;
         return this;
     }
 
-    public int getReadTimeoutMs()
-    {
+    public int getReadTimeoutMs() {
         return readTimeoutMs;
     }
 
-    public SocketOpts setReadTimeoutMs(int readTimeoutMs)
-    {
+    public SocketOpts setReadTimeoutMs(int readTimeoutMs) {
         this.readTimeoutMs = readTimeoutMs;
         return this;
     }
 
-    public Boolean getKeepAlive()
-    {
+    public Boolean getKeepAlive() {
         return keepAlive;
     }
 
-    public SocketOpts setKeepAlive(Boolean keepAlive)
-    {
+    public SocketOpts setKeepAlive(Boolean keepAlive) {
         this.keepAlive = keepAlive;
         return this;
     }
 
-    public Boolean getReuseAddress()
-    {
+    public Boolean getReuseAddress() {
         return reuseAddress;
     }
 
-    public SocketOpts setReuseAddress(Boolean reuseAddress)
-    {
+    public SocketOpts setReuseAddress(Boolean reuseAddress) {
         this.reuseAddress = reuseAddress;
         return this;
     }
 
-    public Integer getSoLinger()
-    {
+    public Integer getSoLinger() {
         return soLinger;
     }
 
-    public SocketOpts setSoLinger(Integer soLinger)
-    {
+    public SocketOpts setSoLinger(Integer soLinger) {
         this.soLinger = soLinger;
         return this;
     }
 
-    public Boolean getTcpNoDelay()
-    {
+    public Boolean getTcpNoDelay() {
         return tcpNoDelay;
     }
 
-    public SocketOpts setTcpNoDelay(Boolean tcpNoDelay)
-    {
+    public SocketOpts setTcpNoDelay(Boolean tcpNoDelay) {
         this.tcpNoDelay = tcpNoDelay;
         return this;
     }
 
-    public Integer getReceiveBufferSize()
-    {
+    public Integer getReceiveBufferSize() {
         return receiveBufferSize;
     }
 
-    public SocketOpts setReceiveBufferSize(Integer receiveBufferSize)
-    {
+    public SocketOpts setReceiveBufferSize(Integer receiveBufferSize) {
         this.receiveBufferSize = receiveBufferSize;
         return this;
     }
 
-    public Integer getSendBufferSize()
-    {
+    public Integer getSendBufferSize() {
         return sendBufferSize;
     }
 
-    public SocketOpts setSendBufferSize(Integer sendBufferSize)
-    {
+    public SocketOpts setSendBufferSize(Integer sendBufferSize) {
         this.sendBufferSize = sendBufferSize;
         return this;
     }

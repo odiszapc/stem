@@ -18,34 +18,30 @@ package org.stem.client.v2;
 
 import org.stem.transport.Message;
 
-public class RequestHandler implements Connection.ResponseCallback
-{
+public class RequestHandler implements Connection.ResponseCallback {
     @Override
-    public Message.Request request()
-    {
+    public Message.Request request() {
         return null;
     }
 
     @Override
-    public void onSet(Connection connection, Message.Response response, long latency)
-    {
+    public void onSet(Connection connection, Message.Response response, long latency) {
 
     }
 
     @Override
-    public void onException(Connection connection, Exception exception, long latency)
-    {
+    public void onException(Connection connection, Exception exception, long latency) {
 
     }
 
     @Override
-    public void onTimeout(Connection connection, long latency)
-    {
+    public void onTimeout(Connection connection, long latency) {
 
     }
 
     interface Callback extends Connection.ResponseCallback {
         public void onSet(Connection connection, Message.Response response, ExecutionInfo info, long latency);
+
         public void register(RequestHandler handler);
     }
 }

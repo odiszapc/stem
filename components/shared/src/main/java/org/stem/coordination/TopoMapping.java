@@ -21,49 +21,40 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class TopoMapping extends ZNodeAbstract
-{
+public class TopoMapping extends ZNodeAbstract {
     Map<Long, List<UUID>> bucketMap = new HashMap<Long, List<UUID>>();
     Map<UUID, String> diskMap = new HashMap<UUID, String>();
 
-    public Map<Long, List<UUID>> getBucketMap()
-    {
+    public Map<Long, List<UUID>> getBucketMap() {
         return bucketMap;
     }
 
-    public Map<UUID, String> getDiskMap()
-    {
+    public Map<UUID, String> getDiskMap() {
         return diskMap;
     }
 
-    public int CRUSHMapSize()
-    {
+    public int CRUSHMapSize() {
         return bucketMap.size();
     }
 
     @Override
-    public String nodeName()
-    {
+    public String nodeName() {
         return ZooConstants.TOPO_MAP;
     }
 
-    public TopoMapping()
-    {
+    public TopoMapping() {
     }
 
-    public TopoMapping(Map<Long, List<UUID>> bucketMap, Map<UUID, String> diskMap)
-    {
+    public TopoMapping(Map<Long, List<UUID>> bucketMap, Map<UUID, String> diskMap) {
         this.bucketMap = bucketMap;
         this.diskMap = diskMap;
     }
 
-    public List<UUID> getDisks(Long vBucket)
-    {
+    public List<UUID> getDisks(Long vBucket) {
         return bucketMap.get(vBucket);
     }
 
-    public String getStorageNodeEntpoint(UUID diskId)
-    {
+    public String getStorageNodeEntpoint(UUID diskId) {
         return diskMap.get(diskId);
     }
 

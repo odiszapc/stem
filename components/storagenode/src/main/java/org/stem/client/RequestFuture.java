@@ -29,19 +29,16 @@ import org.stem.transport.ops.ErrorMessage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-public class RequestFuture extends AbstractFuture<Message.Response>
-{
+public class RequestFuture extends AbstractFuture<Message.Response> {
 
     final ResponseCallback callback;
     private final Message.Request request;
 
-    public Message.Request getRequest()
-    {
+    public Message.Request getRequest() {
         return request;
     }
 
-    class ResponseCallback
-    {
+    class ResponseCallback {
         final int streamId;
         public final HashedWheelTimer timer = new HashedWheelTimer(
                 new ThreadFactoryBuilder().setNameFormat("Timeouter-%d").build(),
@@ -50,16 +47,14 @@ public class RequestFuture extends AbstractFuture<Message.Response>
         private final long startTime;
         private final int timeoutMs;
 
-        public ResponseCallback(Message.Request request, int timeoutMs)
-        {
+        public ResponseCallback(Message.Request request, int timeoutMs) {
             this.timeoutMs = timeoutMs;
             this.streamId = request.getStreamId();
             this.startTime = System.nanoTime();
             this.timer.newTimeout(newTimer(), this.timeoutMs, TimeUnit.MILLISECONDS);
         }
 
-        private void onTimeout(long latency)
-        {
+        private void onTimeout(long latency) {
             Throwable reason = new TimeoutException(String.format("Connection timeout: %s Ms > %s Ms", latency / 1000000, timeoutMs));
             setFailed(reason);
 //            setException(new TimeoutException(
@@ -67,44 +62,35 @@ public class RequestFuture extends AbstractFuture<Message.Response>
             // TODO: release streamId
         }
 
-        private TimerTask newTimer()
-        {
-            return new TimerTask()
-            {
+        private TimerTask newTimer() {
+            return new TimerTask() {
                 @Override
-                public void run(Timeout timeout) throws Exception
-                {
+                public void run(Timeout timeout) throws Exception {
                     onTimeout(System.nanoTime() - startTime);
                 }
             };
         }
 
-        public void setSuccess(Message.Response msg)
-        {
+        public void setSuccess(Message.Response msg) {
             //this.timer.stop(); // TODO: timer can't be stopped from thread it was not created from
             RequestFuture.this.set(msg);
         }
 
-        public void setFailed(Throwable t)
-        {
+        public void setFailed(Throwable t) {
             setSuccess(ErrorMessage.fromException(t));
         }
     }
 
-    public RequestFuture(Message.Request request, int timeoutMs)
-    {
+    public RequestFuture(Message.Request request, int timeoutMs) {
         this.request = request;
         this.callback = new ResponseCallback(request, timeoutMs);
     }
 
-    public Message.Response getUninterruptibly()
-    {
-        try
-        {
+    public Message.Response getUninterruptibly() {
+        try {
             return Uninterruptibles.getUninterruptibly(this);
         }
-        catch (ExecutionException e)
-        {
+        catch (ExecutionException e) {
             throw new RuntimeException(e.getCause());
         }
     }

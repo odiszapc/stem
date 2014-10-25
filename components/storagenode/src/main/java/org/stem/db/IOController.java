@@ -16,22 +16,18 @@
 
 package org.stem.db;
 
-public class IOController
-{
+public class IOController {
     protected MountPoint mp;
 
-    public IOController(MountPoint mp)
-    {
+    public IOController(MountPoint mp) {
         this.mp = mp;
     }
 
-    public MountPoint mountpoint()
-    {
+    public MountPoint mountpoint() {
         return mp;
     }
 
-    public FatFile getFatFile(int index)
-    {
+    public FatFile getFatFile(int index) {
         return mp.getFatFile(index);
     }
 }

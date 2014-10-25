@@ -18,7 +18,6 @@ package org.stem.client.v2;
 
 import com.google.common.util.concurrent.AbstractFuture;
 
-public abstract class CloseFuture extends AbstractFuture<Void>
-{
+public abstract class CloseFuture extends AbstractFuture<Void> {
     public abstract CloseFuture force();
 }

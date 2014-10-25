@@ -39,8 +39,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
-public class ExternalNode
-{
+public class ExternalNode {
     private MavenContext mvnContext;
     private Log log;
 
@@ -48,44 +47,36 @@ public class ExternalNode
     private final YamlConfigurator configurator;
     private int mountPointsNumber = 1;
 
-    public ExternalNode(File nodeDir, YamlConfigurator configurator, MavenContext mvnContext, Log log)
-    {
+    public ExternalNode(File nodeDir, YamlConfigurator configurator, MavenContext mvnContext, Log log) {
         this.nodeDir = nodeDir;
         this.configurator = configurator;
         this.mvnContext = mvnContext;
         this.log = log;
     }
 
-    public void start() throws IOException, MojoExecutionException
-    {
+    public void start() throws IOException, MojoExecutionException {
         CommandLine commandLine = newCommandLine(nodeDir);
         startStemProcess(commandLine, createEnvironmentVars(nodeDir));
     }
 
-    private Map<String, String> createEnvironmentVars(File nodeDir)
-    {
+    private Map<String, String> createEnvironmentVars(File nodeDir) {
         Map<String, String> env = new HashMap<String, String>();
 
-        try
-        {
+        try {
             Properties properties = CommandLineUtils.getSystemEnvVars();
-            for (Map.Entry prop : properties.entrySet())
-            {
+            for (Map.Entry prop : properties.entrySet()) {
                 env.put((String) prop.getKey(), (String) prop.getValue());
             }
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             log.error("Could not assign default system environment variables.", e);
         }
         env.put("stem.config", new File(new File(nodeDir, "conf"), "stem.yaml").getAbsolutePath());
         return env;
     }
 
-    private DefaultExecuteResultHandler startStemProcess(CommandLine commandLine, Map env) throws MojoExecutionException
-    {
-        try
-        {
+    private DefaultExecuteResultHandler startStemProcess(CommandLine commandLine, Map env) throws MojoExecutionException {
+        try {
             DefaultExecutor exec = new DefaultExecutor();
             DefaultExecuteResultHandler execHandler = new DefaultExecuteResultHandler();
             exec.setWorkingDirectory(nodeDir);
@@ -111,14 +102,12 @@ public class ExternalNode
 //            }
             return execHandler;
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             throw new MojoExecutionException("Command execution failed.", e);
         }
     }
 
-    private CommandLine newCommandLine(File nodeDir) throws IOException
-    {
+    private CommandLine newCommandLine(File nodeDir) throws IOException {
         createStemHome(nodeDir);
         CommandLine cmd = newJavaCommandLine();
         // TODO: add -Xmx, -Dlog4j.configuration, JMX configuration
@@ -130,28 +119,22 @@ public class ExternalNode
         return cmd;
     }
 
-    private CommandLine newJavaCommandLine()
-    {
+    private CommandLine newJavaCommandLine() {
         String javaExecPath = null;
 
         Toolchain toolchain = getToolchain();
 
-        if (toolchain != null)
-        {
+        if (toolchain != null) {
             log.info("Toolchain: " + toolchain);
             javaExecPath = toolchain.findTool("java");
 
-        } else if (OS.isFamilyWindows())
-        {
+        } else if (OS.isFamilyWindows()) {
             String exec = "java.exe";
             String path = System.getenv("PATH");
-            if (path != null)
-            {
-                for (String elem : StringUtils.split(path, File.pathSeparator))
-                {
+            if (path != null) {
+                for (String elem : StringUtils.split(path, File.pathSeparator)) {
                     File file = new File(elem, exec);
-                    if (file.exists())
-                    {
+                    if (file.exists()) {
                         javaExecPath = file.getAbsolutePath();
                         break;
                     }
@@ -160,37 +143,31 @@ public class ExternalNode
 
         }
 
-        if (null == javaExecPath)
-        {
+        if (null == javaExecPath) {
             javaExecPath = "java";
         }
 
         return new CommandLine(javaExecPath);
     }
 
-    private Toolchain getToolchain()
-    {
+    private Toolchain getToolchain() {
         Toolchain toolchain = null;
 
-        try
-        {
+        try {
             ToolchainManager toolchainManager =
                     (ToolchainManager) mvnContext.session.getContainer().lookup(ToolchainManager.ROLE);
-            if (toolchainManager != null)
-            {
+            if (toolchainManager != null) {
                 toolchain = toolchainManager.getToolchainFromBuildContext("jdk", mvnContext.session);
             }
         }
-        catch (ComponentLookupException e)
-        {
+        catch (ComponentLookupException e) {
             //
         }
 
         return toolchain;
     }
 
-    private void createStemHome(File nodeDir) throws IOException
-    {
+    private void createStemHome(File nodeDir) throws IOException {
         File bin = new File(nodeDir, "bin");
         File conf = new File(nodeDir, "conf");
         File data = new File(nodeDir, "data");
@@ -205,15 +182,13 @@ public class ExternalNode
     }
 
 
-    private void createNodeJar(File jarFile, String mainClass, File nodeDir) throws IOException
-    {
+    private void createNodeJar(File jarFile, String mainClass, File nodeDir) throws IOException {
         File conf = new File(nodeDir, "conf");
 
         FileOutputStream fos = null;
         JarOutputStream jos = null;
 
-        try
-        {
+        try {
             fos = new FileOutputStream(jarFile);
             jos = new JarOutputStream(fos);
             jos.setLevel(JarOutputStream.STORED);
@@ -234,8 +209,7 @@ public class ExternalNode
             cp.append(new URL(mvnContext.classesDir.toURI().toASCIIString()).toExternalForm());
             cp.append(' ');
 
-            for (Artifact artifact : mvnContext.pluginDependencies)
-            {
+            for (Artifact artifact : mvnContext.pluginDependencies) {
                 log.info("Adding plugin dependency artifact: " + ArtifactUtils.versionlessKey(artifact) +
                         " to the classpath");
                 // NOTE: if File points to a directory, this entry MUST end in '/'.
@@ -250,25 +224,21 @@ public class ExternalNode
             man.write(jos);
 
         }
-        finally
-        {
+        finally {
             IOUtil.close(jos);
             IOUtil.close(fos);
         }
     }
 
-    private void newConfigYaml(File conf, List<File> mpDirs)
-    {
+    private void newConfigYaml(File conf, List<File> mpDirs) {
         String[] mpPaths = getMountPointPaths(mpDirs).toArray(new String[mpDirs.size()]);
         configurator.setBlobMountPoints(mpPaths);
 
         configurator.save(new File(conf, "stem.yaml"));
     }
 
-    private void createDirsClean(List<File> dirs)
-    {
-        for (File dir : dirs)
-        {
+    private void createDirsClean(List<File> dirs) {
+        for (File dir : dirs) {
             if (dir.isFile())
                 dir.delete();
 
@@ -277,31 +247,25 @@ public class ExternalNode
         }
     }
 
-    private List<File> newMountPointDirs(File conf)
-    {
+    private List<File> newMountPointDirs(File conf) {
         List<File> dirs = Lists.newArrayList();
-        for (int i = 1; i <= mountPointsNumber; i++)
-        {
+        for (int i = 1; i <= mountPointsNumber; i++) {
             File mp = new File(conf, "mountpoint" + (i > 1 ? i : ""));
             dirs.add(mp);
         }
         return dirs;
     }
 
-    private List<String> getMountPointPaths(List<File> files)
-    {
+    private List<String> getMountPointPaths(List<File> files) {
         List<String> list = Lists.newArrayList();
-        for (File file : files)
-        {
+        for (File file : files) {
             list.add(file.getAbsolutePath());
         }
         return list;
     }
 
-    public ExternalNode setMounPointsNumber(int num)
-    {
-        if (num < 1 || num > 254)
-        {
+    public ExternalNode setMounPointsNumber(int num) {
+        if (num < 1 || num > 254) {
             throw new RuntimeException("number of mount points should be in range (1, 254)");
         }
 

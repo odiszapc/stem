@@ -16,33 +16,27 @@
 
 package org.stem.api.request;
 
-public class InitClusterRequest extends ClusterManagerRequest
-{
+public class InitClusterRequest extends ClusterManagerRequest {
     String name;
     int vBuckets;
     int rf;
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public int getvBuckets()
-    {
+    public int getvBuckets() {
         return vBuckets;
     }
 
-    public int getRf()
-    {
+    public int getRf() {
         return rf;
     }
 
-    public InitClusterRequest()
-    {
+    public InitClusterRequest() {
     }
 
-    public InitClusterRequest(String name, int vBuckets, int rf)
-    {
+    public InitClusterRequest(String name, int vBuckets, int rf) {
         this.name = name;
         this.vBuckets = vBuckets;
         this.rf = rf;

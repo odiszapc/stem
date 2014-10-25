@@ -18,34 +18,28 @@ package org.stem.coordination;
 
 import org.stem.domain.Cluster;
 
-public class StorageStatListener extends StemZooEventHandler<StorageStat>
-{
+public class StorageStatListener extends StemZooEventHandler<StorageStat> {
     @Override
-    public Class<StorageStat> getBaseClass()
-    {
+    public Class<StorageStat> getBaseClass() {
         return StorageStat.class;
     }
 
     @Override
-    protected void onChildAdded(StorageStat stat)
-    {
+    protected void onChildAdded(StorageStat stat) {
         Cluster.getInstance().updateStat(stat);
     }
 
     @Override
-    protected void onChildUpdated(StorageStat stat)
-    {
+    protected void onChildUpdated(StorageStat stat) {
         Cluster.getInstance().updateStat(stat);
     }
 
     @Override
-    protected void onChildRemoved(StorageStat stat)
-    {
+    protected void onChildRemoved(StorageStat stat) {
         // TODO:
     }
 
     @Override
-    protected void onError(Throwable t)
-    {
+    protected void onError(Throwable t) {
     }
 }

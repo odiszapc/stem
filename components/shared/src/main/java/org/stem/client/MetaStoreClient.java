@@ -31,8 +31,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-public class MetaStoreClient
-{
+public class MetaStoreClient {
     private static final String INSERT_STATEMENT = "INSERT INTO stem.blobs_meta (blob, disk, data) VALUES (?, ?, ?)";
     private static final String SELECT_STATEMENT = "SELECT * FROM stem.blobs_meta WHERE blob = ?";
     private static final String SELECT_REPLICA_STATEMENT = "SELECT * FROM stem.blobs_meta WHERE blob = ? AND disk = ?";
@@ -55,8 +54,7 @@ public class MetaStoreClient
 
     }
 
-    public void start()
-    {
+    public void start() {
         cluster = Cluster.builder()
                 .addContactPoint("127.0.0.1") // TODO: make configurable
                 .withClusterName(Schema.CLUSTER)
@@ -73,8 +71,7 @@ public class MetaStoreClient
         prepareStatements();
     }
 
-    private void prepareStatements()
-    {
+    private void prepareStatements() {
         insertToBlobsMeta = getSession().prepare(INSERT_STATEMENT);
         selectBlobsMeta = getSession().prepare(SELECT_STATEMENT);
         selectReplicaBlobsMeta = getSession().prepare(SELECT_REPLICA_STATEMENT);
@@ -83,26 +80,22 @@ public class MetaStoreClient
         deleteReplicaBlobsMeta = getSession().prepare(DELETE_REPLICA_STATEMENT);
     }
 
-    public void stop()
-    {
+    public void stop() {
         cluster.close();
     }
 
-    public Session getSession()
-    {
+    public Session getSession() {
         return session;
     }
 
 
-    public List<ExtendedBlobDescriptor> readMeta(byte[] key)
-    {
+    public List<ExtendedBlobDescriptor> readMeta(byte[] key) {
         BoundStatement statement = selectBlobsMeta.bind(ByteBuffer.wrap(key));
         List<Row> rows = getSession().execute(statement).all();
 
         List<ExtendedBlobDescriptor> results = Lists.newArrayList();
 
-        for (Row row : rows)
-        {
+        for (Row row : rows) {
             ExtendedBlobDescriptor writeResult = extractMeta(row);
             results.add(writeResult);
 
@@ -110,8 +103,7 @@ public class MetaStoreClient
         return results;
     }
 
-    public ExtendedBlobDescriptor readMeta(byte[] key, UUID diskId)
-    {
+    public ExtendedBlobDescriptor readMeta(byte[] key, UUID diskId) {
         BoundStatement statement = selectReplicaBlobsMeta.bind(ByteBuffer.wrap(key), diskId);
         Row row = getSession().execute(statement).one();// TODO: check is there are many replicas for this particular blob and disk ??? (is it possible?)
         if (null == row)
@@ -120,11 +112,9 @@ public class MetaStoreClient
         return extractMeta(row);
     }
 
-    public void writeMeta(Collection<ExtendedBlobDescriptor> results)
-    {
+    public void writeMeta(Collection<ExtendedBlobDescriptor> results) {
         BatchStatement batch = new BatchStatement();
-        for (ExtendedBlobDescriptor wr : results)
-        {
+        for (ExtendedBlobDescriptor wr : results) {
             ByteBuffer key = ByteBuffer.wrap(wr.getKey());
             ByteBuffer data = buildMeta(wr.getFFIndex(), wr.getBodyOffset(), wr.getLength());
 
@@ -134,27 +124,23 @@ public class MetaStoreClient
         // TODO: continue here
     }
 
-    public void updateMeta(ExtendedBlobDescriptor d)
-    {
+    public void updateMeta(ExtendedBlobDescriptor d) {
         updateMeta(d.getKey(), d.getDisk(), d.getFFIndex(), d.getBodyOffset(), d.getLength());
     }
 
-    public void updateMeta(byte[] key, UUID diskId, int fatFileIndex, int offset, int length)
-    {
+    public void updateMeta(byte[] key, UUID diskId, int fatFileIndex, int offset, int length) {
         // UPDATE stem.blobs_meta SET data = ? WHERE blob = ? AND disk = ?
         ByteBuffer data = buildMeta(fatFileIndex, offset, length);
         BoundStatement statement = updateBlobsMeta.bind(data, ByteBuffer.wrap(key), diskId);
         session.execute(statement);
     }
 
-    public void deleteMeta(byte[] key)
-    {
+    public void deleteMeta(byte[] key) {
         BoundStatement statement = deleteBlobsMeta.bind(ByteBuffer.wrap(key));
         getSession().execute(statement);
     }
 
-    private ByteBuffer buildMeta(int fatFileIndex, int offset, int length)
-    {
+    private ByteBuffer buildMeta(int fatFileIndex, int offset, int length) {
         ByteBuf b = Unpooled.buffer(12);
         b.writeInt(fatFileIndex);
         b.writeInt(offset);
@@ -163,8 +149,7 @@ public class MetaStoreClient
         return b.nioBuffer();
     }
 
-    private ExtendedBlobDescriptor extractMeta(Row row)
-    {
+    private ExtendedBlobDescriptor extractMeta(Row row) {
         ByteBuffer keyBuf = row.getBytes("blob");
         byte[] key = new byte[keyBuf.remaining()];
         keyBuf.get(key, 0, key.length);
@@ -179,8 +164,7 @@ public class MetaStoreClient
     }
 
 
-    public void deleteReplica(byte[] key, UUID diskId)
-    {
+    public void deleteReplica(byte[] key, UUID diskId) {
         BoundStatement statement = deleteReplicaBlobsMeta.bind(ByteBuffer.wrap(key), diskId);
         getSession().execute(statement);
     }

@@ -18,17 +18,14 @@ package org.stem.client.v2;
 
 import java.net.InetSocketAddress;
 
-public class Host
-{
+public class Host {
     private InetSocketAddress socketAddress;
 
-    public Host(InetSocketAddress socketAddress)
-    {
+    public Host(InetSocketAddress socketAddress) {
         this.socketAddress = socketAddress;
     }
 
-    public InetSocketAddress getSocketAddress()
-    {
+    public InetSocketAddress getSocketAddress() {
         return socketAddress;
     }
 }

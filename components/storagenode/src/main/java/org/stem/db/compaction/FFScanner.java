@@ -22,14 +22,12 @@ import org.stem.db.FatFile;
 import java.io.IOException;
 import java.util.Iterator;
 
-public class FFScanner implements Iterator<Blob>
-{
+public class FFScanner implements Iterator<Blob> {
     private FatFile ff;
     private Blob currentBlob;
     int nextOffset = FatFile.PAYLOAD_OFFSET;
 
-    public FFScanner(FatFile ff)
-    {
+    public FFScanner(FatFile ff) {
         this.ff = ff;
 
         // TODO: looks like it's mistake, we can iterate not-full files
@@ -38,41 +36,33 @@ public class FFScanner implements Iterator<Blob>
     }
 
     @Override
-    public boolean hasNext()
-    {
+    public boolean hasNext() {
         ff.readLock.lock();
-        try
-        {
+        try {
             Blob blob = Blob.deserialize(ff, nextOffset);
-            if (null != blob)
-            {
+            if (null != blob) {
                 currentBlob = blob;
                 nextOffset += Blob.Header.SIZE + blob.getHeader().length;
                 return true;
-            } else
-            {
+            } else {
                 return false;
             }
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             throw new RuntimeException(e);
         }
-        finally
-        {
+        finally {
             ff.readLock.unlock();
         }
     }
 
     @Override
-    public Blob next()
-    {
+    public Blob next() {
         return currentBlob;
     }
 
     @Override
-    public void remove()
-    {
+    public void remove() {
         throw new UnsupportedOperationException();
     }
 }

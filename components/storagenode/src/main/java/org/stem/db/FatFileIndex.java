@@ -47,8 +47,7 @@ import java.util.zip.CRC32;
  * | Index length | CRC32        |
  * +--------------+--------------+
  */
-public class FatFileIndex
-{
+public class FatFileIndex {
     public static final int LENGTH_SIZE = 4;
     public static final int CRC32_SIZE = 4;
 
@@ -56,31 +55,25 @@ public class FatFileIndex
 
     private List<Entry> entries;
 
-    public List<Entry> getEntries()
-    {
+    public List<Entry> getEntries() {
         return entries;
     }
 
-    public FatFileIndex()
-    {
+    public FatFileIndex() {
         entries = new ArrayList<Entry>();
     }
 
-    public void add(Entry entry)
-    {
+    public void add(Entry entry) {
         entries.add(entry);
     }
 
-    public int getSize()
-    {
+    public int getSize() {
         return entries.size() * Entry.SIZE;
     }
 
-    public ByteBuffer serialize()
-    {
+    public ByteBuffer serialize() {
         ByteBuffer bodyBuf = ByteBuffer.allocate(getSize());
-        for (Entry entry : entries)
-        {
+        for (Entry entry : entries) {
             entry.writeToBuf(bodyBuf);
         }
         bodyBuf.position(0);
@@ -96,16 +89,13 @@ public class FatFileIndex
         return indexBuf;
     }
 
-    public static Entry create(Blob.Header header, int blobOffset, byte deleteFlag)
-    {
+    public static Entry create(Blob.Header header, int blobOffset, byte deleteFlag) {
         return new Entry(header.key, blobOffset, header.length, deleteFlag);
     }
 
-    public static FatFileIndex deserialize(FileChannel channel, long indexHeaderOffset) throws IOException
-    {
+    public static FatFileIndex deserialize(FileChannel channel, long indexHeaderOffset) throws IOException {
         FileLock lock = channel.lock();
-        try
-        {
+        try {
             // Deserialize header
             ByteBuffer out = ByteBuffer.allocate(FatFileIndex.Header.SIZE);
             channel.position(indexHeaderOffset);
@@ -125,37 +115,31 @@ public class FatFileIndex
             crc.update(out.array());
             int crc32 = (int) crc.getValue();
 
-            if (crc32 != header.crc32)
-            {
+            if (crc32 != header.crc32) {
                 throw new IOException(String.format("Wrong index CRC32 checksum (%s but %s expected)", crc32, header.crc32));
             }
 
             out.position(0);
-            while (out.hasRemaining())
-            {
+            while (out.hasRemaining()) {
                 index.add(Entry.readFromBuf(out));
             }
 
             return index;
         }
-        finally
-        {
+        finally {
             lock.release();
         }
     }
 
-    public Entry findByKey(byte[] key)
-    {
-        for (Entry entry : entries)
-        {
+    public Entry findByKey(byte[] key) {
+        for (Entry entry : entries) {
             if (Arrays.equals(entry.key, key))
                 return entry;
         }
         return null;
     }
 
-    public static class Header
-    {
+    public static class Header {
         public static final int CRC32_SIZE = 4;
         public static final int LENGTH_SIZE = 4;
         public static final int SIZE = LENGTH_SIZE + CRC32_SIZE;
@@ -163,14 +147,12 @@ public class FatFileIndex
         int length;
         int crc32;
 
-        public Header(int length, int crc32)
-        {
+        public Header(int length, int crc32) {
             this.length = length;
             this.crc32 = crc32;
         }
 
-        public ByteBuffer serialize()
-        {
+        public ByteBuffer serialize() {
             ByteBuffer buf = ByteBuffer.allocate(SIZE);
             buf.putInt(length);
             ByteBuffer crc32Buf = ByteBuffer.allocate(CRC32_SIZE).putInt(crc32);
@@ -181,22 +163,19 @@ public class FatFileIndex
             return buf;
         }
 
-        public static Header deserialize(ByteBuffer buf)
-        {
+        public static Header deserialize(ByteBuffer buf) {
             assert buf.remaining() == SIZE;
             int size = buf.getInt();
             int crc32 = buf.getInt();
             return Header.create(size, crc32);
         }
 
-        public static Header create(int size, int crc32)
-        {
+        public static Header create(int size, int crc32) {
             return new Header(size, crc32);
         }
     }
 
-    public static class Entry
-    {
+    public static class Entry {
         public static final int KEY_SIZE = 16;
         public static final int OFFSET_SIZE = 4;
         public static final int LENGTH_SIZE = 4;
@@ -212,16 +191,14 @@ public class FatFileIndex
         public byte deleteFlag;  // 1
         public static final int SIZE = KEY_SIZE + OFFSET_SIZE + LENGTH_SIZE + FLAGS_SIZE;
 
-        public Entry(byte[] key, int offset, int length, byte deleteFlag)
-        {
+        public Entry(byte[] key, int offset, int length, byte deleteFlag) {
             this.key = key;
             this.offset = offset;
             this.length = length;
             this.deleteFlag = deleteFlag;
         }
 
-        public static Entry readFromBuf(ByteBuffer buf)
-        {
+        public static Entry readFromBuf(ByteBuffer buf) {
             byte[] key = new byte[KEY_SIZE];
             buf.get(key);
             int offset = buf.getInt();
@@ -231,21 +208,18 @@ public class FatFileIndex
             // TODO: validation
         }
 
-        public void writeToBuf(ByteBuffer buf)
-        {
+        public void writeToBuf(ByteBuffer buf) {
             buf.put(key);
             buf.putInt(offset);
             buf.putInt(length);
             buf.put(deleteFlag);
         }
 
-        public boolean isLive()
-        {
+        public boolean isLive() {
             return FLAG_LIVE == this.deleteFlag;
         }
 
-        public boolean isDeleted()
-        {
+        public boolean isDeleted() {
             return FLAG_DELETED == this.deleteFlag;
         }
     }

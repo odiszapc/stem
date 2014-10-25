@@ -16,18 +16,15 @@
 
 package org.stem.client.v2;
 
-public class ProtocolOpts
-{
+public class ProtocolOpts {
     public static final int DEFAULT_PORT = 9998;
     private final int port;
 
-    public ProtocolOpts()
-    {
+    public ProtocolOpts() {
         this(DEFAULT_PORT);
     }
 
-    public ProtocolOpts(int port)
-    {
+    public ProtocolOpts(int port) {
         this.port = port;
     }
 }

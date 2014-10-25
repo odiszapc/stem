@@ -18,11 +18,9 @@ package org.stem;
 
 import org.junit.Test;
 
-public class SampleIT
-{
+public class SampleIT {
     @Test
-    public void testName() throws Exception
-    {
+    public void testName() throws Exception {
 
 
     }

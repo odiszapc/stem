@@ -44,15 +44,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class ProtocolTest extends IntegrationTestBase
-{
+public class ProtocolTest extends IntegrationTestBase {
 
     final String host = "localhost";
     final int port = 9999;
 
     @Test
-    public void testConnect() throws Exception
-    {
+    public void testConnect() throws Exception {
         final String host = "localhost";
         final int port = 9999;
 
@@ -61,8 +59,7 @@ public class ProtocolTest extends IntegrationTestBase
     }
 
     @Test
-    public void testReadWrite() throws Exception
-    {
+    public void testReadWrite() throws Exception {
         StorageNodeClient client = new StorageNodeClient(host, port);
         client.start();
 
@@ -89,8 +86,7 @@ public class ProtocolTest extends IntegrationTestBase
 
 
     @Test
-    public void testStorageNodeDelete() throws Exception
-    {
+    public void testStorageNodeDelete() throws Exception {
         StorageNodeClient client = new StorageNodeClient(host, port);
         client.start();
         WriteBlobMessage writeOp = getRandomWriteMessage();
@@ -105,8 +101,7 @@ public class ProtocolTest extends IntegrationTestBase
     }
 
     @Test
-    public void testDelete() throws Exception
-    {
+    public void testDelete() throws Exception {
         clusterManagerClient.computeMapping();
 
         StemClient client = new StemClient();
@@ -129,8 +124,7 @@ public class ProtocolTest extends IntegrationTestBase
 
     @Test
     @Ignore // TODO: it's ignored because it's ran endlessly
-    public void testStorageNodeWritePerformance() throws Exception
-    {
+    public void testStorageNodeWritePerformance() throws Exception {
         StorageNodeClient client = new StorageNodeClient(host, port);
         client.start();
 
@@ -145,12 +139,10 @@ public class ProtocolTest extends IntegrationTestBase
         long start, duration;
         long i = 0;
         start = System.nanoTime();
-        while (true)
-        {
+        while (true) {
             i++;
             Message.Response resp = client.execute(op);
-            if (i % 1000 == 0)
-            {
+            if (i % 1000 == 0) {
                 duration = System.nanoTime() - start;
 
                 long rps = i * 1000000000 / duration;
@@ -163,8 +155,7 @@ public class ProtocolTest extends IntegrationTestBase
 
     @Test
     @Ignore // TODO: it's ignored because it's ran endlessly
-    public void testClusterWritePerformance() throws Exception
-    {
+    public void testClusterWritePerformance() throws Exception {
         Logger.getLogger("io.netty").setLevel(Level.OFF);
 
         clusterManagerClient.computeMapping();
@@ -178,12 +169,10 @@ public class ProtocolTest extends IntegrationTestBase
         long start, duration;
         long i = 0;
         start = System.nanoTime();
-        while (true)
-        {
+        while (true) {
             i++;
             client.put(key, blob);
-            if (i % 1000 == 0)
-            {
+            if (i % 1000 == 0) {
                 duration = System.nanoTime() - start;
 
                 long rps = i * 1000000000 / duration;
@@ -196,8 +185,7 @@ public class ProtocolTest extends IntegrationTestBase
     }
 
     @Test
-    public void testClusterWrite() throws Exception
-    {
+    public void testClusterWrite() throws Exception {
         clusterManagerClient.computeMapping();
 
         StemClient client = new StemClient();
@@ -215,8 +203,7 @@ public class ProtocolTest extends IntegrationTestBase
 
     @Test
     @Ignore // TODO: it's ignored because it's ran endlessly
-    public void testClusterMultiThreadWrite() throws Exception
-    {
+    public void testClusterMultiThreadWrite() throws Exception {
         clusterManagerClient.computeMapping();
         MultiSourcesExecutor executor = new MultiSourcesExecutor();
         executor.submitWriters(4);
@@ -225,8 +212,7 @@ public class ProtocolTest extends IntegrationTestBase
 
     @Test
     @Ignore // TODO: it's ignored because it's ran endlessly
-    public void testMultiSourcesWritePerformance() throws Exception
-    {
+    public void testMultiSourcesWritePerformance() throws Exception {
         StorageNodeClient client = new StorageNodeClient(host, port);
         client.start();
 
@@ -235,8 +221,7 @@ public class ProtocolTest extends IntegrationTestBase
         Set<UUID> disks = Layout.getInstance().getMountPoints().keySet();
 
         List<WriteBlobMessage> messages = new ArrayList<WriteBlobMessage>(disks.size());
-        for (UUID disk : disks)
-        {
+        for (UUID disk : disks) {
             WriteBlobMessage op = new WriteBlobMessage();
             op.disk = disk;
             op.key = key;
@@ -246,8 +231,7 @@ public class ProtocolTest extends IntegrationTestBase
 
         int threadsNum = messages.size();
         ExecutorService service = Executors.newFixedThreadPool(threadsNum);
-        for (int j = 0; j < threadsNum; ++j)
-        {
+        for (int j = 0; j < threadsNum; ++j) {
             ClientThread clientThread = new ClientThread(messages.get(j), j);
             service.submit(clientThread);
         }
@@ -256,15 +240,13 @@ public class ProtocolTest extends IntegrationTestBase
         service.awaitTermination(10, TimeUnit.MINUTES);
     }
 
-    public class ClientThread implements Callable<Void>
-    {
+    public class ClientThread implements Callable<Void> {
 
         private WriteBlobMessage op;
         private int id;
         private StorageNodeClient client;
 
-        public ClientThread(WriteBlobMessage op, int id) throws IOException
-        {
+        public ClientThread(WriteBlobMessage op, int id) throws IOException {
             this.op = op;
             this.id = id;
             client = new StorageNodeClient(host, port);
@@ -272,19 +254,16 @@ public class ProtocolTest extends IntegrationTestBase
         }
 
         @Override
-        public Void call() throws Exception
-        {
+        public Void call() throws Exception {
             long start, duration;
             long i = 0;
             start = System.nanoTime();
-            while (true)
-            {
+            while (true) {
                 i++;
 
                 Message.Response resp = client.execute(op);
                 //if (i > 10000) {Thread.sleep(100000000);}
-                if (i % 1000 == 0)
-                {
+                if (i % 1000 == 0) {
                     duration = System.nanoTime() - start;
 
                     long rps = i * 1000000000 / duration;
@@ -296,80 +275,65 @@ public class ProtocolTest extends IntegrationTestBase
         }
     }
 
-    private class MultiSourcesExecutor
-    {
+    private class MultiSourcesExecutor {
 
         ExecutorService service = Executors.newCachedThreadPool();
         AtomicLong counter = new AtomicLong();
         StemClient client;
 
-        private MultiSourcesExecutor()
-        {
+        private MultiSourcesExecutor() {
             client = new StemClient();
             client.start();
             service.submit(new Logger());
         }
 
-        public void submitWriters(int num)
-        {
-            for (int i = 0; i < num; i++)
-            {
+        public void submitWriters(int num) {
+            for (int i = 0; i < num; i++) {
                 newWriter();
             }
         }
 
-        public void newWriter()
-        {
+        public void newWriter() {
             service.submit(new Writer());
 
         }
 
-        public void shutdown() throws InterruptedException
-        {
+        public void shutdown() throws InterruptedException {
             service.shutdown();
             service.awaitTermination(10, TimeUnit.MINUTES);
         }
 
-        public class Writer implements Runnable
-        {
+        public class Writer implements Runnable {
             byte[] in = TestUtil.generateRandomBlob(65536);
 
             @Override
-            public void run()
-            {
+            public void run() {
                 StemClient client = new StemClient();
                 client.start();
 
-                while (true)
-                {
+                while (true) {
 
                     byte[] key = TestUtil.generateRandomBlob(16);
 
-                    try
-                    {
+                    try {
                         client.put(key, in);
                         counter.incrementAndGet();
                     }
-                    catch (Throwable ex)
-                    {
+                    catch (Throwable ex) {
                         int a = 1;
                     }
                 }
             }
         }
 
-        public class Logger implements Runnable
-        {
+        public class Logger implements Runnable {
             long tickBefore = System.nanoTime();
             long countBefore = 0;
 
             @Override
-            public void run()
-            {
-                while (true)
-                {
-                    try
-                    {
+            public void run() {
+                while (true) {
+                    try {
                         long tickNow = System.nanoTime();
                         long countNow = counter.get();
                         long countDelta = countNow - countBefore;
@@ -381,8 +345,7 @@ public class ProtocolTest extends IntegrationTestBase
 
                         Thread.sleep(2000);
                     }
-                    catch (InterruptedException e)
-                    {
+                    catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }

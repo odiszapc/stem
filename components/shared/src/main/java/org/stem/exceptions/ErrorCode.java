@@ -19,8 +19,7 @@ package org.stem.exceptions;
 import java.util.HashMap;
 import java.util.Map;
 
-public enum ErrorCode
-{
+public enum ErrorCode {
     SERVER_ERROR(0x0000),
 
     TIMEOUT(0x1000),
@@ -29,19 +28,16 @@ public enum ErrorCode
     public int value;
     private static final Map<Integer, ErrorCode> map = new HashMap<Integer, ErrorCode>(ErrorCode.values().length);
 
-    static
-    {
+    static {
         for (ErrorCode code : ErrorCode.values())
             map.put(code.value, code);
     }
 
-    ErrorCode(int value)
-    {
+    ErrorCode(int value) {
         this.value = value;
     }
 
-    public static ErrorCode fromValue(int value)
-    {
+    public static ErrorCode fromValue(int value) {
         ErrorCode code = map.get(value);
         if (code == null)
             throw new IllegalArgumentException(String.format("Unknown error code %d", value));

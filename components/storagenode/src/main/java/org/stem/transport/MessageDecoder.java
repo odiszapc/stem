@@ -21,17 +21,14 @@ import io.netty.handler.codec.MessageToMessageDecoder;
 
 import java.util.List;
 
-public class MessageDecoder extends MessageToMessageDecoder<Frame>
-{
+public class MessageDecoder extends MessageToMessageDecoder<Frame> {
     @Override
-    protected void decode(ChannelHandlerContext ctx, Frame frame, List<Object> out) throws Exception
-    {
+    protected void decode(ChannelHandlerContext ctx, Frame frame, List<Object> out) throws Exception {
         boolean isRequest = frame.header.opType.direction == Message.Direction.REQUEST;
         Message message = frame.header.opType.codec.decode(frame.body);
         message.setStreamId(frame.header.streamId);
         frame.body.release();
-        if (isRequest)
-        {
+        if (isRequest) {
             message.attach(frame.connection);
         }
         out.add(message);

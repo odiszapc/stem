@@ -18,8 +18,7 @@ package org.stem.exceptions;
 
 import java.net.InetSocketAddress;
 
-public class ClientTransportException extends ConnectionException
-{
+public class ClientTransportException extends ConnectionException {
 
     public ClientTransportException(InetSocketAddress address, String message, Throwable cause) {
         super(address, message, cause);

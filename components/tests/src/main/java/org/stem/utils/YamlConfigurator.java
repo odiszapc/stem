@@ -31,21 +31,16 @@ import java.util.Random;
 /**
  * YamlConfigurator.open("stem.yaml")
  */
-public class YamlConfigurator
-{
-    public static YamlConfigurator open(URL configUrl)
-    {
+public class YamlConfigurator {
+    public static YamlConfigurator open(URL configUrl) {
         return new YamlConfigurator(configUrl);
     }
 
-    public static YamlConfigurator open(String configPath)
-    {
-        try
-        {
+    public static YamlConfigurator open(String configPath) {
+        try {
             return new YamlConfigurator(configPath);
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -54,22 +49,17 @@ public class YamlConfigurator
     private URL url;
     private Config config;
 
-    public URI getURI()
-    {
-        try
-        {
+    public URI getURI() {
+        try {
             return url.toURI();
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private YamlConfigurator(URL configUrl)
-    {
-        try
-        {
+    private YamlConfigurator(URL configUrl) {
+        try {
             if (null == configUrl)
                 throw new NullPointerException("URL parameter is null");
 
@@ -80,133 +70,109 @@ public class YamlConfigurator
             config = yaml.loadAs(stream, Config.class);
             stream.close(); // TODO; utilize the power of Guava
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private YamlConfigurator(String configPath)
-    {
+    private YamlConfigurator(String configPath) {
         this(convertPathToURL(configPath));
     }
 
-    public YamlConfigurator setAutoAllocate(Boolean value)
-    {
+    public YamlConfigurator setAutoAllocate(Boolean value) {
         config.auto_allocate = value;
         return this;
     }
 
-    public YamlConfigurator setBlobMountPoints(String... value)
-    {
+    public YamlConfigurator setBlobMountPoints(String... value) {
         config.blob_mount_points = value;
         return this;
     }
 
-    public YamlConfigurator setBlobMountPoint(String value)
-    {
+    public YamlConfigurator setBlobMountPoint(String value) {
         config.blob_mount_points = new String[]{value};
         return this;
     }
 
-    public YamlConfigurator setBlobManagerEndpoint(String value)
-    {
+    public YamlConfigurator setBlobManagerEndpoint(String value) {
         config.cluster_manager_endpoint = value;
         return this;
     }
 
-    public YamlConfigurator setNodeListen(String value)
-    {
+    public YamlConfigurator setNodeListen(String value) {
         config.node_listen = value;
         return this;
     }
 
-    public YamlConfigurator setFatFileSizeInMb(Integer value)
-    {
+    public YamlConfigurator setFatFileSizeInMb(Integer value) {
         config.fat_file_size_in_mb = value;
         return this;
     }
 
-    public YamlConfigurator setMarkOnAllocate(Boolean value)
-    {
+    public YamlConfigurator setMarkOnAllocate(Boolean value) {
         config.mark_on_allocate = value;
         return this;
     }
 
-    public YamlConfigurator setMaxSpaceAllocationInMb(Integer value)
-    {
+    public YamlConfigurator setMaxSpaceAllocationInMb(Integer value) {
         config.max_space_allocation_in_mb = value;
         return this;
     }
 
-    public YamlConfigurator setCompactionThreshold(Float value)
-    {
+    public YamlConfigurator setCompactionThreshold(Float value) {
         config.compaction_threshold = value;
         return this;
     }
 
-    public String save()
-    {
-        try
-        {
+    public String save() {
+        try {
             File file = new File(url.toURI());
             int index = Math.abs(random.nextInt());
             String newPath = file.getParentFile().getAbsolutePath() + File.separator + index + ".yaml";
             save(newPath);
             return newPath;
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public String saveTo(String dir)
-    {
-        try
-        {
+    public String saveTo(String dir) {
+        try {
             int index = Math.abs(random.nextInt());
             String path = dir + File.separator + index + ".yaml";
             save(path);
             return path;
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void save(String configPath)
-    {
+    public void save(String configPath) {
         File newFile = new File(configPath);
         save(newFile);
     }
 
-    public void save(File newFile)
-    {
-        try
-        {
+    public void save(File newFile) {
+        try {
             Yaml yamlDumper = new Yaml();
             FileWriter writer = new FileWriter(newFile);
             yamlDumper.dump(config, writer);
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static URL convertPathToURL(String configPath)
-    {
-        try
-        {
+    private static URL convertPathToURL(String configPath) {
+        try {
             URL url = Thread.currentThread().getContextClassLoader().getResource(configPath);
             if (null == url)
                 throw new Exception(configPath + " can not be found");
             return url;
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             throw new RuntimeException("Can not convert String path to URL object", e);
         }
 

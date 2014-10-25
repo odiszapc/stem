@@ -20,8 +20,7 @@ import org.glassfish.grizzly.http.server.CLStaticHttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 
-public class CLStaticByPassHttpHandler extends CLStaticHttpHandler
-{
+public class CLStaticByPassHttpHandler extends CLStaticHttpHandler {
     /**
      * Create <tt>HttpHandler</tt>, which will handle requests
      * to the static resources resolved by the given class loader.
@@ -34,18 +33,15 @@ public class CLStaticByPassHttpHandler extends CLStaticHttpHandler
      *                    from {@link ClassLoader}'s root.
      * @throws IllegalArgumentException if one of the docRoots doesn't end with slash ('/')
      */
-    public CLStaticByPassHttpHandler(ClassLoader classLoader, String... docRoots)
-    {
+    public CLStaticByPassHttpHandler(ClassLoader classLoader, String... docRoots) {
         super(classLoader, docRoots);
     }
 
     @Override
-    public void service(Request request, Response response) throws Exception
-    {
+    public void service(Request request, Response response) throws Exception {
         final String uri = getRelativeURI(request);
 
-        if (uri == null || !handle(uri, request, response))
-        {
+        if (uri == null || !handle(uri, request, response)) {
             onMissingResource(request, response);
         }
     }

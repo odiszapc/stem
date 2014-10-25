@@ -16,31 +16,26 @@
 
 package org.stem.domain;
 
-public class BlobDescriptor
-{
+public class BlobDescriptor {
     final int FFIndex;
     final int offset;
     final int bodyOffset;
 
-    public BlobDescriptor(int FFIndex, int offset, int bodyOffset)
-    {
+    public BlobDescriptor(int FFIndex, int offset, int bodyOffset) {
         this.FFIndex = FFIndex;
         this.offset = offset; // TODO: for FatFiles > 4GB Integer is not enough
         this.bodyOffset = bodyOffset; // TODO: for FatFiles > 4GB Integer is not enough
     }
 
-    public int getFFIndex()
-    {
+    public int getFFIndex() {
         return FFIndex;
     }
 
-    public int getOffset()
-    {
+    public int getOffset() {
         return offset;
     }
 
-    public int getBodyOffset()
-    {
+    public int getBodyOffset() {
         return bodyOffset;
     }
 }

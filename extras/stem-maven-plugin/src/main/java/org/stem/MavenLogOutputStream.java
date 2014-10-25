@@ -21,18 +21,15 @@ import org.apache.commons.exec.LogOutputStream;
 import org.apache.maven.plugin.logging.Log;
 
 
-public class MavenLogOutputStream extends LogOutputStream
-{
+public class MavenLogOutputStream extends LogOutputStream {
     private Log outputLog;
 
-    public MavenLogOutputStream(Log outputLog)
-    {
+    public MavenLogOutputStream(Log outputLog) {
         this.outputLog = outputLog;
     }
 
     @Override
-    protected void processLine(String line, int level)
-    {
+    protected void processLine(String line, int level) {
         outputLog.info(line);
     }
 }

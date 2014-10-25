@@ -19,11 +19,9 @@ package org.stem.transport;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-public class MessageDispatcher extends SimpleChannelInboundHandler<Message.Request>
-{
+public class MessageDispatcher extends SimpleChannelInboundHandler<Message.Request> {
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Message.Request request) throws Exception
-    {
+    protected void channelRead0(ChannelHandlerContext ctx, Message.Request request) throws Exception {
         Message.Response response = request.execute();
         response.setStreamId(request.getStreamId());
         response.attach(request.connection());

@@ -29,17 +29,14 @@ import java.lang.reflect.Type;
 
 @Consumes("multipart/form-data")
 @Provider
-public class MimeMultipartReader implements MessageBodyReader<Object>
-{
+public class MimeMultipartReader implements MessageBodyReader<Object> {
     @Override
-    public boolean isReadable(Class<?> aClass, Type type, Annotation[] annotations, MediaType mediaType)
-    {
+    public boolean isReadable(Class<?> aClass, Type type, Annotation[] annotations, MediaType mediaType) {
         return false;
     }
 
     @Override
-    public Object readFrom(Class<Object> objectClass, Type type, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> stringStringMultivaluedMap, InputStream inputStream) throws IOException, WebApplicationException
-    {
+    public Object readFrom(Class<Object> objectClass, Type type, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> stringStringMultivaluedMap, InputStream inputStream) throws IOException, WebApplicationException {
         return null;
     }
 }

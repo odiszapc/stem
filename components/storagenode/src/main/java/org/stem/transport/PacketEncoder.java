@@ -21,12 +21,10 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 
-public class PacketEncoder extends MessageToByteEncoder<Frame>
-{
+public class PacketEncoder extends MessageToByteEncoder<Frame> {
 
     @Override
-    protected void encode(ChannelHandlerContext ctx, Frame frame, ByteBuf out) throws Exception
-    {
+    protected void encode(ChannelHandlerContext ctx, Frame frame, ByteBuf out) throws Exception {
         ByteBuf header = Unpooled.buffer(Frame.Header.LENGTH);
         Message.Type opType = frame.header.opType;
 

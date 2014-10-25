@@ -22,8 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class DataTracker
-{
+public class DataTracker {
     ConcurrentMap<Long, AtomicLong> totalCountMap = new ConcurrentHashMap<Long, AtomicLong>();
     ConcurrentMap<Long, AtomicLong> liveCountMap = new ConcurrentHashMap<Long, AtomicLong>();
     ConcurrentMap<Long, AtomicLong> totalSizeMap = new ConcurrentHashMap<Long, AtomicLong>();
@@ -62,61 +61,49 @@ public class DataTracker
 
     private ArrayBalancer dht; // TODO: share instance by making it static
 
-    public DataTracker(int vBuckets)
-    {
+    public DataTracker(int vBuckets) {
         dht = new ArrayBalancer(vBuckets);
     }
 
-    public void count(FatFileIndex index)
-    {
-        for (FatFileIndex.Entry entry : index.getEntries())
-        {
+    public void count(FatFileIndex index) {
+        for (FatFileIndex.Entry entry : index.getEntries()) {
             count(entry);
         }
     }
 
-    public void count(FatFileIndex.Entry entry)
-    {
+    public void count(FatFileIndex.Entry entry) {
         count(entry.key, entry.length, entry.isLive());
     }
 
-    public void count(Blob.Header header)
-    {
+    public void count(Blob.Header header) {
         count(header.key, header.length, header.isLive());
     }
 
-    public long getTotalBlobs()
-    {
+    public long getTotalBlobs() {
         return totalCount.get();
     }
 
-    public long getLiveBlobs()
-    {
+    public long getLiveBlobs() {
         return liveCount.get();
     }
 
-    public long getTotalSizeInBytes()
-    {
+    public long getTotalSizeInBytes() {
         return totalSizeInBytes.get();
     }
 
-    public long getLiveSizeInBytes()
-    {
+    public long getLiveSizeInBytes() {
         return liveSizeInBytes.get();
     }
 
-    public long getAllocatedSizeInBytes()
-    {
+    public long getAllocatedSizeInBytes() {
         return allocatedSizeInBytes.get();
     }
 
-    public long getDeletesSizeInBytes()
-    {
+    public long getDeletesSizeInBytes() {
         return deletesSizeInBytes.get();
     }
 
-    public long getDeletesSizeInBytes(int ff)
-    {
+    public long getDeletesSizeInBytes(int ff) {
         AtomicLong ref = deletesPerFFSizeMap.get(ff);
         if (null == ref)
             return 0;
@@ -124,13 +111,11 @@ public class DataTracker
         return ref.get();
     }
 
-    public long getDeletesCount()
-    {
+    public long getDeletesCount() {
         return deletesCount.get();
     }
 
-    public long getDeletesCount(int ff)
-    {
+    public long getDeletesCount(int ff) {
         AtomicLong ref = deletesPerFFCountMap.get(ff);
         if (null == ref)
             return 0;
@@ -138,13 +123,11 @@ public class DataTracker
         return ref.get();
     }
 
-    public Long getVBucket(byte[] key)
-    {
+    public Long getVBucket(byte[] key) {
         return dht.getToken(key).longValue();
     }
 
-    public void count(byte[] keyBytes, long size, boolean live)
-    {
+    public void count(byte[] keyBytes, long size, boolean live) {
         Long vBucket = dht.getToken(keyBytes).longValue();
         initCounters(vBucket);
 
@@ -154,8 +137,7 @@ public class DataTracker
         totalCount.incrementAndGet();
         totalSizeInBytes.addAndGet(size);
 
-        if (live)
-        {
+        if (live) {
             liveCountMap.get(vBucket).incrementAndGet();
             liveSizeMap.get(vBucket).addAndGet(size);
 
@@ -164,16 +146,14 @@ public class DataTracker
         }
     }
 
-    private void initCounters(long vBucket)
-    {
+    private void initCounters(long vBucket) {
         totalCountMap.putIfAbsent(vBucket, new AtomicLong(0));
         totalSizeMap.putIfAbsent(vBucket, new AtomicLong(0));
         liveCountMap.putIfAbsent(vBucket, new AtomicLong(0));
         liveSizeMap.putIfAbsent(vBucket, new AtomicLong(0));
     }
 
-    public void discount(byte[] keyBytes, long size, int ff)
-    {
+    public void discount(byte[] keyBytes, long size, int ff) {
         Long vBucket = dht.getToken(keyBytes).longValue();
         initCounters(vBucket);
 
@@ -192,8 +172,7 @@ public class DataTracker
         deletesSizeInBytes.addAndGet(size);
     }
 
-    public void remove(byte[] keyBytes, long size)
-    {
+    public void remove(byte[] keyBytes, long size) {
         Long vBucket = dht.getToken(keyBytes).longValue();
         initCounters(vBucket);
 
@@ -210,8 +189,7 @@ public class DataTracker
         liveSizeInBytes.addAndGet(-size);
     }
 
-    public void removeDeletes(byte[] keyBytes, long size, int ff)
-    {
+    public void removeDeletes(byte[] keyBytes, long size, int ff) {
         Long vBucket = dht.getToken(keyBytes).longValue();
         initCounters(vBucket);
 
@@ -224,8 +202,7 @@ public class DataTracker
         deletesSizeInBytes.addAndGet(-size);
     }
 
-    public void incFullFatFiles(long size)
-    {
+    public void incFullFatFiles(long size) {
         fullFatFileCount.incrementAndGet();
         fullFatFileSizeInBytes.addAndGet(size);
 
@@ -233,55 +210,46 @@ public class DataTracker
         allocatedSizeInBytes.addAndGet(size);
     }
 
-    public void incBlankFatFiles(long size)
-    {
+    public void incBlankFatFiles(long size) {
         fatFileCount.incrementAndGet();
         blankFatFileCount.incrementAndGet();
         allocatedSizeInBytes.addAndGet(size);
     }
 
-    public void turnIntoBlank(long size)
-    {
+    public void turnIntoBlank(long size) {
         fullFatFileCount.decrementAndGet();
         fullFatFileSizeInBytes.addAndGet(-size);
         blankFatFileCount.incrementAndGet();
     }
 
-    public void turnIntoFull(long size)
-    {
+    public void turnIntoFull(long size) {
         fullFatFileCount.incrementAndGet();
         fullFatFileSizeInBytes.addAndGet(size);
         blankFatFileCount.decrementAndGet();
     }
 
-    public void turnIntoActive()
-    {
+    public void turnIntoActive() {
         blankFatFileCount.decrementAndGet();
     }
 
-    public void setActiveFatFile(long size)
-    {
+    public void setActiveFatFile(long size) {
         fatFileCount.incrementAndGet();
         allocatedSizeInBytes.addAndGet(size);
     }
 
-    public long getBlankFatFileCount()
-    {
+    public long getBlankFatFileCount() {
         return blankFatFileCount.get();
     }
 
-    public long getFullFatFileCount()
-    {
+    public long getFullFatFileCount() {
         return fullFatFileCount.get();
     }
 
-    public long getFatFileCount()
-    {
+    public long getFatFileCount() {
         return fatFileCount.get();
     }
 
-    public long getLiveBucketSize(long vBucket)
-    {
+    public long getLiveBucketSize(long vBucket) {
         AtomicLong atomic = liveSizeMap.get(vBucket);
         if (null == atomic)
             return 0;

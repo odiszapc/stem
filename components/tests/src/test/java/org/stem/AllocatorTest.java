@@ -24,11 +24,9 @@ import java.io.File;
 
 import static org.stem.utils.TestUtil.temporize;
 
-public class AllocatorTest extends IntegrationTestBase
-{
+public class AllocatorTest extends IntegrationTestBase {
     @Test
-    public void testSize() throws Exception
-    {
+    public void testSize() throws Exception {
         String fatFilePath = temporize("000001.db");
         FatFileAllocator.allocateFile(fatFilePath, 256);
 
@@ -37,8 +35,7 @@ public class AllocatorTest extends IntegrationTestBase
     }
 
     @Test
-    public void testAllocateDirectoryMaxSize() throws Exception
-    {
+    public void testAllocateDirectoryMaxSize() throws Exception {
         String directoryPath = temporize("AllocateDirectoryMaxSize");
         File dir = new File(directoryPath);
         Assert.assertTrue(dir.mkdir());

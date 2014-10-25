@@ -44,39 +44,32 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 
-public class ClusterManagerLauncher
-{
+public class ClusterManagerLauncher {
     HttpServer server;
 
-    public static void main(String[] args) throws InterruptedException
-    {
+    public static void main(String[] args) throws InterruptedException {
         ClusterManagerLauncher launcher = new ClusterManagerLauncher();
         launcher.start();
         Thread.currentThread().join();
     }
 
-    public void start()
-    {
-        try
-        {
+    public void start() {
+        try {
             initZookeeperPaths();
             loadClusterConfiguration();
             configureWebServer();
             startWebServer();
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             throw new RuntimeException("Error while starting Cluster Manager web server", e);
         }
     }
 
-    private void loadClusterConfiguration()
-    {
+    private void loadClusterConfiguration() {
         Cluster.init();
     }
 
-    private void configureWebServer() throws URISyntaxException, IOException
-    {
+    private void configureWebServer() throws URISyntaxException, IOException {
         URI uri = new URI("http://0.0.0.0:9997");
         ResourceConfig resourceCfg = new ResourceConfig();
         setupJsonSerialization(resourceCfg);
@@ -87,20 +80,17 @@ public class ClusterManagerLauncher
         configureStaticResources(server, resourceCfg);
     }
 
-    private void startWebServer() throws IOException
-    {
+    private void startWebServer() throws IOException {
         server.start();
         server.getListener("grizzly").getFileCache().setEnabled(false);
         server.getListener("grizzly").getFilterChain().add(2, new HttpBaseFilter() // TODO: indexOfType
         {
             @Override
-            public NextAction handleRead(FilterChainContext ctx) throws IOException
-            {
+            public NextAction handleRead(FilterChainContext ctx) throws IOException {
                 HttpContent message = ctx.getMessage();
                 HttpRequestPacket httpHeader = (HttpRequestPacket) message.getHttpHeader();
                 String uri = httpHeader.getRequestURI();
-                if (uri.equals("/"))
-                {
+                if (uri.equals("/")) {
                     uri = "/admin";
                     httpHeader.getRequestURIRef().init(uri.getBytes(), 0, uri.getBytes().length);
                 }
@@ -110,38 +100,32 @@ public class ClusterManagerLauncher
         });
     }
 
-    public void stop()
-    {
+    public void stop() {
         if (null != server) // TODO: why this may happen
             server.shutdownNow();
 
         Cluster.destroy();
     }
 
-    private void configureStaticResources(HttpServer server, ResourceConfig resourceCfg)
-    {
+    private void configureStaticResources(HttpServer server, ResourceConfig resourceCfg) {
         HttpHandler handler = getStaticHandler();
         server.getServerConfiguration().addHttpHandler(handler, "/admin", "/static");
     }
 
-    private void initZookeeperPaths()
-    {
+    private void initZookeeperPaths() {
         ZookeeperClient client = ZookeeperClientFactory.create();
         client.start();
-        try
-        {
+        try {
             client.createIfNotExists(ZooConstants.CLUSTER);
             client.listenForChildren(ZooConstants.CLUSTER, new StorageStatListener());
             //client.createIfNotExists(ZooConstants.CLUSTER_DESCRIPTOR_PATH);
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             throw new RuntimeException("Can't init Zookeeper", e);
         }
     }
 
-    private HttpServer createServer(URI uri, ResourceConfig resourceCfg)
-    {
+    private HttpServer createServer(URI uri, ResourceConfig resourceCfg) {
         final String host = uri.getHost();
         final int port = uri.getPort();
         final HttpServer server = new HttpServer();
@@ -152,20 +136,17 @@ public class ClusterManagerLauncher
         final ServerConfiguration config = server.getServerConfiguration();
         final HttpHandler handler = ContainerFactory.createContainer(HttpHandler.class, resourceCfg);
 
-        if (handler != null)
-        {
+        if (handler != null) {
             config.addHttpHandler(handler, uri.getPath());
         }
         return server;
     }
 
-    private void setupJsonSerialization(ResourceConfig cfg)
-    {
+    private void setupJsonSerialization(ResourceConfig cfg) {
         cfg.registerInstances(getJsonProvider());
     }
 
-    public static JacksonJaxbJsonProvider getJsonProvider()
-    {
+    public static JacksonJaxbJsonProvider getJsonProvider() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         //mapper.getSerializationConfig().addMixInAnnotations(File.class, MixIn_File.class);
@@ -175,8 +156,7 @@ public class ClusterManagerLauncher
         return provider;
     }
 
-    private ThreadPoolConfig adjustThreadPool()
-    {
+    private ThreadPoolConfig adjustThreadPool() {
         Integer corePoolSize = 2;
         Integer maxPoolSize = 8;
         ThreadPoolConfig workerPoolConfig = ThreadPoolConfig.defaultConfig();
@@ -188,13 +168,10 @@ public class ClusterManagerLauncher
         return workerPoolConfig;
     }
 
-    public HttpHandler getStaticHandler()
-    {
-        if (null != System.getProperty("development"))
-        {
+    public HttpHandler getStaticHandler() {
+        if (null != System.getProperty("development")) {
             return new StaticHttpHandler("src/main/resources/static/");
-        } else
-        {
+        } else {
             CLStaticByPassHttpHandler handler = new CLStaticByPassHttpHandler(this.getClass().getClassLoader(), "static/");
             handler.setFileCacheEnabled(false);
             return handler;

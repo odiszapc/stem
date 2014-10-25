@@ -20,41 +20,33 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.*;
 import org.apache.curator.utils.ZKPaths;
 
-public class ZNodeListener implements PathChildrenCacheListener, NodeCacheListener
-{
+public class ZNodeListener implements PathChildrenCacheListener, NodeCacheListener {
     private ZNodeEventHandler handler;
     private NodeCache nodeCache;
 
-    public ZNodeListener(ZNodeEventHandler handler)
-    {
+    public ZNodeListener(ZNodeEventHandler handler) {
         this.handler = handler;
     }
 
-    public ZNodeListener(ZNodeEventHandler handler, NodeCache nodeCache)
-    {
+    public ZNodeListener(ZNodeEventHandler handler, NodeCache nodeCache) {
         this.handler = handler;
         this.nodeCache = nodeCache;
     }
 
     @Override
-    public void childEvent(CuratorFramework client, PathChildrenCacheEvent event) throws Exception
-    {
-        switch (event.getType())
-        {
-            case CHILD_ADDED:
-            {
+    public void childEvent(CuratorFramework client, PathChildrenCacheEvent event) throws Exception {
+        switch (event.getType()) {
+            case CHILD_ADDED: {
                 handler.onChildAdded(ZKPaths.getNodeFromPath(event.getData().getPath()), event.getData().getData(), event.getData().getStat());
                 break;
             }
 
-            case CHILD_UPDATED:
-            {
+            case CHILD_UPDATED: {
                 handler.onChildUpdated(ZKPaths.getNodeFromPath(event.getData().getPath()), event.getData().getData(), event.getData().getStat());
                 break;
             }
 
-            case CHILD_REMOVED:
-            {
+            case CHILD_REMOVED: {
                 handler.onChildRemoved(ZKPaths.getNodeFromPath(event.getData().getPath()), event.getData().getData(), event.getData().getStat());
                 break;
             }
@@ -62,10 +54,8 @@ public class ZNodeListener implements PathChildrenCacheListener, NodeCacheListen
     }
 
     @Override
-    public void nodeChanged() throws Exception
-    {
-        if (null == handler)
-        {
+    public void nodeChanged() throws Exception {
+        if (null == handler) {
             // TODO: warn
             return;
         }

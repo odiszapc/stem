@@ -16,7 +16,6 @@
 
 package org.stem.api.response;
 
-public class StemResponse
-{
+public class StemResponse {
 
 }

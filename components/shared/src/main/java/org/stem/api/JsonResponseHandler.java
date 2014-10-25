@@ -29,26 +29,21 @@ import org.stem.util.JsonUtils;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class JsonResponseHandler implements ResponseHandler<StemResponse>
-{
+public class JsonResponseHandler implements ResponseHandler<StemResponse> {
     private Class<? extends StemResponse> clazz;
 
-    public JsonResponseHandler(Class<? extends StemResponse> clazz)
-    {
+    public JsonResponseHandler(Class<? extends StemResponse> clazz) {
         this.clazz = clazz;
     }
 
     @Override
-    public StemResponse handleResponse(HttpResponse response) throws ClientProtocolException, IOException
-    {
+    public StemResponse handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
         StatusLine statusLine = response.getStatusLine();
         HttpEntity entity = response.getEntity();
         InputStream content = entity.getContent();
 
-        if (statusLine.getStatusCode() >= 300)
-        {
-            try
-            {
+        if (statusLine.getStatusCode() >= 300) {
+            try {
                 ErrorResponse errorResponse = JsonUtils.decode(content, ErrorResponse.class);
 
                 String message = String.format("%s [%s]: Code: %s, Message: %s", statusLine.getReasonPhrase(),
@@ -60,16 +55,14 @@ public class JsonResponseHandler implements ResponseHandler<StemResponse>
                         statusLine.getStatusCode(),
                         message);
             }
-            catch (RuntimeException e)
-            {
+            catch (RuntimeException e) {
                 throw new HttpResponseException(
                         statusLine.getStatusCode(),
                         statusLine.getReasonPhrase());
             }
         }
 
-        if (entity == null)
-        {
+        if (entity == null) {
             throw new ClientProtocolException("Response contains no content");
         }
 

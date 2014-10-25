@@ -30,8 +30,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
 @Path(RESTConstants.Api.Cluster.URI)
-public class ClusterResource
-{
+public class ClusterResource {
     /**
      * Init cluster
      *
@@ -40,8 +39,7 @@ public class ClusterResource
      */
     @PUT
     @Path(RESTConstants.Api.Cluster.Init.BASE)
-    public Response init(InitClusterRequest request)
-    {
+    public Response init(InitClusterRequest request) {
         Cluster.init(request.getName(), request.getvBuckets(), request.getRf());
         Cluster.getInstance().save();
 
@@ -55,8 +53,7 @@ public class ClusterResource
      */
     @GET
     @Path(RESTConstants.Api.Cluster.Get.BASE)
-    public Response get()
-    {
+    public Response get() {
         Cluster cluster = Cluster.getInstance();
         ClusterResponse response = RestUtils.buildClusterResponse(cluster, true);
         return RestUtils.ok(response);
@@ -70,8 +67,7 @@ public class ClusterResource
      */
     @PUT
     @Path(RESTConstants.Api.Cluster.Join.BASE)
-    public Response join(JoinRequest request)
-    {
+    public Response join(JoinRequest request) {
         StorageNode storage = new StorageNode(request);
         Cluster.getInstance().addStorageIfNotExist(storage);
         return RestUtils.ok();

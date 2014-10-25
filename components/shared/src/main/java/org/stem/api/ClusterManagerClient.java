@@ -26,44 +26,36 @@ import org.stem.api.response.StemResponse;
 
 import java.net.URI;
 
-public class ClusterManagerClient extends BaseHttpClient
-{
-    public static ClusterManagerClient create(String uri)
-    {
+public class ClusterManagerClient extends BaseHttpClient {
+    public static ClusterManagerClient create(String uri) {
         return new ClusterManagerClient(uri);
     }
 
-    public ClusterManagerClient(String uri)
-    {
+    public ClusterManagerClient(String uri) {
         super(uri);
     }
 
-    public void join(JoinRequest msg)
-    {
-        try
-        {
+    public void join(JoinRequest msg) {
+        try {
             URI uri = getURI(RESTConstants.Api.Cluster.Join.URI);
             HttpPut request = new HttpPut(uri);
 
             StemResponse send = send(request, msg, StemResponse.class);
 
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             throw new RuntimeException("Can't join cluster, ClusterManager response: " + e.getMessage());
         }
     }
 
-    public ClusterResponse describeCluster()
-    {
+    public ClusterResponse describeCluster() {
         URI uri = getURI(RESTConstants.Api.Cluster.Get.URI);
         HttpGet request = new HttpGet(uri);
 
         return send(request, ClusterResponse.class);
     }
 
-    public StemResponse info()
-    {
+    public StemResponse info() {
         URI uri = getURI(RESTConstants.Api.BASE);
         HttpGet request = new HttpGet(uri);
 
@@ -71,8 +63,7 @@ public class ClusterManagerClient extends BaseHttpClient
     }
 
 
-    public StemResponse initCluster(String clusterName, int vBuckets, int rf)
-    {
+    public StemResponse initCluster(String clusterName, int vBuckets, int rf) {
         URI uri = getURI(RESTConstants.Api.Cluster.Init.URI);
         HttpPut request = new HttpPut(uri);
 
@@ -82,8 +73,7 @@ public class ClusterManagerClient extends BaseHttpClient
     }
 
 
-    public StemResponse computeMapping()
-    {
+    public StemResponse computeMapping() {
         URI uri = getURI(RESTConstants.Api.Topology.Build.URI);
         return send(new HttpPost(uri), StemResponse.class);
     }

@@ -30,8 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-public class StorageNodeDescriptor
-{
+public class StorageNodeDescriptor {
 
     private static final Logger logger = LoggerFactory.getLogger(StorageNodeDescriptor.class);
     private static Config config;
@@ -39,23 +38,19 @@ public class StorageNodeDescriptor
     private static ClusterResponse.Cluster cluster;
     private static MetaStoreClient metaStoreClient;
 
-    static
-    {
+    static {
         loadConfig();
     }
 
-    public static void loadConfig()
-    {
+    public static void loadConfig() {
         URL url = getConfigUrl();
         logger.info("Loading settings from " + url);
 
         InputStream stream;
-        try
-        {
+        try {
             stream = url.openStream();
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             throw new AssertionError(e);
         }
 
@@ -64,111 +59,92 @@ public class StorageNodeDescriptor
         config = (Config) yaml.load(stream);
     }
 
-    static URL getConfigUrl()
-    {
+    static URL getConfigUrl() {
         String configPath = System.getProperty(STEM_CONFIG_PROPERTY);
         if (null == configPath)
             throw new RuntimeException("System property \"" + STEM_CONFIG_PROPERTY + "\" not set");
 
         URL url;
 
-        try
-        {
+        try {
             File file = new File(configPath);
             url = file.toURI().toURL();
             url.openStream().close();
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             throw new RuntimeException("Cannot load " + configPath);
         }
         return url;
     }
 
-    public static String getClusterManagerEndpoint()
-    {
+    public static String getClusterManagerEndpoint() {
         return config.cluster_manager_endpoint;
     }
 
-    public static String[] getBlobMountPoints()
-    {
+    public static String[] getBlobMountPoints() {
         return config.blob_mount_points;
     }
 
-    public static String getNodeListen()
-    {
+    public static String getNodeListen() {
         return config.node_listen;
     }
 
-    public static Integer getNodePort()
-    {
+    public static Integer getNodePort() {
         return config.node_port;
     }
 
-    public static Integer getFatFileSizeInMb()
-    {
+    public static Integer getFatFileSizeInMb() {
         return config.fat_file_size_in_mb;
     }
 
-    public static boolean getMarkOnAllocate()
-    {
+    public static boolean getMarkOnAllocate() {
         return config.mark_on_allocate;
     }
 
-    public static boolean getAutoAllocate()
-    {
+    public static boolean getAutoAllocate() {
         return config.auto_allocate;
     }
 
-    public static float getCompactionThreshold()
-    {
+    public static float getCompactionThreshold() {
         return config.compaction_threshold;
     }
 
-    public static Integer getMaxAllocationInMb()
-    {
+    public static Integer getMaxAllocationInMb() {
         return null == config.max_space_allocation_in_mb
                 ? 0
                 : config.max_space_allocation_in_mb;
     }
 
-    public static MetaStoreClient getMetaStoreClient()
-    {
+    public static MetaStoreClient getMetaStoreClient() {
         return metaStoreClient;
     }
 
-    public static void loadLayout() throws IOException
-    {
+    public static void loadLayout() throws IOException {
         String[] mountPoints = getBlobMountPoints();
         int vBuckets = StorageNodeDescriptor.getCluster().getvBucketsNum(); // Hard binding: Layout -> getCluster()
         Layout.getInstance().load(mountPoints, vBuckets);
     }
 
-    public static void describeCluster()
-    {
+    public static void describeCluster() {
         cluster = ClusterService.instance.describeCluster();
         logger.info("Cluster description: {}", cluster);
         metaStoreClient = new MetaStoreClient();
         metaStoreClient.start();
     }
 
-    public static void initStorageService()
-    {
+    public static void initStorageService() {
         StorageService.instance.init();
     }
 
-    public static void detachLayout()
-    {
+    public static void detachLayout() {
         Layout.getInstance().detach();
     }
 
-    public static ClusterResponse.Cluster getCluster()
-    {
+    public static ClusterResponse.Cluster getCluster() {
         return cluster;
     }
 
-    public static void joinCluster()
-    {
+    public static void joinCluster() {
         ClusterService.instance.join();
         ClusterService.instance.startDataNotificator();
     }

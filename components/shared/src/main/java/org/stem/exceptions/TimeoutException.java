@@ -16,10 +16,8 @@
 
 package org.stem.exceptions;
 
-public class TimeoutException extends RuntimeException
-{
-    public TimeoutException(String message)
-    {
+public class TimeoutException extends RuntimeException {
+    public TimeoutException(String message) {
         super(message);
     }
 }

@@ -18,25 +18,21 @@ package org.stem.exceptions;
 
 import java.net.InetSocketAddress;
 
-public class ConnectionException extends Exception
-{
+public class ConnectionException extends Exception {
     public final InetSocketAddress address;
 
-    public ConnectionException(InetSocketAddress address, String message, Throwable cause)
-    {
+    public ConnectionException(InetSocketAddress address, String message, Throwable cause) {
         super(message, cause);
         this.address = address;
     }
 
-    public ConnectionException(InetSocketAddress address, String message)
-    {
+    public ConnectionException(InetSocketAddress address, String message) {
         super(message);
         this.address = address;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return String.format("[%s] %s", address, super.getMessage());
     }
 }

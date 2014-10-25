@@ -33,27 +33,23 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
  * <p/>
  * BODY is a byte array of `length` bytes
  */
-public class PacketDecoder extends LengthFieldBasedFrameDecoder
-{
+public class PacketDecoder extends LengthFieldBasedFrameDecoder {
     private static final int MAX_FRAME_SIZE = 64 * 1024 * 1024;
     Connection connection;
 
-    public PacketDecoder()
-    {
+    public PacketDecoder() {
         super(MAX_FRAME_SIZE, 1 + 4, 4, 0, 0, true);
         connection = new Connection();
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception
-    {
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
         connection.setChannel(ctx.channel());
     }
 
 
     @Override
-    protected Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception
-    {
+    protected Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
         ByteBuf fullBody = (ByteBuf) super.decode(ctx, in);
         if (null == fullBody)
             return null;

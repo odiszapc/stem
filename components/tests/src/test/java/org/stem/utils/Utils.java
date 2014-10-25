@@ -17,12 +17,9 @@
 package org.stem.utils;
 
 
+public class Utils {
 
-public class Utils
-{
-
-    public void startStorageNode() throws Exception
-    {
+    public void startStorageNode() throws Exception {
 //        Executor exec = new DefaultExecutor();
 //        DefaultExecuteResultHandler execHandler = new DefaultExecuteResultHandler();
 //        exec.setProcessDestroyer(new ShutdownHookProcessDestroyer());

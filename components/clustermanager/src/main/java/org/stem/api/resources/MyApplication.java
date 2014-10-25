@@ -19,11 +19,9 @@ package org.stem.api.resources;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.stem.ClusterManagerLauncher;
 
-public class MyApplication extends ResourceConfig
-{
+public class MyApplication extends ResourceConfig {
 
-    public MyApplication()
-    {
+    public MyApplication() {
         // Resources.
         register(RootResource.class);
         register(TopologyResource.class);

@@ -16,6 +16,5 @@
 
 package org.stem.coordination;
 
-public class ZookeeperDao
-{
+public class ZookeeperDao {
 }

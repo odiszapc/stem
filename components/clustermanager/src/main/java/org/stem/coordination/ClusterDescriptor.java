@@ -17,41 +17,34 @@
 package org.stem.coordination;
 
 // TODO: integrate into org.stem.domain.Cluster ?
-public class ClusterDescriptor extends ZNodeAbstract
-{
+public class ClusterDescriptor extends ZNodeAbstract {
     String name;
     int vBuckets;
     int rf;
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public int getvBuckets()
-    {
+    public int getvBuckets() {
         return vBuckets;
     }
 
-    public int getRf()
-    {
+    public int getRf() {
         return rf;
     }
 
-    public ClusterDescriptor()
-    {
+    public ClusterDescriptor() {
     }
 
-    public ClusterDescriptor(String name, int vBuckets, int rf)
-    {
+    public ClusterDescriptor(String name, int vBuckets, int rf) {
         this.name = name;
         this.vBuckets = vBuckets;
         this.rf = rf;
     }
 
     @Override
-    public String nodeName()
-    {
+    public String nodeName() {
         return ZooConstants.CLUSTER_DESCRIPTOR_NAME;
     }
 }

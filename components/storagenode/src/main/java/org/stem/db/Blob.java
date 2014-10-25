@@ -34,18 +34,15 @@ public class Blob // TODO: integrate all descriptors (mountpoint, fatfile, etc)
 
     BlobDescriptor descriptor;
 
-    public Header getHeader()
-    {
+    public Header getHeader() {
         return header;
     }
 
-    public BlobDescriptor getDescriptor()
-    {
+    public BlobDescriptor getDescriptor() {
         return descriptor;
     }
 
-    public static Blob deserialize(FatFile ff, long blobHeaderOffset) throws IOException
-    {
+    public static Blob deserialize(FatFile ff, long blobHeaderOffset) throws IOException {
         FileChannel channel = ff.getReader().getChannel();
         Header header = Header.deserialize(channel, blobHeaderOffset);
         //System.out.println("deserialized: 0x" + Hex.encodeHexString(header.key) + ", offset=" + (int) blobHeaderOffset + Header.SIZE + ", valid=" + header.valid());
@@ -56,8 +53,7 @@ public class Blob // TODO: integrate all descriptors (mountpoint, fatfile, etc)
 //                int a = 1;
 //            }
 //        }
-        if (header.corrupted())
-        {
+        if (header.corrupted()) {
             return null;
         }
         //throw new IOException("Blob header is corrupted");
@@ -68,52 +64,43 @@ public class Blob // TODO: integrate all descriptors (mountpoint, fatfile, etc)
         return new Blob(header, new BlobDescriptor(ff.id, (int) blobHeaderOffset, bodyOffset), data);
     }
 
-    public static ExtendedBlobDescriptor deserializeDescriptor(FatFile ff, long blobHeaderOffset) throws IOException
-    {
+    public static ExtendedBlobDescriptor deserializeDescriptor(FatFile ff, long blobHeaderOffset) throws IOException {
         FileChannel channel = ff.getReader().getChannel();
         Header header = Header.deserialize(channel, blobHeaderOffset);
-        if (!header.valid())
-        {
+        if (!header.valid()) {
             return null;
         }
 
         return new ExtendedBlobDescriptor(header.key, header.length, ff.id, (int) blobHeaderOffset, (int) blobHeaderOffset + Header.SIZE);
     }
 
-    public Blob(Header header, byte[] data)
-    {
+    public Blob(Header header, byte[] data) {
         this.header = header;
         this.data = data;
     }
 
-    public Blob(Header header, BlobDescriptor descriptor, byte[] data)
-    {
+    public Blob(Header header, BlobDescriptor descriptor, byte[] data) {
         this(header, data);
         this.descriptor = descriptor;
     }
 
-    public int size()
-    {
+    public int size() {
         return header.length;
     }
 
-    public byte[] key()
-    {
+    public byte[] key() {
         return header.key;
     }
 
-    public byte[] data()
-    {
+    public byte[] data() {
         return data;
     }
 
-    public boolean deleted()
-    {
+    public boolean deleted() {
         return header.isDeleted();
     }
 
-    public static class Header
-    {
+    public static class Header {
         private static final int KEY_SIZE = 16;
         private static final int LENGTH_SIZE = 4;
         private static final int CRC32_SIZE = 4;
@@ -128,25 +115,20 @@ public class Blob // TODO: integrate all descriptors (mountpoint, fatfile, etc)
         private CRC32 crc = new CRC32();
 
 
-        public static Header create(byte[] keyBytes, int payloadLength, int crc32, byte deleteFlag)
-        {
+        public static Header create(byte[] keyBytes, int payloadLength, int crc32, byte deleteFlag) {
             return new Header(keyBytes, payloadLength, crc32, deleteFlag);
         }
 
-        public static Header create(byte[] keyBytes, int payloadLength, byte deleteFlag)
-        {
+        public static Header create(byte[] keyBytes, int payloadLength, byte deleteFlag) {
             return new Header(keyBytes, payloadLength, deleteFlag);
         }
 
-        public static Header create(String key, int payloadLength, byte deleteFlag) throws IOException
-        {
+        public static Header create(String key, int payloadLength, byte deleteFlag) throws IOException {
             byte[] keyBytes;
-            try
-            {
+            try {
                 keyBytes = Hex.decodeHex(key.toCharArray());
             }
-            catch (DecoderException e)
-            {
+            catch (DecoderException e) {
                 throw new IOException("Can not decode the key " + key, e);
             }
             assert keyBytes.length == 16;
@@ -154,8 +136,7 @@ public class Blob // TODO: integrate all descriptors (mountpoint, fatfile, etc)
             return new Header(keyBytes, payloadLength, deleteFlag);
         }
 
-        public Header(byte[] key, int length, int crc32, byte deleteFlag)
-        {
+        public Header(byte[] key, int length, int crc32, byte deleteFlag) {
             this.key = key;
             this.length = length;
             this.crc32 = crc32;
@@ -163,8 +144,7 @@ public class Blob // TODO: integrate all descriptors (mountpoint, fatfile, etc)
         }
 
 
-        public Header(byte[] key, int length, byte deleteFlag)
-        {
+        public Header(byte[] key, int length, byte deleteFlag) {
             this.key = key;
             this.length = length;
             this.deleteFlag = deleteFlag;
@@ -178,8 +158,7 @@ public class Blob // TODO: integrate all descriptors (mountpoint, fatfile, etc)
          *
          * @return
          */
-        public ByteBuffer serialize()
-        {
+        public ByteBuffer serialize() {
             ByteBuffer buf = ByteBuffer.allocate(SIZE);
             buf.put(key);
             buf.putInt(length);
@@ -196,11 +175,9 @@ public class Blob // TODO: integrate all descriptors (mountpoint, fatfile, etc)
             return buf;
         }
 
-        public static Header deserialize(FileChannel channel, long blobHeaderOffset) throws IOException
-        {
+        public static Header deserialize(FileChannel channel, long blobHeaderOffset) throws IOException {
             FileLock lock = channel.lock();
-            try
-            {
+            try {
                 channel.position(blobHeaderOffset);
                 ByteBuffer buf = ByteBuffer.allocate(SIZE);
                 channel.read(buf);
@@ -213,16 +190,14 @@ public class Blob // TODO: integrate all descriptors (mountpoint, fatfile, etc)
                 byte deleteFlag = buf.get();
                 return Header.create(key, length, crc32, deleteFlag);
             }
-            finally
-            {
+            finally {
                 lock.release();
             }
 
 
         }
 
-        private Integer calculateChecksum()
-        {
+        private Integer calculateChecksum() {
             ByteBuffer blobLengthBuf = ByteBuffer.allocate(LENGTH_SIZE).putInt(length);
             blobLengthBuf.position(0);
 
@@ -233,34 +208,28 @@ public class Blob // TODO: integrate all descriptors (mountpoint, fatfile, etc)
             return (int) crc.getValue();
         }
 
-        public void nextOffset()
-        {
+        public void nextOffset() {
 
         }
 
-        public boolean valid()
-        {
+        public boolean valid() {
             return calculateChecksum().equals(crc32);
         }
 
-        public boolean corrupted()
-        {
+        public boolean corrupted() {
             return !valid();
         }
 
-        public FatFileIndex.Entry toIndexEntry(int offset)
-        {
+        public FatFileIndex.Entry toIndexEntry(int offset) {
             return new FatFileIndex.Entry(key, offset, length, deleteFlag);
         }
 
 
-        public boolean isLive()
-        {
+        public boolean isLive() {
             return FatFileIndex.Entry.FLAG_LIVE == this.deleteFlag;
         }
 
-        public boolean isDeleted()
-        {
+        public boolean isDeleted() {
             return FatFileIndex.Entry.FLAG_DELETED == this.deleteFlag;
         }
     }

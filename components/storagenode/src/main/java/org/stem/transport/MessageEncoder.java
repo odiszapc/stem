@@ -22,11 +22,9 @@ import io.netty.handler.codec.MessageToMessageEncoder;
 
 import java.util.List;
 
-public class MessageEncoder extends MessageToMessageEncoder<Message>
-{
+public class MessageEncoder extends MessageToMessageEncoder<Message> {
     @Override
-    protected void encode(ChannelHandlerContext ctx, Message message, List<Object> out) throws Exception
-    {
+    protected void encode(ChannelHandlerContext ctx, Message message, List<Object> out) throws Exception {
         ByteBuf body = message.encode();
         Frame frame = Frame.create(message.type, message.getStreamId(), body, message.connection());
         out.add(frame);

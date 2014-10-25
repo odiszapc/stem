@@ -19,52 +19,43 @@ package org.stem.streaming;
 import java.util.Map;
 import java.util.UUID;
 
-public class StreamSession extends AbstractSession
-{
+public class StreamSession extends AbstractSession {
     String endpoint;
     Map<UUID, DiskMovement> movements; // session covers many disks
 
-    public StreamSession()
-    {
+    public StreamSession() {
     }
 
-    public StreamSession(String endpoint, Map<UUID, DiskMovement> movements)
-    {
+    public StreamSession(String endpoint, Map<UUID, DiskMovement> movements) {
         this.endpoint = endpoint;
         this.movements = movements;
     }
 
     @Override
-    public String nodeName()
-    {
+    public String nodeName() {
         return endpoint;
     }
 
     @Override
-    protected Object formingEntity()
-    {
+    protected Object formingEntity() {
         return this;
     }
 
     //public Map<Long, BucketStreamingPart> getDiskMovements
 
-    public String getEndpoint()
-    {
+    public String getEndpoint() {
         return endpoint;
     }
 
-    public void setEndpoint(String endpoint)
-    {
+    public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
     }
 
-    public Map<UUID, DiskMovement> getMovements()
-    {
+    public Map<UUID, DiskMovement> getMovements() {
         return movements;
     }
 
-    public void setMovements(Map<UUID, DiskMovement> movements)
-    {
+    public void setMovements(Map<UUID, DiskMovement> movements) {
         this.movements = movements;
     }
 }

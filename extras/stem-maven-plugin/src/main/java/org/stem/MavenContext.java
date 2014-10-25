@@ -23,16 +23,14 @@ import org.apache.maven.project.MavenProject;
 import java.io.File;
 import java.util.List;
 
-public class MavenContext
-{
+public class MavenContext {
     MavenProject project;
     File classesDir;
     List<Artifact> pluginDependencies;
     Artifact pluginArtifact;
     MavenSession session;
 
-    public MavenContext(MavenProject project, File classesDir, List<Artifact> pluginDependencies, Artifact pluginArtifact, MavenSession session)
-    {
+    public MavenContext(MavenProject project, File classesDir, List<Artifact> pluginDependencies, Artifact pluginArtifact, MavenSession session) {
         this.project = project;
         this.classesDir = classesDir;
         this.pluginDependencies = pluginDependencies;

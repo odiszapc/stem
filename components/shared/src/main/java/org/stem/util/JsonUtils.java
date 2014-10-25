@@ -27,97 +27,74 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
-public class JsonUtils
-{
+public class JsonUtils {
 
     private static ObjectMapper mapper = new ObjectMapper();
 
-    static
-    {
+    static {
         //jsonEncoder.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
         //jsonEncoder.configure(JsonGenerator.Feature.QUOTE_FIELD_NAMES, false);
     }
 
-    public static String encode(Object obj)
-    {
-        try
-        {
+    public static String encode(Object obj) {
+        try {
             return mapper.writeValueAsString(obj);
         }
-        catch (JsonProcessingException e)
-        {
+        catch (JsonProcessingException e) {
             throw new RuntimeException("Can't serialize object", e);
         }
     }
 
-    public static byte[] encodeBytes(Object obj)
-    {
-        try
-        {
+    public static byte[] encodeBytes(Object obj) {
+        try {
             return mapper.writeValueAsBytes(obj);
         }
-        catch (JsonProcessingException e)
-        {
+        catch (JsonProcessingException e) {
             throw new RuntimeException("Can't serialize object", e);
         }
     }
 
-    public static <T> T decode(String json, Class<T> clazz)
-    {
-        try
-        {
+    public static <T> T decode(String json, Class<T> clazz) {
+        try {
             return mapper.readValue(json, clazz);
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             throw new RuntimeException("Can't serialize object", e);
         }
     }
 
-    public static <T> T decode(byte[] json, Class<T> clazz)
-    {
-        try
-        {
+    public static <T> T decode(byte[] json, Class<T> clazz) {
+        try {
             return mapper.readValue(json, clazz);
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             throw new RuntimeException("Can't serialize object", e);
         }
     }
 
-    public static <T> T decode(InputStream jsonStream, Class<T> clazz)
-    {
-        try
-        {
+    public static <T> T decode(InputStream jsonStream, Class<T> clazz) {
+        try {
             return mapper.readValue(jsonStream, clazz);
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             throw new RuntimeException("Can't serialize object", e);
         }
     }
 
-    public static <T> T decode(InputStream jsonStream, SimpleType typeInfo)
-    {
-        try
-        {
+    public static <T> T decode(InputStream jsonStream, SimpleType typeInfo) {
+        try {
             return mapper.readValue(jsonStream, typeInfo);
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             throw new RuntimeException("Can't serialize object", e);
         }
     }
 
-    public static <T> T decode(String json, JavaType type)
-    {
-        try
-        {
+    public static <T> T decode(String json, JavaType type) {
+        try {
             return mapper.readValue(json, type);
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             throw new RuntimeException("Can't serialize object", e);
         }
     }
@@ -127,8 +104,7 @@ public class JsonUtils
 //                .moreSpecificType()
 //    }
 
-    public static JavaType constructHashOfLists(Class<?> keyClass, Class<?> listElementClass)
-    {
+    public static JavaType constructHashOfLists(Class<?> keyClass, Class<?> listElementClass) {
         JavaType keyType = mapper.getTypeFactory().uncheckedSimpleType(keyClass);
 
         CollectionType listType = mapper.getTypeFactory().

@@ -16,7 +16,6 @@
 
 package org.stem.client.v2;
 
-import com.sun.jndi.ldap.pool.Pool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.exceptions.ConnectionException;
@@ -32,8 +31,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class ConnectionPool
-{
+public class ConnectionPool {
     private static final Logger logger = LoggerFactory.getLogger(ConnectionPool.class);
 
     private static final int MAX_SIMULTANEOUS_CREATION = 1;
@@ -53,24 +51,20 @@ public class ConnectionPool
 
     private final AtomicReference<CloseFuture> closeFuture = new AtomicReference<>();
 
-    public ConnectionPool(Host host, Session session) throws ConnectionException
-    {
+    public ConnectionPool(Host host, Session session) throws ConnectionException {
         this.host = host;
         this.session = session;
 
-        this.newConnectionTask = new Runnable()
-        {
+        this.newConnectionTask = new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 addConnectionIfUnderMaximum();
                 scheduledForCreation.decrementAndGet();
             }
         };
 
         List<PooledConnection> l = new ArrayList<>(options().getStartConnectionsPerHost());
-        for (int i = 0; i < options().getStartConnectionsPerHost(); i++)
-        {
+        for (int i = 0; i < options().getStartConnectionsPerHost(); i++) {
             l.add(session.connectionFactory().open(this));
         }
         this.connections = new CopyOnWriteArrayList<>(l);
@@ -79,20 +73,16 @@ public class ConnectionPool
         logger.trace("Created connection pool to host {}", host);
     }
 
-    private PoolingOpts options()
-    {
+    private PoolingOpts options() {
         return session.configuration().getPoolingOpts();
     }
 
-    public PooledConnection borrowConnection(long timeout, TimeUnit unit) throws ConnectionException, TimeoutException
-    {
+    public PooledConnection borrowConnection(long timeout, TimeUnit unit) throws ConnectionException, TimeoutException {
         if (isClosed())
             throw new ConnectionException(host.getSocketAddress(), "Pool is down");
 
-        if (connections.isEmpty())
-        {
-            for (int i = 0; i < options().getStartConnectionsPerHost(); i++)
-            {
+        if (connections.isEmpty()) {
+            for (int i = 0; i < options().getStartConnectionsPerHost(); i++) {
                 scheduledForCreation.incrementAndGet();
                 session.blockingExecutor().submit(newConnectionTask);
             }
@@ -102,11 +92,9 @@ public class ConnectionPool
 
         int minInFlight = Integer.MAX_VALUE;
         PooledConnection leastBusy = null;
-        for (PooledConnection connection : connections)
-        {
+        for (PooledConnection connection : connections) {
             int inFlight = connection.inFlight.get();
-            if (inFlight < minInFlight)
-            {
+            if (inFlight < minInFlight) {
                 minInFlight = inFlight;
                 leastBusy = connection;
             }
@@ -115,19 +103,15 @@ public class ConnectionPool
         if (minInFlight >= options().getMaxSimultaneousRequestsPerConnection() && connections.size() < options().getMaxConnectionsPerHost())
             maybeSpawnNewConnection();
 
-        if (null == leastBusy)
-        {
+        if (null == leastBusy) {
             if (isClosed())
                 throw new ConnectionException(host.getSocketAddress(), "Pool is shutdown");
             leastBusy = waitForConnection(timeout, unit);
-        } else
-        {
-            while (true)
-            {
+        } else {
+            while (true) {
                 int inFlight = leastBusy.inFlight.get();
 
-                if (inFlight >= leastBusy.maxAvailableStreams())
-                {
+                if (inFlight >= leastBusy.maxAvailableStreams()) {
                     leastBusy = waitForConnection(timeout, unit);
                     break;
                 }
@@ -139,18 +123,14 @@ public class ConnectionPool
         return leastBusy;
     }
 
-    private PooledConnection waitForConnection(long timeout, TimeUnit unit) throws ConnectionException, TimeoutException
-    {
+    private PooledConnection waitForConnection(long timeout, TimeUnit unit) throws ConnectionException, TimeoutException {
         long start = System.nanoTime();
         long remaining = timeout;
-        do
-        {
-            try
-            {
+        do {
+            try {
                 awaitAvailableConnection(remaining, unit);
             }
-            catch (InterruptedException e)
-            {
+            catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 timeout = 0;
             }
@@ -161,20 +141,16 @@ public class ConnectionPool
             // Looking for a less busy connection
             int minInFlight = Integer.MAX_VALUE;
             PooledConnection leastBusy = null;
-            for (PooledConnection connection : connections)
-            {
+            for (PooledConnection connection : connections) {
                 int inFlight = connection.inFlight.get();
-                if (inFlight < minInFlight)
-                {
+                if (inFlight < minInFlight) {
                     minInFlight = inFlight;
                     leastBusy = connection;
                 }
             }
 
-            if (null != leastBusy)
-            {
-                while (true)
-                {
+            if (null != leastBusy) {
+                while (true) {
                     int inFlight = leastBusy.inFlight.get();
 
                     if (inFlight >= leastBusy.maxAvailableStreams())
@@ -191,10 +167,8 @@ public class ConnectionPool
         throw new TimeoutException();
     }
 
-    private boolean addConnectionIfUnderMaximum()
-    {
-        for (; ; )
-        {
+    private boolean addConnectionIfUnderMaximum() {
+        for (; ; ) {
             int opened = open.get();
             if (opened >= options().getMaxConnectionsPerHost())
                 return false;
@@ -203,20 +177,17 @@ public class ConnectionPool
                 break;
         }
 
-        if (isClosed())
-        {
+        if (isClosed()) {
             open.decrementAndGet();
             return false;
         }
 
-        try
-        {
+        try {
             connections.add(session.connectionFactory().open(this));
             signalAvailableConnection();
             return true;
         }
-        catch (ConnectionException e)
-        {
+        catch (ConnectionException e) {
             open.decrementAndGet();
             logger.debug("Connection error to {} while creating additional connection", host);
             return false;
@@ -225,10 +196,8 @@ public class ConnectionPool
     }
 
 
-    private void maybeSpawnNewConnection()
-    {
-        while (true)
-        {
+    private void maybeSpawnNewConnection() {
+        while (true) {
             int inCreation = scheduledForCreation.get();
             if (inCreation >= MAX_SIMULTANEOUS_CREATION)
                 return;
@@ -240,41 +209,34 @@ public class ConnectionPool
         session.blockingExecutor().submit(newConnectionTask);
     }
 
-    private void awaitAvailableConnection(long timeout, TimeUnit unit) throws InterruptedException
-    {
+    private void awaitAvailableConnection(long timeout, TimeUnit unit) throws InterruptedException {
         waitLock.lock();
         waiter++;
-        try
-        {
+        try {
             hasAvailableConnection.await(timeout, unit);
         }
-        finally
-        {
+        finally {
             waiter--;
             waitLock.unlock();
         }
 
     }
 
-    private void signalAvailableConnection()
-    {
+    private void signalAvailableConnection() {
         if (0 == waiter)
             return;
 
         waitLock.lock();
-        try
-        {
+        try {
             hasAvailableConnection.signal();
         }
-        finally
-        {
+        finally {
             waitLock.unlock();
         }
 
     }
 
-    public boolean isClosed()
-    {
+    public boolean isClosed() {
         return closeFuture.get() != null;
     }
 }

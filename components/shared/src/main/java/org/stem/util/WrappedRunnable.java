@@ -18,17 +18,13 @@ package org.stem.util;
 
 import com.google.common.base.Throwables;
 
-public abstract class WrappedRunnable implements Runnable
-{
+public abstract class WrappedRunnable implements Runnable {
     @Override
-    public final void run()
-    {
-        try
-        {
+    public final void run() {
+        try {
             runMayThrow();
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }

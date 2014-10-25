@@ -22,8 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class TestUtil
-{
+public class TestUtil {
     public static final String TMP_DATA_DIR_NAME = "tmp-io";
     public static final String TMP_DATA_DIR;
 
@@ -32,36 +31,30 @@ public class TestUtil
         TMP_DATA_DIR = resourceRoot + TMP_DATA_DIR_NAME;
     }
 
-    public static String temporize(String path)
-    {
+    public static String temporize(String path) {
         return TMP_DATA_DIR + File.separator + path;
     }
 
-    public static void createTempDir() throws IOException
-    {
+    public static void createTempDir() throws IOException {
         File dir = new File(TMP_DATA_DIR);
         if (!(dir.exists() && dir.isDirectory()))
             createDir(TMP_DATA_DIR);
     }
 
-    public static void cleanupTempDir() throws IOException
-    {
+    public static void cleanupTempDir() throws IOException {
         File dir = new File(TMP_DATA_DIR);
         delete(dir);
     }
 
-    public static void emptyDir(String path) throws IOException
-    {
+    public static void emptyDir(String path) throws IOException {
         File dir = new File(path);
         assert dir.isDirectory();
-        for (File file : dir.listFiles())
-        {
+        for (File file : dir.listFiles()) {
             delete(file);
         }
     }
 
-    public static String getDirInTmp(String path)
-    {
+    public static String getDirInTmp(String path) {
         String temporized = temporize(path);
         File dir = new File(temporized);
         if (!dir.exists())
@@ -69,72 +62,58 @@ public class TestUtil
         return temporized;
     }
 
-    public static String createDirInTmp(String path)
-    {
+    public static String createDirInTmp(String path) {
         String temporized = temporize(path);
         createDir(path);
         return temporized;
     }
 
-    public static void createDir(String path)
-    {
+    public static void createDir(String path) {
         File dir = new File(path);
-        if (!dir.mkdirs())
-        {
+        if (!dir.mkdirs()) {
             throw new RuntimeException("Can not create directory: " + path);
         }
     }
 
-    public static void delete(String path) throws IOException
-    {
+    public static void delete(String path) throws IOException {
         delete(new File(path));
     }
 
-    public static void delete(File file) throws IOException
-    {
+    public static void delete(File file) throws IOException {
         if (!file.exists())
             return;
 
-        if (file.isDirectory())
-        {
-            if (file.list().length == 0)
-            {
+        if (file.isDirectory()) {
+            if (file.list().length == 0) {
                 file.delete();
-            } else
-            {
+            } else {
                 String files[] = file.list();
 
-                for (String temp : files)
-                {
+                for (String temp : files) {
                     File fileDelete = new File(file, temp);
                     delete(fileDelete);
                 }
 
                 //check the directory again, if empty then delete it
-                if (file.list().length == 0)
-                {
+                if (file.list().length == 0) {
                     file.delete();
                 }
             }
-        } else
-        {
+        } else {
             file.delete();
         }
     }
 
-    public static List<byte[]> generateRandomBlobs(int from, int to)
-    {
+    public static List<byte[]> generateRandomBlobs(int from, int to) {
         int chunksCount = from + (int) (Math.random() * ((to - from) + 1));
         List<byte[]> chunks = new ArrayList<byte[]>(chunksCount);
 
         Random staticRand = new Random(System.currentTimeMillis());
 
-        for (int i = 0; i < chunksCount; i++)
-        {
+        for (int i = 0; i < chunksCount; i++) {
             int size = (i == chunksCount - 1) ? staticRand.nextInt(65536 / 2) : 65536;
             byte[] chunk = new byte[size];
-            for (int k = 0; k < chunk.length; k++)
-            {
+            for (int k = 0; k < chunk.length; k++) {
                 chunk[i] = (byte) (Math.random() * 255);
             }
             chunks.add(chunk);
@@ -142,18 +121,15 @@ public class TestUtil
         return chunks;
     }
 
-    public static List<byte[]> generateRandomBlobs(int chunksCount)
-    {
+    public static List<byte[]> generateRandomBlobs(int chunksCount) {
         List<byte[]> chunks = new ArrayList<byte[]>(chunksCount);
 
         Random staticRand = new Random(System.currentTimeMillis());
 
-        for (int i = 0; i < chunksCount; i++)
-        {
+        for (int i = 0; i < chunksCount; i++) {
             int size = (i == chunksCount - 1) ? staticRand.nextInt(65536 / 2) : 65536;
             byte[] chunk = new byte[size];
-            for (int k = 0; k < chunk.length; k++)
-            {
+            for (int k = 0; k < chunk.length; k++) {
                 chunk[i] = (byte) (Math.random() * 255);
             }
             chunks.add(chunk);
@@ -161,33 +137,27 @@ public class TestUtil
         return chunks;
     }
 
-    public static byte[] generateRandomBlob()
-    {
+    public static byte[] generateRandomBlob() {
         return generateRandomBlob(65536);
     }
 
-    public static byte[] generateRandomBlob(int size)
-    {
+    public static byte[] generateRandomBlob(int size) {
         byte[] chunk = new byte[size];
-        for (int k = 0; k < chunk.length; k++)
-        {
+        for (int k = 0; k < chunk.length; k++) {
             chunk[k] = (byte) (Math.random() * 255);
         }
         return chunk;
     }
 
-    public static byte[] generateZeroBlob(int size)
-    {
+    public static byte[] generateZeroBlob(int size) {
         byte[] chunk = new byte[size];
-        for (int k = 0; k < chunk.length; k++)
-        {
+        for (int k = 0; k < chunk.length; k++) {
             chunk[k] = (byte) 0;
         }
         return chunk;
     }
 
-    public static byte[] generateRandomChunk(int sizeFrom, int sizeTo)
-    {
+    public static byte[] generateRandomChunk(int sizeFrom, int sizeTo) {
         Random staticRand = new Random(System.currentTimeMillis());
         int size = sizeFrom + staticRand.nextInt(sizeTo - sizeFrom);
         return generateRandomBlob(size);

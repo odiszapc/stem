@@ -24,15 +24,13 @@ public class Frame // TODO: rename to Packet
     public final ByteBuf body;
     public Connection connection;
 
-    public Frame(Header header, ByteBuf body, Connection connection)
-    {
+    public Frame(Header header, ByteBuf body, Connection connection) {
         this.body = body;
         this.header = header;
         this.connection = connection;
     }
 
-    public static Frame create(ByteBuf in, Connection connection)
-    {
+    public static Frame create(ByteBuf in, Connection connection) {
         int opcode = in.readByte();
         Message.Type opType = Message.Type.fromOpcode(opcode);
         int streamId = in.readInt();
@@ -43,21 +41,18 @@ public class Frame // TODO: rename to Packet
         return new Frame(header, in, connection);
     }
 
-    public static Frame create(Message.Type type, int streamId, ByteBuf body, Connection connection)
-    {
+    public static Frame create(Message.Type type, int streamId, ByteBuf body, Connection connection) {
         Frame.Header header = new Frame.Header(type, streamId);
         return new Frame(header, body, connection);
     }
 
 
-    public static class Header
-    {
+    public static class Header {
         public static final int LENGTH = 1 + 4 + 4;
         public Message.Type opType;
         int streamId;
 
-        public Header(Message.Type opType, int streamId)
-        {
+        public Header(Message.Type opType, int streamId) {
             this.opType = opType;
             this.streamId = streamId;
         }

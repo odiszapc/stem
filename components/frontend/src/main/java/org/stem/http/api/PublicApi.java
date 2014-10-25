@@ -27,26 +27,28 @@ public class PublicApi {
 
     private HttpServer server;
 
-    public static void main(String args[]){
+    public static void main(String args[]) {
 
         try {
             PublicApi api = new PublicApi();
             api.start();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             System.err.println(e);
         }
     }
 
-    public void start(){
+    public void start() {
         server = new HttpServer();
         try {
             server.start();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void stop(){
+    public void stop() {
         if (server != null) {
             server.shutdownNow();
         }

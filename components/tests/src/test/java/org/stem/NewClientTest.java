@@ -27,9 +27,8 @@ import java.util.UUID;
 public class NewClientTest //extends IntegrationTestBase
 {
     @Test
-    public void testName() throws Exception
-    {
-        Connection connection = new Connection(
+    public void testName() throws Exception {
+        Connection connection = new Connection("connection",
                 new InetSocketAddress("127.0.0.1", 9998), new Connection.Factory(new Configuration()));
 
         WriteBlobMessage req = new WriteBlobMessage(UUID.fromString("53860d16-b255-4d28-9fb1-40d8e5e94ab0"), "key".getBytes(), "value".getBytes());

@@ -25,43 +25,34 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 // TODO: remove synchronized
-public class Layout
-{
+public class Layout {
     private static final Logger logger = LoggerFactory.getLogger(Layout.class);
     public static Layout instance;
 
-    public static synchronized Layout getInstance()
-    {
-        if (null == instance)
-        {
+    public static synchronized Layout getInstance() {
+        if (null == instance) {
             instance = new Layout();
         }
         return instance;
     }
 
-    private Layout()
-    {
+    private Layout() {
     }
 
-    public synchronized Map<UUID, MountPoint> getMountPoints()
-    {
+    public synchronized Map<UUID, MountPoint> getMountPoints() {
         return mountPoints;
     }
 
-    public synchronized MountPoint getMountPoint(UUID id)
-    {
+    public synchronized MountPoint getMountPoint(UUID id) {
         return mountPoints.get(id);
     }
 
     private Map<UUID, MountPoint> mountPoints = new ConcurrentHashMap<UUID, MountPoint>();
 
     // TODO: check for UUID duplicates
-    public void load(String[] dirPaths, int vBuckets) throws IOException
-    {
-        for (String path : dirPaths)
-        {
-            try
-            {
+    public void load(String[] dirPaths, int vBuckets) throws IOException {
+        for (String path : dirPaths) {
+            try {
                 logger.debug("Opening mount point {}", path);
 
                 DataTracker dataTracker = new DataTracker(vBuckets);
@@ -77,8 +68,7 @@ public class Layout
                 mountPoints.put(mp.uuid, mp);
 
             }
-            catch (IOException e)
-            {
+            catch (IOException e) {
                 logger.error("Can't load mount point {}", path);
                 throw e;
             }
@@ -87,10 +77,8 @@ public class Layout
 
     // TODO: summaries numbers provided by DataTracker for each mount point
 
-    public void detach()
-    {
-        for (MountPoint mountPoint : mountPoints.values())
-        {
+    public void detach() {
+        for (MountPoint mountPoint : mountPoints.values()) {
             mountPoints.remove(mountPoint.uuid);
             mountPoint.close();
         }

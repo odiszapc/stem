@@ -24,26 +24,21 @@ import org.stem.domain.StorageNode;
 
 import javax.ws.rs.core.Response;
 
-public class RestUtils
-{
-    public static Response ok()
-    {
+public class RestUtils {
+    public static Response ok() {
 
         return ok(new StemResponse());
     }
 
-    public static Response ok(StemResponse response)
-    {
+    public static Response ok(StemResponse response) {
         return Response.status(Response.Status.OK).entity(response).build();
     }
 
-    public static ClusterResponse buildClusterResponse(Cluster cluster)
-    {
+    public static ClusterResponse buildClusterResponse(Cluster cluster) {
         return buildClusterResponse(cluster, false);
     }
 
-    public static ClusterResponse buildClusterResponse(Cluster cluster, boolean attachDiskStat)
-    {
+    public static ClusterResponse buildClusterResponse(Cluster cluster, boolean attachDiskStat) {
         ClusterResponse response = new ClusterResponse();
 
         response.getCluster().setName(cluster.getName());
@@ -52,8 +47,7 @@ public class RestUtils
         response.getCluster().setUsedBytes(cluster.getUsedBytes());
         response.getCluster().setTotalBytes(cluster.getTotalBytes());
 
-        for (StorageNode node : cluster.getStorageNodes())
-        {
+        for (StorageNode node : cluster.getStorageNodes()) {
             ClusterResponse.Storage storageREST = new ClusterResponse.Storage(
                     node.getIpAddress(),
                     node.getPort(),
@@ -61,10 +55,8 @@ public class RestUtils
                     node.getTotalBytes()
             );
 
-            if (attachDiskStat)
-            {
-                for (Disk disk : node.getDisks())
-                {
+            if (attachDiskStat) {
+                for (Disk disk : node.getDisks()) {
                     ClusterResponse.Disk diskREST = new ClusterResponse.Disk();
                     diskREST.setId(disk.getId());
                     diskREST.setPath(disk.getPath());

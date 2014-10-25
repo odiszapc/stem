@@ -34,8 +34,7 @@ import java.util.List;
  * @phase pre-integration-test
  */
 public class StartStemNode
-        extends AbstractMojo
-{
+        extends AbstractMojo {
     /**
      * Location of the file.
      *
@@ -81,10 +80,8 @@ public class StartStemNode
     protected MavenSession session;
 
     public void execute()
-            throws MojoExecutionException
-    {
-        try
-        {
+            throws MojoExecutionException {
+        try {
             MavenContext mvnContext = new MavenContext(project, classesDir, pluginDependencies, pluginArtifact, session);
 
             File nodeDir = new File(stemDir, "node1");
@@ -93,8 +90,7 @@ public class StartStemNode
 
             node.start();
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             throw new MojoExecutionException(e.getLocalizedMessage(), e);
         }
 

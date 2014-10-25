@@ -30,8 +30,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.*;
 
-public class MountPoint
-{
+public class MountPoint {
     private static final Logger logger = LoggerFactory.getLogger(MountPoint.class);
     public static final String ID_FILENAME = "id";
 
@@ -44,63 +43,53 @@ public class MountPoint
 
     private DataTracker dataTracker;
 
-    public DataTracker getDataTracker()
-    {
+    public DataTracker getDataTracker() {
         return dataTracker;
     }
 
-    private MountPoint(String path, long totalSpace, DataTracker dataTracker)
-    {
+    private MountPoint(String path, long totalSpace, DataTracker dataTracker) {
         this.path = path;
         this.totalSpace = totalSpace;
         this.dataTracker = dataTracker;
     }
 
     @VisibleForTesting
-    public MountPoint(UUID uuid, String path, long totalSpace, DataTracker dataTracker)
-    {
+    public MountPoint(UUID uuid, String path, long totalSpace, DataTracker dataTracker) {
         this.uuid = uuid;
         this.path = path;
         this.totalSpace = totalSpace;
         this.dataTracker = dataTracker;
     }
 
-    public static MountPoint open(String path, DataTracker dataTracker) throws IOException
-    {
+    public static MountPoint open(String path, DataTracker dataTracker) throws IOException {
         return open(path, dataTracker, true);
     }
 
-    public static MountPoint open(String directoryPath, DataTracker dataTracker, boolean init) throws IOException
-    {
+    public static MountPoint open(String directoryPath, DataTracker dataTracker, boolean init) throws IOException {
         File dir = BBUtils.getDirectory(directoryPath);
         long capacity = dir.getFreeSpace(); // For small fat files
 
         MountPoint mountPoint = new MountPoint(directoryPath, capacity, dataTracker);
-        if (init)
-        {
+        if (init) {
             mountPoint.init();
         }
         return mountPoint;
     }
 
-    public FatFile getFatFile(int index)
-    {
+    public FatFile getFatFile(int index) {
         return fatFiles.get(index);
     }
 
-    private void init() throws IOException
-    {
+    private void init() throws IOException {
         File dir = BBUtils.getDirectory(path);
         File[] allFiles = dir.listFiles();
         File[] fatFiles = listFatFiles();
         uuid = readIdent();
 
-        if (0 != fatFiles.length)
-        {
+        if (0 != fatFiles.length) {
             if (null == uuid)
                 throw new IOException("Ident file not found for mount point " + path);
-        } else
-        {
+        } else {
             assert null != allFiles;
             if (0 != allFiles.length)
                 throw new IOException("Mount point " + path + " is not empty");
@@ -113,8 +102,7 @@ public class MountPoint
                     ? StorageNodeDescriptor.getMaxAllocationInMb() * 1024 * 1024
                     : totalSpace;
 
-            if (StorageNodeDescriptor.getAutoAllocate())
-            {
+            if (StorageNodeDescriptor.getAutoAllocate()) {
                 FatFileAllocator.allocateDirectory(
                         path,
                         StorageNodeDescriptor.getFatFileSizeInMb(),
@@ -126,8 +114,7 @@ public class MountPoint
         // TODO: open descriptors
         // TODO: check fat file size with pre-configured
         fatFiles = listFatFiles();
-        for (File fatFile : fatFiles)
-        {
+        for (File fatFile : fatFiles) {
             logger.info("Opening {}", fatFile.getAbsolutePath());
             FatFile file = FatFile.open(fatFile.getAbsolutePath(), dataTracker);
             this.fatFiles.put(file.id, file);
@@ -137,33 +124,27 @@ public class MountPoint
         this.usedSpace = findBlankOrActive().size() * StorageNodeDescriptor.getFatFileSizeInMb();
     }
 
-    private void writeIdent() throws IOException
-    {
+    private void writeIdent() throws IOException {
         assert null != uuid;
         String idFilePath = path + File.separator + ID_FILENAME;
         FileUtils.writeStringToFile(new File(idFilePath), uuid.toString());
     }
 
-    private UUID generateIdent()
-    {
+    private UUID generateIdent() {
         return UUID.randomUUID();
     }
 
-    private File[] listFatFiles() throws IOException
-    {
+    private File[] listFatFiles() throws IOException {
         File dir = BBUtils.getDirectory(path);
-        return dir.listFiles(new FilenameFilter()
-        {
+        return dir.listFiles(new FilenameFilter() {
             @Override
-            public boolean accept(File dir, String name)
-            {
+            public boolean accept(File dir, String name) {
                 return name.matches(FatFileAllocator.FAT_FILE_NAME_REGEX);
             }
         });
     }
 
-    private UUID readIdent() throws IOException
-    {
+    private UUID readIdent() throws IOException {
         String idFilePath = path + File.separator + ID_FILENAME;
         File file = new File(idFilePath);
         if (!file.exists())
@@ -173,21 +154,16 @@ public class MountPoint
         return UUID.fromString(uuidString);
     }
 
-    public void close()
-    {
-        for (FatFile fatFile : fatFiles.values())
-        {
+    public void close() {
+        for (FatFile fatFile : fatFiles.values()) {
             fatFile.close();
         }
     }
 
-    public Collection<FatFile> findBlankOrActive()
-    {
-        Collection<FatFile> collection = CollectionUtils.select(fatFiles.values(), new Predicate<FatFile>()
-        {
+    public Collection<FatFile> findBlankOrActive() {
+        Collection<FatFile> collection = CollectionUtils.select(fatFiles.values(), new Predicate<FatFile>() {
             @Override
-            public boolean evaluate(FatFile file)
-            {
+            public boolean evaluate(FatFile file) {
                 return file.isBlank() || file.isActive();
             }
         });
@@ -195,16 +171,13 @@ public class MountPoint
         List<FatFile> sortedList = new ArrayList<FatFile>(collection);
 
         // Sort, ACTIVE files is placed first
-        Collections.sort(sortedList, new Comparator<FatFile>()
-        {
+        Collections.sort(sortedList, new Comparator<FatFile>() {
             @Override
-            public int compare(FatFile f1, FatFile f2)
-            {
+            public int compare(FatFile f1, FatFile f2) {
                 if (f1.getState() == f2.getState())
                     return f1.id.compareTo(f2.id);
 
-                else
-                {
+                else {
                     Integer state1 = f1.getState().ordinal();
                     Integer state2 = f2.getState().ordinal();
                     return state1.compareTo(state2);
@@ -215,13 +188,10 @@ public class MountPoint
         return sortedList;
     }
 
-    public Collection<FatFile> findFullOrActive()
-    {
-        Collection<FatFile> collection = CollectionUtils.select(fatFiles.values(), new Predicate<FatFile>()
-        {
+    public Collection<FatFile> findFullOrActive() {
+        Collection<FatFile> collection = CollectionUtils.select(fatFiles.values(), new Predicate<FatFile>() {
             @Override
-            public boolean evaluate(FatFile file)
-            {
+            public boolean evaluate(FatFile file) {
                 return file.isFull() || file.isActive();
             }
         });
@@ -229,11 +199,9 @@ public class MountPoint
         List<FatFile> sortedList = new ArrayList<FatFile>(collection);
 
         // Sort, ACTIVE files is placed first
-        Collections.sort(sortedList, new Comparator<FatFile>()
-        {
+        Collections.sort(sortedList, new Comparator<FatFile>() {
             @Override
-            public int compare(FatFile f1, FatFile f2)
-            {
+            public int compare(FatFile f1, FatFile f2) {
                 return f1.id.compareTo(f2.id);
             }
         });
@@ -241,29 +209,23 @@ public class MountPoint
         return sortedList;
     }
 
-    public Collection<FatFile> findFull()
-    {
-        Collection<FatFile> collection = CollectionUtils.select(fatFiles.values(), new Predicate<FatFile>()
-        {
+    public Collection<FatFile> findFull() {
+        Collection<FatFile> collection = CollectionUtils.select(fatFiles.values(), new Predicate<FatFile>() {
             @Override
-            public boolean evaluate(FatFile file)
-            {
+            public boolean evaluate(FatFile file) {
                 return file.isFull();
             }
         });
 
         List<FatFile> sortedList = new ArrayList<FatFile>(collection);
 
-        Collections.sort(sortedList, new Comparator<FatFile>()
-        {
+        Collections.sort(sortedList, new Comparator<FatFile>() {
             @Override
-            public int compare(FatFile f1, FatFile f2)
-            {
+            public int compare(FatFile f1, FatFile f2) {
                 if (f1.getState() == f2.getState())
                     return f1.id.compareTo(f2.id);
 
-                else
-                {
+                else {
                     Integer state1 = f1.getState().ordinal();
                     Integer state2 = f2.getState().ordinal();
                     return state1.compareTo(state2);
@@ -274,37 +236,30 @@ public class MountPoint
         return sortedList;
     }
 
-    public Collection<FatFile> findReadyForCompaction()
-    {
+    public Collection<FatFile> findReadyForCompaction() {
         Collection<FatFile> full = findFull();
 
-        return CollectionUtils.select(full, new Predicate<FatFile>()
-        {
+        return CollectionUtils.select(full, new Predicate<FatFile>() {
             @Override
-            public boolean evaluate(FatFile file)
-            {
+            public boolean evaluate(FatFile file) {
                 return null != dataTracker.deletesPerFFCountMap.get(file.id);
             }
         });
     }
 
-    public long getTotalSizeInBytes()
-    {
+    public long getTotalSizeInBytes() {
         return dataTracker.getTotalSizeInBytes();
     }
 
-    public long getLiveSizeInBytes()
-    {
+    public long getLiveSizeInBytes() {
         return dataTracker.getLiveSizeInBytes();
     }
 
-    public long getAllocatedSizeInBytes()
-    {
+    public long getAllocatedSizeInBytes() {
         return dataTracker.getAllocatedSizeInBytes();
     }
 
-    public String getPath()
-    {
+    public String getPath() {
         return path;
     }
 }

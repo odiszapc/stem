@@ -24,19 +24,16 @@ import org.stem.util.BBUtils;
 
 import java.util.UUID;
 
-public class ReadBlobMessage extends Message.Request
-{
+public class ReadBlobMessage extends Message.Request {
     public UUID disk;
     public Integer fatFileIndex;
     public Integer offset;
     public Integer length;
 
-    public static final Codec<ReadBlobMessage> codec = new Codec<ReadBlobMessage>()
-    {
+    public static final Codec<ReadBlobMessage> codec = new Codec<ReadBlobMessage>() {
 
         @Override
-        public ByteBuf encode(ReadBlobMessage op)
-        {
+        public ByteBuf encode(ReadBlobMessage op) {
             ByteBuf buf = Unpooled.buffer();
             BBUtils.writeString(op.disk.toString(), buf);
             buf.writeInt(op.fatFileIndex);
@@ -46,8 +43,7 @@ public class ReadBlobMessage extends Message.Request
         }
 
         @Override
-        public ReadBlobMessage decode(ByteBuf buf)
-        {
+        public ReadBlobMessage decode(ByteBuf buf) {
             UUID diskId = UUID.fromString(BBUtils.readString(buf));
             int fatFileIndex = buf.readInt();
             int offset = buf.readInt();
@@ -57,8 +53,7 @@ public class ReadBlobMessage extends Message.Request
         }
     };
 
-    public ReadBlobMessage(UUID disk, int fatFileIndex, int offset, int length)
-    {
+    public ReadBlobMessage(UUID disk, int fatFileIndex, int offset, int length) {
         super(Type.READ_BLOB);
         this.disk = disk;
         this.fatFileIndex = fatFileIndex;
@@ -68,23 +63,19 @@ public class ReadBlobMessage extends Message.Request
 
 
     @Override
-    public ByteBuf encode()
-    {
+    public ByteBuf encode() {
         return codec.encode(this);
     }
 
     @Override
-    public Response execute()
-    {
-        try
-        {
+    public Response execute() {
+        try {
             byte[] data = StorageService.instance.read(this);
 
             return new ResultMessage.ReadBlob(data);
 
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             return ErrorMessage.fromException(e);
         }
     }

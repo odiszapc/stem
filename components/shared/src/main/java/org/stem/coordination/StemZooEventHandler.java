@@ -21,68 +21,52 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.util.JsonUtils;
 
-public abstract class StemZooEventHandler<T>
-{
+public abstract class StemZooEventHandler<T> {
     private static final Logger logger = LoggerFactory.getLogger(StemZooEventHandler.class);
     private ZNodeEventHandler handler;
 
-    public ZNodeEventHandler getHandler()
-    {
+    public ZNodeEventHandler getHandler() {
         return handler;
     }
 
-    protected StemZooEventHandler()
-    {
-        handler = new ZNodeEventHandler()
-        {
+    protected StemZooEventHandler() {
+        handler = new ZNodeEventHandler() {
             @Override
-            public void onChildAdded(String path, byte[] data, Stat stat)
-            {
-                try
-                {
+            public void onChildAdded(String path, byte[] data, Stat stat) {
+                try {
                     StemZooEventHandler.this.onChildAdded(decode(data));
                 }
-                catch (Exception e)
-                {
+                catch (Exception e) {
                     onError(e);
                 }
             }
 
             @Override
-            public void onChildUpdated(String path, byte[] data, Stat stat)
-            {
-                try
-                {
+            public void onChildUpdated(String path, byte[] data, Stat stat) {
+                try {
                     StemZooEventHandler.this.onChildUpdated(decode(data));
                 }
-                catch (Exception e)
-                {
+                catch (Exception e) {
                     onError(e);
                 }
             }
 
             @Override
-            public void onChildRemoved(String path, byte[] data, Stat stat)
-            {
-                try
-                {
+            public void onChildRemoved(String path, byte[] data, Stat stat) {
+                try {
                     StemZooEventHandler.this.onChildRemoved(decode(data));
                 }
-                catch (Exception e)
-                {
+                catch (Exception e) {
                     onError(e);
                 }
             }
 
             @Override
-            public void onNodeUpdated(String path, byte[] data, Stat stat)
-            {
-                try
-                {
+            public void onNodeUpdated(String path, byte[] data, Stat stat) {
+                try {
                     StemZooEventHandler.this.onNodeUpdated(decode(data));
                 }
-                catch (Exception e)
-                {
+                catch (Exception e) {
                     onError(e);
                 }
             }
@@ -91,29 +75,23 @@ public abstract class StemZooEventHandler<T>
         };
     }
 
-    private T decode(byte[] data)
-    {
+    private T decode(byte[] data) {
         return JsonUtils.decode(data, getBaseClass());
     }
 
-    protected void onChildAdded(T object)
-    {
+    protected void onChildAdded(T object) {
     }
 
-    protected void onChildUpdated(T object)
-    {
+    protected void onChildUpdated(T object) {
     }
 
-    protected void onChildRemoved(T object)
-    {
+    protected void onChildRemoved(T object) {
     }
 
-    protected void onNodeUpdated(T object)
-    {
+    protected void onNodeUpdated(T object) {
     }
 
-    protected void onError(Throwable t)
-    {
+    protected void onError(Throwable t) {
         // TODO: log or throw?
         logger.error("Error while processing event from Zookeeper", t);
     }

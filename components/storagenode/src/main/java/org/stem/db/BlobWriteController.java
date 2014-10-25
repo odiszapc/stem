@@ -16,6 +16,5 @@
 
 package org.stem.db;
 
-public class BlobWriteController
-{
+public class BlobWriteController {
 }

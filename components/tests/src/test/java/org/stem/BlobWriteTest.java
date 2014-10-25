@@ -23,19 +23,16 @@ import org.stem.db.FatFile;
 import org.stem.db.FatFileAllocator;
 import org.stem.utils.TestUtil;
 
-public class BlobWriteTest extends IntegrationTestBase
-{
+public class BlobWriteTest extends IntegrationTestBase {
     @Test
-    public void testWriteSingleBlob() throws Exception
-    {
+    public void testWriteSingleBlob() throws Exception {
         String path = TestUtil.temporize("stem-ff-000001.db");
         FatFileAllocator.allocateFile(path, 4);
 
         FatFile fatFile = FatFile.open(path, new DataTracker(10));
         fatFile.writeActiveMarker();
 
-        while (fatFile.hasSpaceFor(65536))
-        {
+        while (fatFile.hasSpaceFor(65536)) {
             byte[] blob = createBlob(65536);
             String key = DigestUtils.md5Hex(blob);
 
@@ -45,11 +42,9 @@ public class BlobWriteTest extends IntegrationTestBase
         fatFile.writeFullMarker();
     }
 
-    private byte[] createBlob(int size)
-    {
+    private byte[] createBlob(int size) {
         byte[] blob = new byte[size];
-        for (int i = 0; i < size; i++)
-        {
+        for (int i = 0; i < size; i++) {
             blob[i] = 1;
         }
         return blob;

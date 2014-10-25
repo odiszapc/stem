@@ -48,8 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class IntegrationTestBase
-{
+public class IntegrationTestBase {
     ClusterManagerLauncher clusterManagerInstance;
     private TestingServer zookeeperInstance;
     protected ClusterManagerClient clusterManagerClient;
@@ -57,8 +56,7 @@ public class IntegrationTestBase
     protected StemClient client = new StemClient();
 
     @Before
-    public void setUp() throws IOException
-    {
+    public void setUp() throws IOException {
         TestUtil.cleanupTempDir();
         TestUtil.createTempDir();
 
@@ -80,8 +78,7 @@ public class IntegrationTestBase
 
 
     @After
-    public void tearDown() throws Exception
-    {
+    public void tearDown() throws Exception {
         stopStorageNodeEmbedded();
         cleanupDataDirectories();
 
@@ -92,13 +89,11 @@ public class IntegrationTestBase
     }
 
     @VisibleForTesting
-    protected void shoutDownZookeeperClients()
-    {
+    protected void shoutDownZookeeperClients() {
         ZookeeperClientFactory.closeAll();
     }
 
-    private void loadSchema()
-    {
+    private void loadSchema() {
         cassandraTestSession.execute("DROP KEYSPACE IF EXISTS stem");
         InputStream inputStream = ClassLoader.getSystemResourceAsStream("schema.cql");
         if (null == inputStream)
@@ -106,155 +101,122 @@ public class IntegrationTestBase
         List<String> lines = getLines(inputStream);
         List<String> statements = linesToCQLStatements(lines);
 
-        for (String statement : statements)
-        {
+        for (String statement : statements) {
             cassandraTestSession.execute(statement);
         }
     }
 
-    private List<String> linesToCQLStatements(List<String> lines)
-    {
+    private List<String> linesToCQLStatements(List<String> lines) {
         List<String> statements = new ArrayList<String>();
         StringBuilder statementUnderConstruction = new StringBuilder();
-        for (String line : lines)
-        {
+        for (String line : lines) {
             statementUnderConstruction.append(line.trim());
-            if (endOfStatementLine(line))
-            {
+            if (endOfStatementLine(line)) {
                 statements.add(statementUnderConstruction.toString());
                 statementUnderConstruction.setLength(0);
-            } else
-            {
+            } else {
                 statementUnderConstruction.append(" ");
             }
         }
         return statements;
     }
 
-    private boolean endOfStatementLine(String line)
-    {
+    private boolean endOfStatementLine(String line) {
         return line.endsWith(";");
     }
 
     // TODO: extract CQL statements read logic to separate class
-    public List<String> getLines(InputStream inputStream)
-    {
+    public List<String> getLines(InputStream inputStream) {
         final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
         BufferedReader br = new BufferedReader(inputStreamReader);
         String line;
         List<String> cqlQueries = Lists.newArrayList();
-        try
-        {
-            while ((line = br.readLine()) != null)
-            {
-                if (StringUtils.isNotBlank(line))
-                {
+        try {
+            while ((line = br.readLine()) != null) {
+                if (StringUtils.isNotBlank(line)) {
                     cqlQueries.add(line);
                 }
             }
             br.close();
             return cqlQueries;
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    protected void initCluster()
-    {
+    protected void initCluster() {
         clusterManagerClient.initCluster(getClusterName(), getvBucketsNum(), getRF());
     }
 
-    protected String getClusterName()
-    {
+    protected String getClusterName() {
         return "Test cluster";
     }
 
-    protected int getvBucketsNum()
-    {
+    protected int getvBucketsNum() {
         return 1000;
     }
 
-    protected int getRF()
-    {
+    protected int getRF() {
         return 1;
     }
 
-    protected void waitForClusterManager()
-    {
-        try
-        {
+    protected void waitForClusterManager() {
+        try {
             boolean connected = false;
             int maxCount = 5;
             int count = 0;
-            while (!connected && count < maxCount)
-            {
+            while (!connected && count < maxCount) {
                 connected = tryClusterManager();
-                if (!connected)
-                {
+                if (!connected) {
                     Thread.sleep(500);
                     count++;
                 }
             }
-            if (count >= maxCount)
-            {
+            if (count >= maxCount) {
                 throw new RuntimeException("Timed out waiting for Blob Manager to start");
             }
         }
-        catch (InterruptedException e)
-        {
+        catch (InterruptedException e) {
             throw new RuntimeException("Error while waiting for Blob manager instance to be started", e);
         }
     }
 
-    private boolean tryClusterManager() throws InterruptedException
-    {
-        try
-        {
+    private boolean tryClusterManager() throws InterruptedException {
+        try {
             StemResponse info = ClusterManagerClient
                     .create("http://localhost:9997")
                     .info();
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             return false;
         }
         return true;
     }
 
-    protected void startZookeeperEmbedded()
-    {
-        try
-        {
+    protected void startZookeeperEmbedded() {
+        try {
             zookeeperInstance = new TestingServer(2181);
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             throw new RuntimeException("Cant start Zookeeper instance", e);
         }
     }
 
 
-    protected void stopZookeeperEmbedded()
-    {
-        try
-        {
+    protected void stopZookeeperEmbedded() {
+        try {
             zookeeperInstance.close();
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             throw new RuntimeException("Cant stop Zookeeper instance", e);
         }
     }
 
-    protected void startClusterManagerEmbedded()
-    {
-        Thread clusterManagerThread = new Thread()
-        {
+    protected void startClusterManagerEmbedded() {
+        Thread clusterManagerThread = new Thread() {
             @Override
-            public void run()
-            {
+            public void run() {
                 clusterManagerInstance = new ClusterManagerLauncher();
                 clusterManagerInstance.start();
             }
@@ -262,19 +224,16 @@ public class IntegrationTestBase
         clusterManagerThread.start();
     }
 
-    protected void restartClusterManagerEmbedded()
-    {
+    protected void restartClusterManagerEmbedded() {
         stopClusterManagerEmbedded();
         startClusterManagerEmbedded();
     }
 
-    protected void stopClusterManagerEmbedded()
-    {
+    protected void stopClusterManagerEmbedded() {
         clusterManagerInstance.stop();
     }
 
-    private void startCassandraEmbedded()
-    {
+    private void startCassandraEmbedded() {
         cassandraTestSession = CassandraEmbeddedServerBuilder
                 .noEntityPackages()
                 .withClusterName("Stem Meta Store")
@@ -286,61 +245,50 @@ public class IntegrationTestBase
         //cassandraTestSession.execute("");
     }
 
-    private void stopCassandraEmbedded()
-    {
+    private void stopCassandraEmbedded() {
         cassandraTestSession.close();
     }
 
-    private void cleanupDataDirectories() throws IOException
-    {
+    private void cleanupDataDirectories() throws IOException {
         String[] paths = StorageNodeDescriptor.getBlobMountPoints();
-        for (String path : paths)
-        {
+        for (String path : paths) {
             TestUtil.emptyDir(path);
         }
 
         //TestUtil.emptyDir(path);
     }
 
-    private void startStorageNodeEmbedded()
-    {
+    private void startStorageNodeEmbedded() {
         StorageNodeDescriptor.loadConfig(); // must be called explicitly
         StemDaemon.instance.start();
     }
 
-    private void stopStorageNodeEmbedded()
-    {
+    private void stopStorageNodeEmbedded() {
         StemDaemon.instance.stop();
     }
 
-    private String setupEnvironment()
-    {
+    private String setupEnvironment() {
         return System.setProperty("stem.config", getStorageNodeConfigPath());
     }
 
     @AfterClass
-    public static void afterClass() throws IOException
-    {
+    public static void afterClass() throws IOException {
         TestUtil.cleanupTempDir();
     }
 
-    protected static UUID getFirstDiskUUID()
-    {
+    protected static UUID getFirstDiskUUID() {
         return Layout.getInstance().getMountPoints().keySet().iterator().next();
     }
 
-    protected static MountPoint getFirstDisk()
-    {
+    protected static MountPoint getFirstDisk() {
         return Layout.getInstance().getMountPoints().get(getFirstDiskUUID());
     }
 
-    protected static int getWriteCandidates()
-    {
+    protected static int getWriteCandidates() {
         return StorageService.instance.getWriteCandidates(getFirstDiskUUID());
     }
 
-    protected WriteBlobMessage getRandomWriteMessage()
-    {
+    protected WriteBlobMessage getRandomWriteMessage() {
         byte[] blob = TestUtil.generateRandomBlob(65536);
         byte[] key = DigestUtils.md5(blob);
         UUID disk = getFirstDiskUUID();
@@ -353,11 +301,9 @@ public class IntegrationTestBase
         return op;
     }
 
-    protected List<byte[]> generateRandomLoad(int blobsNum)
-    {
+    protected List<byte[]> generateRandomLoad(int blobsNum) {
         List<byte[]> generatedKeys = new ArrayList<byte[]>(blobsNum);
-        for (int i = 0; i < blobsNum; i++)
-        {
+        for (int i = 0; i < blobsNum; i++) {
             byte[] data = TestUtil.generateRandomBlob(65536);
             byte[] key = DigestUtils.md5(data);
 
@@ -369,11 +315,9 @@ public class IntegrationTestBase
         return generatedKeys;
     }
 
-    protected List<byte[]> generateStaticLoad(int blobsNum)
-    {
+    protected List<byte[]> generateStaticLoad(int blobsNum) {
         List<byte[]> generatedKeys = new ArrayList<byte[]>(blobsNum);
-        for (int i = 0; i < blobsNum; i++)
-        {
+        for (int i = 0; i < blobsNum; i++) {
             byte[] data = TestUtil.generateZeroBlob(65536);
             data[i] = 1;
             byte[] key = DigestUtils.md5(data);
@@ -386,8 +330,7 @@ public class IntegrationTestBase
         return generatedKeys;
     }
 
-    protected String getStorageNodeConfigPath()
-    {
+    protected String getStorageNodeConfigPath() {
         String tmpDir = TestUtil.getDirInTmp("storagenode");
         String tmpDataDir = TestUtil.getDirInTmp("storagenode/data");
         YamlConfigurator yamlConfigurator = YamlConfigurator.open(getStorageNodeConfigName());
@@ -403,13 +346,11 @@ public class IntegrationTestBase
                 .saveTo(tmpDir);
     }
 
-    protected void customStorageNodeConfiguration(YamlConfigurator yamlConfigurator)
-    {
+    protected void customStorageNodeConfiguration(YamlConfigurator yamlConfigurator) {
 
     }
 
-    protected String getStorageNodeConfigName()
-    {
+    protected String getStorageNodeConfigName() {
         return "stem.yaml";
     }
 }

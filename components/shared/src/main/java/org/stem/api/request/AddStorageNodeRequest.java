@@ -18,83 +18,67 @@ package org.stem.api.request;
 
 import java.util.List;
 
-public class AddStorageNodeRequest extends ClusterManagerRequest
-{
+public class AddStorageNodeRequest extends ClusterManagerRequest {
     String ipAddress;
     int port;
     List<Disk> disks;
 
-    public AddStorageNodeRequest()
-    {
+    public AddStorageNodeRequest() {
     }
 
-    public String getIpAddress()
-    {
+    public String getIpAddress() {
         return ipAddress;
     }
 
-    public void setIpAddress(String ipAddress)
-    {
+    public void setIpAddress(String ipAddress) {
         this.ipAddress = ipAddress;
     }
 
-    public int getPort()
-    {
+    public int getPort() {
         return port;
     }
 
-    public void setPort(int port)
-    {
+    public void setPort(int port) {
         this.port = port;
     }
 
-    public List<Disk> getDisks()
-    {
+    public List<Disk> getDisks() {
         return disks;
     }
 
-    public void setDisks(List<Disk> disks)
-    {
+    public void setDisks(List<Disk> disks) {
         this.disks = disks;
     }
 
-    public static class Disk
-    {
+    public static class Disk {
         String id;
         long usedBytes;
         long totalBytes;
 
-        public Disk()
-        {
+        public Disk() {
         }
 
-        public String getId()
-        {
+        public String getId() {
             return id;
         }
 
-        public void setId(String id)
-        {
+        public void setId(String id) {
             this.id = id;
         }
 
-        public long getUsedBytes()
-        {
+        public long getUsedBytes() {
             return usedBytes;
         }
 
-        public void setUsedBytes(long usedBytes)
-        {
+        public void setUsedBytes(long usedBytes) {
             this.usedBytes = usedBytes;
         }
 
-        public long getTotalBytes()
-        {
+        public long getTotalBytes() {
             return totalBytes;
         }
 
-        public void setTotalBytes(long totalBytes)
-        {
+        public void setTotalBytes(long totalBytes) {
             this.totalBytes = totalBytes;
         }
     }

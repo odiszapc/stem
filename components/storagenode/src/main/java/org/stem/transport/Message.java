@@ -20,19 +20,16 @@ import io.netty.buffer.ByteBuf;
 import org.stem.transport.ops.*;
 
 
-abstract public class Message
-{
+abstract public class Message {
     public final Type type;
     private Connection connection;
     private volatile int streamId;
 
-    public enum Direction
-    {
+    public enum Direction {
         REQUEST, RESPONSE
     }
 
-    public enum Type
-    {
+    public enum Type {
         RESULT(0, Direction.RESPONSE, ResultMessage.codec),
         ERROR(1, Direction.RESPONSE, ErrorMessage.codec),
         READ_BLOB(2, Direction.REQUEST, ReadBlobMessage.codec),
@@ -44,8 +41,7 @@ abstract public class Message
         public final Direction direction;
         public final Codec<?> codec;
 
-        Type(int opcode, Direction direction, Codec codec)
-        {
+        Type(int opcode, Direction direction, Codec codec) {
             this.opcode = opcode;
             this.direction = direction;
             this.codec = codec;
@@ -53,35 +49,29 @@ abstract public class Message
 
         private static Type[] opcodes;
 
-        static
-        {
+        static {
             int maxOpcode = -1;
             for (Type type : Type.values())
                 maxOpcode = Math.max(type.opcode, maxOpcode);
             opcodes = new Type[maxOpcode + 1];
-            for (Type type : Type.values())
-            {
+            for (Type type : Type.values()) {
                 opcodes[type.opcode] = type;
             }
         }
 
-        public static Type fromOpcode(int opcode)
-        {
+        public static Type fromOpcode(int opcode) {
             return opcodes[opcode];
         }
     }
 
-    public interface Codec<O extends Message>
-    {
+    public interface Codec<O extends Message> {
         ByteBuf encode(O op);
 
         O decode(ByteBuf buf);
     }
 
-    public static abstract class Request extends Message
-    {
-        protected Request(Type type)
-        {
+    public static abstract class Request extends Message {
+        protected Request(Type type) {
             super(type);
             assert type.direction == Direction.REQUEST;
         }
@@ -89,49 +79,40 @@ abstract public class Message
         abstract public Response execute();
     }
 
-    public static abstract class Response extends Message
-    {
+    public static abstract class Response extends Message {
 
-        protected Response(Type type)
-        {
+        protected Response(Type type) {
             super(type);
             assert type.direction == Direction.RESPONSE;
         }
 
-        public boolean isFailed()
-        {
+        public boolean isFailed() {
             return this instanceof ErrorMessage;
         }
 
-        public boolean isSuccess()
-        {
+        public boolean isSuccess() {
             return !isFailed();
         }
     }
 
-    protected Message(Type type)
-    {
+    protected Message(Type type) {
         this.type = type;
     }
 
-    public void attach(Connection connection)
-    {
+    public void attach(Connection connection) {
         this.connection = connection;
     }
 
-    public Connection connection()
-    {
+    public Connection connection() {
         return connection;
     }
 
-    public Message setStreamId(int streamId)
-    {
+    public Message setStreamId(int streamId) {
         this.streamId = streamId;
         return this;
     }
 
-    public int getStreamId()
-    {
+    public int getStreamId() {
         return streamId;
     }
 

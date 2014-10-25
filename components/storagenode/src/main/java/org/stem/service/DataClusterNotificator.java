@@ -23,30 +23,24 @@ import org.stem.db.Layout;
 import org.stem.db.MountPoint;
 import org.stem.db.StorageNodeDescriptor;
 
-public class DataClusterNotificator implements Runnable
-{
+public class DataClusterNotificator implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(DataClusterNotificator.class);
 
     ZookeeperClient client; // TODO: the client instance must be a singleton ???
 
 
-    public DataClusterNotificator()
-    {
+    public DataClusterNotificator() {
         client = ZookeeperClientFactory.create();
         client.start();
     }
 
     @Override
-    public void run()
-    {
-        while (true)
-        {
-            try
-            {
+    public void run() {
+        while (true) {
+            try {
                 doWork();
             }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 logger.warn("Error occurred during notify Zookeeper", e);
             }
 
@@ -54,12 +48,10 @@ public class DataClusterNotificator implements Runnable
         }
     }
 
-    private void doWork() throws Exception
-    {
+    private void doWork() throws Exception {
         StorageStat stat = new StorageStat(StorageNodeDescriptor.getNodeListen(), StorageNodeDescriptor.getNodePort());
 
-        for (MountPoint mp : Layout.getInstance().getMountPoints().values())
-        {
+        for (MountPoint mp : Layout.getInstance().getMountPoints().values()) {
             DiskStat disk = new DiskStat(mp.uuid.toString());
             disk.setPath(mp.getPath());
             disk.setTotalBytes(mp.getAllocatedSizeInBytes());
@@ -77,16 +69,13 @@ public class DataClusterNotificator implements Runnable
         client.updateNode(ZooConstants.CLUSTER, stat);
     }
 
-    private void sleep()
-    {
-        try
-        {
+    private void sleep() {
+        try {
 
 
             Thread.sleep(1000);
         }
-        catch (InterruptedException e)
-        {
+        catch (InterruptedException e) {
             e.printStackTrace();
         }
     }

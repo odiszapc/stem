@@ -16,8 +16,7 @@
 
 package org.stem.coordination;
 
-public class ZooConstants
-{
+public class ZooConstants {
     // TODO: think about ZNodes paths
     private static final String STEM_ROOT = "/stem";
     private static final String CLUSTER_MANAGER = STEM_ROOT + "/clustermanager";

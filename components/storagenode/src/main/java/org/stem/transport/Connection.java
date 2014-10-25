@@ -19,17 +19,14 @@ package org.stem.transport;
 
 import io.netty.channel.Channel;
 
-public class Connection
-{
+public class Connection {
     public Channel channel;
 
-    public void setChannel(Channel channel)
-    {
+    public void setChannel(Channel channel) {
         this.channel = channel;
     }
 
-    public Channel channel()
-    {
+    public Channel channel() {
         return channel;
     }
 }

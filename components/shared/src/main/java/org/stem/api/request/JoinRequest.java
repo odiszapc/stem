@@ -20,88 +20,72 @@ package org.stem.api.request;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JoinRequest extends ClusterManagerRequest
-{
+public class JoinRequest extends ClusterManagerRequest {
     private int port;
     private List<String> ipAddresses = new ArrayList<String>();
     private String host;
     private List<Disk> disks = new ArrayList<Disk>();
 
-    public List<String> getIpAddresses()
-    {
+    public List<String> getIpAddresses() {
         return ipAddresses;
     }
 
-    public List<Disk> getDisks()
-    {
+    public List<Disk> getDisks() {
         return disks;
     }
 
-    public String getHost()
-    {
+    public String getHost() {
         return host;
     }
 
-    public void setHost(String host)
-    {
+    public void setHost(String host) {
         this.host = host;
     }
 
-    public int getPort()
-    {
+    public int getPort() {
         return port;
     }
 
-    public void setPort(int port)
-    {
+    public void setPort(int port) {
         this.port = port;
     }
 
-    public JoinRequest()
-    {
+    public JoinRequest() {
     }
 
-    public JoinRequest(String host, int port, List<String> ipAddresses, List<Disk> disks)
-    {
+    public JoinRequest(String host, int port, List<String> ipAddresses, List<Disk> disks) {
         this.host = host;
         this.port = port;
         this.ipAddresses = ipAddresses;
         this.disks = disks;
     }
 
-    public static class Disk
-    {
+    public static class Disk {
         private String id;
         private String path;
         private long totalSizeInBytes;
         private long usedSizeInBytes;
 
-        public String getId()
-        {
+        public String getId() {
             return id;
         }
 
-        public String getPath()
-        {
+        public String getPath() {
             return path;
         }
 
-        public long getTotalSizeInBytes()
-        {
+        public long getTotalSizeInBytes() {
             return totalSizeInBytes;
         }
 
-        public long getUsedSizeInBytes()
-        {
+        public long getUsedSizeInBytes() {
             return usedSizeInBytes;
         }
 
-        public Disk()
-        {
+        public Disk() {
         }
 
-        public Disk(String id, String path, long usedSizeInBytes, long totalSizeInBytes)
-        {
+        public Disk(String id, String path, long usedSizeInBytes, long totalSizeInBytes) {
             this.id = id;
             this.path = path;
             this.usedSizeInBytes = usedSizeInBytes;

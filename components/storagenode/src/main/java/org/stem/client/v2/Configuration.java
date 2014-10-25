@@ -18,8 +18,7 @@ package org.stem.client.v2;
 
 import java.net.InetSocketAddress;
 
-public class Configuration
-{
+public class Configuration {
     SocketOpts socketOpts;
     ProtocolOpts protocolOpts;
     PoolingOpts poolingOpts;
@@ -27,30 +26,25 @@ public class Configuration
     InetSocketAddress clusterManagerHost;
     InetSocketAddress zookeeperHost;
 
-    public Configuration()
-    {
+    public Configuration() {
         this(new SocketOpts(), new ProtocolOpts(), new PoolingOpts());
     }
 
-    public Configuration(SocketOpts socketOpts, ProtocolOpts protocolOpts, PoolingOpts poolingOpts)
-    {
+    public Configuration(SocketOpts socketOpts, ProtocolOpts protocolOpts, PoolingOpts poolingOpts) {
         this.socketOpts = socketOpts;
         this.protocolOpts = protocolOpts;
         this.poolingOpts = poolingOpts;
     }
 
-    public SocketOpts getSocketOpts()
-    {
+    public SocketOpts getSocketOpts() {
         return socketOpts;
     }
 
-    public ProtocolOpts getProtocolOpts()
-    {
+    public ProtocolOpts getProtocolOpts() {
         return protocolOpts;
     }
 
-    public PoolingOpts getPoolingOpts()
-    {
+    public PoolingOpts getPoolingOpts() {
         return poolingOpts;
     }
 }

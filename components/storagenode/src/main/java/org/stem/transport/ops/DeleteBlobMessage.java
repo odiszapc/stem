@@ -24,17 +24,14 @@ import org.stem.util.BBUtils;
 
 import java.util.UUID;
 
-public class DeleteBlobMessage extends Message.Request
-{
+public class DeleteBlobMessage extends Message.Request {
     public UUID disk;
     public Integer fatFileIndex;
     public Integer offset;
 
-    public static final Codec<DeleteBlobMessage> codec = new Codec<DeleteBlobMessage>()
-    {
+    public static final Codec<DeleteBlobMessage> codec = new Codec<DeleteBlobMessage>() {
         @Override
-        public ByteBuf encode(DeleteBlobMessage op)
-        {
+        public ByteBuf encode(DeleteBlobMessage op) {
             ByteBuf buf = Unpooled.buffer();
             BBUtils.writeString(op.disk.toString(), buf);
             buf.writeInt(op.fatFileIndex);
@@ -43,8 +40,7 @@ public class DeleteBlobMessage extends Message.Request
         }
 
         @Override
-        public DeleteBlobMessage decode(ByteBuf buf)
-        {
+        public DeleteBlobMessage decode(ByteBuf buf) {
             UUID diskId = UUID.fromString(BBUtils.readString(buf));
             int fatFileIndex = buf.readInt();
             int offset = buf.readInt();
@@ -53,8 +49,7 @@ public class DeleteBlobMessage extends Message.Request
         }
     };
 
-    public DeleteBlobMessage(UUID disk, int fatFileIndex, int offset)
-    {
+    public DeleteBlobMessage(UUID disk, int fatFileIndex, int offset) {
         super(Type.DELETE_BLOB);
         this.disk = disk;
         this.fatFileIndex = fatFileIndex;
@@ -62,23 +57,19 @@ public class DeleteBlobMessage extends Message.Request
     }
 
     @Override
-    public Response execute()
-    {
-        try
-        {
+    public Response execute() {
+        try {
             StorageService.instance.delete(this);
             return new ResultMessage.Void();
 
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             return ErrorMessage.fromException(e);
         }
     }
 
     @Override
-    public ByteBuf encode()
-    {
+    public ByteBuf encode() {
         return codec.encode(this);
     }
 }

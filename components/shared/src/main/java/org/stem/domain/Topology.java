@@ -25,8 +25,7 @@ import org.stem.util.TopologyUtils;
 
 import java.util.*;
 
-public class Topology
-{
+public class Topology {
     private Node crunchTopology;
     private Map<Long, List<Node>> CRUSHMap;
     private Map<Long, List<MappingDiff.Value<Node>>> mappingDiff = null;
@@ -37,64 +36,53 @@ public class Topology
 
     private Map<String, StorageNode> storagesMap = new HashMap<String, StorageNode>();
 
-    public Collection<StorageNode> getStorages()
-    {
+    public Collection<StorageNode> getStorages() {
         return storagesMap.values();
     }
 
-    public Map<Long, List<Node>> getCRUSHMap()
-    {
+    public Map<Long, List<Node>> getCRUSHMap() {
         return CRUSHMap;
     }
 
-    public Map<UUID, StorageNode> getDisksMap()
-    {
+    public Map<UUID, StorageNode> getDisksMap() {
         return disksMap;
     }
 
-    public Topology(String name, int rf)
-    {
+    public Topology(String name, int rf) {
         crunchTopology = TopologyUtils.createSingleDCCluster(name);
         PlacementRules rules = new RackIsolationPlacementRules();
         mappingFunction = new SimpleCRUSHMapping(rf, rules);
     }
 
-    public boolean storageExists(StorageNode storageNode)
-    {
+    public boolean storageExists(StorageNode storageNode) {
         return null != storagesMap.get(storageNode.getEndpoint());
     }
 
-    public boolean storageExists(String endpoint)
-    {
+    public boolean storageExists(String endpoint) {
         return null != storagesMap.get(endpoint);
     }
 
     // TODO: What should we do when storage going down?
-    public void addStorage(StorageNode storageNode)
-    {
+    public void addStorage(StorageNode storageNode) {
         Node storage = TopologyUtils.createStorage(storageNode.getEndpoint(), storageNode.getDiskIds());
         Node rack = TopologyUtils.createSingleStorageRack(storage);
         TopologyUtils.addChildren(rack, getDC());
 
-        for (String diskId : storageNode.getDiskIds())
-        {
+        for (String diskId : storageNode.getDiskIds()) {
             disksMap.put(UUID.fromString(diskId), storageNode);
         }
         storagesMap.put(storageNode.getEndpoint(), storageNode);
     }
 
-    private Node getDC()
-    {
+    private Node getDC() {
         return crunchTopology.findChildren(StorageSystemTypes.DATA_CENTER).get(0);
     }
 
-    public void computeMappings(int vBuckets)
-    {
+    public void computeMappings(int vBuckets) {
         List<Long> vBucketsIds = TopologyUtils.generateVBucketsIds(vBuckets);
         Map<Long, List<Node>> newMapping = mappingFunction.computeMapping(vBucketsIds, crunchTopology);
 
-        if (null != this.CRUSHMap)
-        {
+        if (null != this.CRUSHMap) {
             mappingDiff = MappingDiff.calculateDiff(CRUSHMap, newMapping);
         }
 
@@ -111,23 +99,19 @@ public class Topology
         DiskMovementMap diskMovementMap = new DiskMovementMap(mappingDiff);
         // Generate session
 
-        for (StorageNode outStorageNode : getStorages())
-        {
+        for (StorageNode outStorageNode : getStorages()) {
             DiskMovementMap slice = diskMovementMap.getSlice(outStorageNode.getDiskUUIDs());
-            if (0 == slice.size())
-            {
+            if (0 == slice.size()) {
                 continue;
             }
 
             Map<UUID, DiskMovement> movements = new HashMap<UUID, DiskMovement>();
-            for (Map.Entry<String, Map<Long, String>> entry : slice.getMap().entrySet())
-            {
+            for (Map.Entry<String, Map<Long, String>> entry : slice.getMap().entrySet()) {
                 //Map<Long, BucketStreamingPart> inBucketParts = new HashMap<Long, BucketStreamingPart>();
                 UUID outDisk = UUID.fromString(entry.getKey());
                 DiskMovement diskMovement = new DiskMovement(outDisk);
                 Map<Long, String> in = entry.getValue();
-                for (Map.Entry<Long, String> entry2 : in.entrySet())
-                {
+                for (Map.Entry<Long, String> entry2 : in.entrySet()) {
                     Long vBucket = entry2.getKey();
                     UUID inDisk = UUID.fromString(entry2.getValue()); // TODO: null check
                     StorageNode inStorageNode = disksMap.get(inDisk); // TODO: null check
@@ -144,8 +128,7 @@ public class Topology
         return sessions;
     }
 
-    public StorageNode getStorage(String endpoint)
-    {
+    public StorageNode getStorage(String endpoint) {
         return storagesMap.get(endpoint);
     }
 }

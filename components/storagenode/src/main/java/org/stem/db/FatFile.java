@@ -46,15 +46,13 @@ import java.util.zip.CRC32;
  * | Marker |
  * +--------+
  */
-public class FatFile
-{
+public class FatFile {
     private static final Logger logger = LoggerFactory.getLogger(FatFile.class);
     private DataTracker tracker;
 
     private final long capacity;
 
-    public FatFileReader getReader()
-    {
+    public FatFileReader getReader() {
         return reader;
     }
 
@@ -79,39 +77,32 @@ public class FatFile
     private int pointer;
     private String path;
 
-    public String getPath()
-    {
+    public String getPath() {
         return path;
     }
 
-    public boolean isBlank()
-    {
+    public boolean isBlank() {
         return RWState.BLANK == state;
     }
 
-    public boolean isActive()
-    {
+    public boolean isActive() {
         return RWState.ACTIVE == state;
     }
 
-    public boolean isFull()
-    {
+    public boolean isFull() {
         return RWState.FULL == state;
     }
 
-    public void reallocate() throws IOException
-    {
+    public void reallocate() throws IOException {
         RWState prevState = state;
         byte[] buf = new byte[65536];
-        for (int i = 0; i < buf.length; i++)
-        {
+        for (int i = 0; i < buf.length; i++) {
             buf[i] = FatFile.MARKER_BLANK;
         }
 
         int offset = 0;
         int size = (int) writer.length();
-        while (true)
-        {
+        while (true) {
             int retain = size - offset;
             int len = Math.min(buf.length, retain);
             if (0 == len)
@@ -128,8 +119,7 @@ public class FatFile
         tracker.turnIntoBlank(this.reader.length());
     }
 
-    public static enum RWState
-    {
+    public static enum RWState {
         ACTIVE,
         BLANK,
         FULL
@@ -137,13 +127,11 @@ public class FatFile
 
     private RWState state;
 
-    public RWState getState()
-    {
+    public RWState getState() {
         return state;
     }
 
-    public static FatFile open(String path, DataTracker tracker) throws IOException
-    {
+    public static FatFile open(String path, DataTracker tracker) throws IOException {
         // TODO: rebuild index
         FatFile file = new FatFile(path, tracker);
         file.init();
@@ -155,51 +143,41 @@ public class FatFile
      *
      * @throws IOException
      */
-    private void init() throws IOException
-    {
+    private void init() throws IOException {
         this.reader.seek(0);
         int firstByte = this.reader.readUnsignedByte();
-        if (MARKER_BLANK == firstByte)
-        {
+        if (MARKER_BLANK == firstByte) {
             state = RWState.BLANK;
             pointer = 0;
             tracker.incBlankFatFiles(capacity);
 
-        } else if (MARKER_ACTIVE == firstByte)
-        {
+        } else if (MARKER_ACTIVE == firstByte) {
             this.reader.seek(reader.length() - 1);
             int lastByte = this.reader.readUnsignedByte();
-            if (MARKER_FULL == lastByte)
-            {
+            if (MARKER_FULL == lastByte) {
                 state = RWState.FULL;
                 loadIndex();
                 tracker.incFullFatFiles(capacity);
 
-            } else if (MARKER_BLANK == lastByte)
-            {
+            } else if (MARKER_BLANK == lastByte) {
                 state = RWState.ACTIVE;
                 pointer = reconsturctIndex();
                 tracker.setActiveFatFile(capacity);
-            } else
-            {
+            } else {
                 throw new IOException(String.format("File %s is corrupted. Last byte value: %s", path, lastByte));
             }
-        } else
-        {
+        } else {
             throw new IOException(String.format("File %s is corrupted. First byte value: %s", path, firstByte));
         }
     }
 
-    private void loadIndex() throws IOException
-    {
+    private void loadIndex() throws IOException {
         FileChannel channel = this.reader.getChannel();
-        try
-        {
+        try {
             index = FatFileIndex.deserialize(channel, indexHeaderOffset);
             tracker.count(index);
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             throw new IOException("Can't load index for #" + id, e);
         }
     }
@@ -210,15 +188,13 @@ public class FatFile
      * @return
      * @throws IOException
      */
-    private int reconsturctIndex() throws IOException
-    {
+    private int reconsturctIndex() throws IOException {
         // TODO: iterate through blobs and find what the hell is it
         FileChannel channel = reader.getChannel();
 
         int offset = 1;
         FatFileIndex index = new FatFileIndex();
-        while (true)
-        {
+        while (true) {
             Blob.Header header = Blob.Header.deserialize(channel, offset);
 
             if (!header.valid())
@@ -237,8 +213,7 @@ public class FatFile
         return offset;
     }
 
-    protected FatFile(String path, DataTracker tracker) throws IOException
-    {
+    protected FatFile(String path, DataTracker tracker) throws IOException {
         this.path = path;
         this.tracker = tracker;
 
@@ -248,31 +223,27 @@ public class FatFile
         m.find();
         this.id = Integer.valueOf(m.group(1));
 
-        try
-        {
+        try {
             this.writer = new ConsequentWriter(path);
             this.reader = new FatFileReader(path);
             this.capacity = writer.length();
             this.indexHeaderOffset = capacity - 1 - FatFileIndex.Header.SIZE;
 
         }
-        catch (FileNotFoundException e)
-        {
+        catch (FileNotFoundException e) {
             throw new IOException("Can open fat file: ", e);
         }
 
         index = new FatFileIndex();
     }
 
-    public void writeActiveMarker() throws IOException
-    {
+    public void writeActiveMarker() throws IOException {
         writer.writeByte(MARKER_ACTIVE);
         state = RWState.ACTIVE;
         pointer += 1; // TODO: change to pointer = FatFile.PAYLOAD_OFFSET
     }
 
-    public void markActive() throws IOException
-    {
+    public void markActive() throws IOException {
         writer.seek(0);
         writer.writeByte(MARKER_ACTIVE);
         state = RWState.ACTIVE;
@@ -280,66 +251,54 @@ public class FatFile
         //pointer += 1; // TODO: change to pointer = FatFile.PAYLOAD_OFFSET
     }
 
-    long getWritePointer() throws IOException
-    {
+    long getWritePointer() throws IOException {
         return writer.getFilePointer();
     }
 
-    public void writeFullMarker() throws IOException
-    {
+    public void writeFullMarker() throws IOException {
         writer.writeByte(MARKER_FULL);
         state = RWState.FULL;
         pointer += 1;
     }
 
-    public boolean hasSpaceFor(Blob blob)
-    {
+    public boolean hasSpaceFor(Blob blob) {
         return hasSpaceFor(blob.size());
     }
 
-    public boolean hasSpaceFor(int blobSize)
-    {
+    public boolean hasSpaceFor(int blobSize) {
         int blobTotalSize = Blob.Header.SIZE + blobSize;
         return getFreeSpace() >= blobTotalSize + FatFileIndex.Entry.SIZE;
     }
 
-    public long size()
-    {
+    public long size() {
         return capacity;
     }
 
-    public long getFreeSpace()
-    {
+    public long getFreeSpace() {
         return capacity - pointer - index.getSize();
     }
 
-    public void writeBlob(String key, byte[] body) throws IOException
-    {
-        try
-        {
+    public void writeBlob(String key, byte[] body) throws IOException {
+        try {
             writeBlob(Hex.decodeHex(key.toCharArray()), ByteBuffer.wrap(body));
         }
-        catch (DecoderException e)
-        {
+        catch (DecoderException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public BlobDescriptor writeBlob(Blob blob) throws IOException
-    {
+    public BlobDescriptor writeBlob(Blob blob) throws IOException {
         // TODO: we already have Blob.Header here, we should avoid building it in further step
         return writeBlob(blob.key(), blob.data());
     }
 
-    public BlobDescriptor writeBlob(byte[] key, byte[] body) throws IOException
-    {
+    public BlobDescriptor writeBlob(byte[] key, byte[] body) throws IOException {
         // TODO: update DataTracker numbers
         return writeBlob(key, ByteBuffer.wrap(body));
     }
 
     // TODO: utilize FileChannel
-    public synchronized BlobDescriptor writeBlob(byte[] key, ByteBuffer blob) throws IOException
-    {
+    public synchronized BlobDescriptor writeBlob(byte[] key, ByteBuffer blob) throws IOException {
         //int offset = (int) writer.getFilePointer(); // TODO: This is WRONG, don't know why
         int offset = pointer;
         int length = blob.capacity();
@@ -360,29 +319,24 @@ public class FatFile
         return new BlobDescriptor(this.id, offset, bodyOffset);
     }
 
-    public byte[] readBlob(Integer offset, Integer length) throws IOException
-    {
+    public byte[] readBlob(Integer offset, Integer length) throws IOException {
         readLock.lock();
 
-        try
-        {
+        try {
             byte[] data = new byte[length];
             reader.seek(offset);
             reader.read(data);
             return data;
         }
-        finally
-        {
+        finally {
             readLock.unlock();
         }
     }
 
-    public byte[] deleteBlob(Integer bodyOffset) throws IOException
-    {
+    public byte[] deleteBlob(Integer bodyOffset) throws IOException {
         readLock.lock();
 
-        try
-        {
+        try {
             long headerOffset = bodyOffset - Blob.Header.SIZE;
             if (headerOffset < 1)
                 throw new IOException(String.format("Invalid blob offset: %s", headerOffset));
@@ -403,21 +357,18 @@ public class FatFile
             if (isFull())
                 writeIndex();
 
-            if (!alreadyDeleted)
-            {
+            if (!alreadyDeleted) {
                 tracker.discount(header.key, header.length, this.id);
             }
 
             return header.key;
         }
-        finally
-        {
+        finally {
             readLock.unlock();
         }
     }
 
-    public void writeIndex() throws IOException
-    {
+    public void writeIndex() throws IOException {
         ByteBuffer indexSerialized = index.serialize();
 
         writer.seek(capacity - indexSerialized.capacity() - 1);
@@ -426,34 +377,28 @@ public class FatFile
         pointer = (int) writer.getFilePointer();
     }
 
-    public void close()
-    {
-        try
-        {
+    public void close() {
+        try {
             reader.close();
             writer.close();
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             logger.error("Can't close {}, {}", reader, writer);
 
         }
     }
 
-    public void seek(int position) throws IOException
-    {
+    public void seek(int position) throws IOException {
         writer.seek(position);
         pointer = position;
     }
 
-    public int getPointer()
-    {
+    public int getPointer() {
         return pointer;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "FatFile{" +
                 "id=" + id +
                 ", state=" + state +

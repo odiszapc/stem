@@ -26,30 +26,24 @@ import org.stem.domain.Topology;
 import java.util.*;
 
 
-public class TopologyUtils
-{
-    public static Node createRoot()
-    {
+public class TopologyUtils {
+    public static Node createRoot() {
         return createNode(1, "ROOT", 1, StorageSystemTypes.ROOT);
     }
 
-    public static Node createRoot(String name)
-    {
+    public static Node createRoot(String name) {
         return createNode(1, name, 1, StorageSystemTypes.ROOT);
     }
 
-    public static Node createDC()
-    {
+    public static Node createDC() {
         return createNode(1, "Datacenter", 1, StorageSystemTypes.DATA_CENTER);
     }
 
-    public static Node createRack(String name)
-    {
+    public static Node createRack(String name) {
         return createNode(null, "RACK-" + name, 1, StorageSystemTypes.RACK);
     }
 
-    public static Node createSingleDCCluster(String name)
-    {
+    public static Node createSingleDCCluster(String name) {
         Node root = createRoot();
         Node dc = createDC();
         root.getChildren().add(dc);
@@ -58,11 +52,9 @@ public class TopologyUtils
         return root;
     }
 
-    public static Node createStorage(String endpoint, List<String> disksIds)
-    {
+    public static Node createStorage(String endpoint, List<String> disksIds) {
         Node storage = createNode(null, "STORAGE-" + endpoint, 1, StorageSystemTypes.STORAGE_NODE);
-        for (String id : disksIds)
-        {
+        for (String id : disksIds) {
             Node disk = createDisk(id);
             storage.getChildren().add(disk);
         }
@@ -70,13 +62,11 @@ public class TopologyUtils
     }
 
 
-    public static Node createDisk(String id)
-    {
+    public static Node createDisk(String id) {
         return createNode(null, "Disk-" + id, 1, StorageSystemTypes.DISK);
     }
 
-    public static Node createNode(Integer id, String name, int weight, int type)
-    {
+    public static Node createNode(Integer id, String name, int weight, int type) {
         Node node = new Node();
         if (null != id)
             node.setId(id);
@@ -89,47 +79,40 @@ public class TopologyUtils
         return node;
     }
 
-    public static List<Long> generateVBucketsIds(int size)
-    {
+    public static List<Long> generateVBucketsIds(int size) {
         List<Long> ranges = Lists.newArrayListWithCapacity(size);
 
-        for (long i = 1; i <= size; i++)
-        {
+        for (long i = 1; i <= size; i++) {
             ranges.add(i);
         }
 
         return ranges;
     }
 
-    public static Node createSingleStorageRack(Node storage)
-    {
+    public static Node createSingleStorageRack(Node storage) {
         Node rack = TopologyUtils.createRack(storage.getName());
         rack.getChildren().add(storage);
         storage.setParent(rack);
         return rack;
     }
 
-    public static void addChildren(Node child, Node parent)
-    {
+    public static void addChildren(Node child, Node parent) {
         parent.getChildren().add(child);
         child.setParent(parent);
     }
 
-    public static TopoMapping buildTopoMap(Topology topology)
-    {
+    public static TopoMapping buildTopoMap(Topology topology) {
         Map<Long, List<Node>> crushMap = topology.getCRUSHMap();
         Map<UUID, String> diskMap = new HashMap<UUID, String>();
 
         Map<Long, List<UUID>> bucketMap = new HashMap<Long, List<UUID>>();
-        for (Map.Entry<Long, List<Node>> entry : crushMap.entrySet())
-        {
+        for (Map.Entry<Long, List<Node>> entry : crushMap.entrySet()) {
             // build bucketMap
             Long vBucket = entry.getKey();
             List<Node> disks = entry.getValue();
 
             List<UUID> disksIds = Lists.newArrayList();
-            for (Node disk : disks)
-            {
+            for (Node disk : disks) {
                 String uuidStr = extractDiskUUID(disk.getName());
                 UUID uuid = UUID.fromString(uuidStr);
                 disksIds.add(uuid);
@@ -139,8 +122,7 @@ public class TopologyUtils
             // build diskMap
 
             Map<UUID, StorageNode> disksMap = topology.getDisksMap();
-            for (Map.Entry<UUID, StorageNode> entry2 : disksMap.entrySet())
-            {
+            for (Map.Entry<UUID, StorageNode> entry2 : disksMap.entrySet()) {
                 UUID diskId = entry2.getKey();
                 StorageNode node = entry2.getValue();
                 diskMap.put(diskId, node.getEndpoint());
@@ -152,8 +134,7 @@ public class TopologyUtils
         return topoMapping;
     }
 
-    public static String extractDiskUUID(String name)
-    {
+    public static String extractDiskUUID(String name) {
         return name.substring(5);
     }
 }

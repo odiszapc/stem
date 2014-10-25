@@ -24,13 +24,10 @@ import org.stem.exceptions.TransportException;
 import org.stem.transport.Message;
 import org.stem.util.BBUtils;
 
-public class ErrorMessage extends Message.Response
-{
-    public static final Message.Codec<ErrorMessage> codec = new Message.Codec<ErrorMessage>()
-    {
+public class ErrorMessage extends Message.Response {
+    public static final Message.Codec<ErrorMessage> codec = new Message.Codec<ErrorMessage>() {
         @Override
-        public ByteBuf encode(ErrorMessage message)
-        {
+        public ByteBuf encode(ErrorMessage message) {
             ByteBuf codeBuf = BBUtils.intToBB(message.error.code().value);
             ByteBuf msgBuf = BBUtils.stringToBB(message.error.getMessage());
 
@@ -38,15 +35,13 @@ public class ErrorMessage extends Message.Response
         }
 
         @Override
-        public ErrorMessage decode(ByteBuf buf)
-        {
+        public ErrorMessage decode(ByteBuf buf) {
             ErrorCode code = ErrorCode.fromValue(buf.readInt());
             String message = BBUtils.readString(buf);
 
             TransportException e = null;
 
-            switch (code)
-            {
+            switch (code) {
                 case SERVER_ERROR:
                     e = new ServerError(message);
                     break;
@@ -59,26 +54,22 @@ public class ErrorMessage extends Message.Response
 
     public final TransportException error;
 
-    public TransportException getError()
-    {
+    public TransportException getError() {
         return error;
     }
 
-    public ErrorMessage(TransportException error)
-    {
+    public ErrorMessage(TransportException error) {
         super(Type.ERROR);
         this.error = error;
     }
 
 
     @Override
-    public ByteBuf encode()
-    {
+    public ByteBuf encode() {
         return codec.encode(this);
     }
 
-    public static ErrorMessage fromException(Throwable e)
-    {
+    public static ErrorMessage fromException(Throwable e) {
         return new ErrorMessage(new ServerError(e));
     }
 }

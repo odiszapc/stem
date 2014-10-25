@@ -16,6 +16,5 @@
 
 package org.stem.client.v2;
 
-public class ExecutionInfo
-{
+public class ExecutionInfo {
 }

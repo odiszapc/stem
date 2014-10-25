@@ -24,38 +24,31 @@ public class StorageStat extends ZNodeAbstract // TODO: rethink StorageNode and 
     String endpoint;
     List<DiskStat> disks = new ArrayList<DiskStat>();
 
-    public StorageStat()
-    {
+    public StorageStat() {
     }
 
-    public StorageStat(String ip, int port)
-    {
+    public StorageStat(String ip, int port) {
         endpoint = ip + ":" + port;
     }
 
-    public String getEndpoint()
-    {
+    public String getEndpoint() {
         return endpoint;
     }
 
-    public void setEndpoint(String endpoint)
-    {
+    public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
     }
 
-    public List<DiskStat> getDisks()
-    {
+    public List<DiskStat> getDisks() {
         return disks;
     }
 
-    public void setDisks(List<DiskStat> disks)
-    {
+    public void setDisks(List<DiskStat> disks) {
         this.disks = disks;
     }
 
     @Override
-    public String nodeName()
-    {
+    public String nodeName() {
         return endpoint;
     }
 }

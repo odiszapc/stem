@@ -23,22 +23,16 @@ import java.util.Enumeration;
 import java.util.List;
 
 
-public class Utils
-{
-    public static List<InetAddress> getIpAddresses()
-    {
-        try
-        {
+public class Utils {
+    public static List<InetAddress> getIpAddresses() {
+        try {
             List<InetAddress> addrList = new ArrayList<InetAddress>();
             Enumeration<NetworkInterface> enumNI = NetworkInterface.getNetworkInterfaces();
-            while (enumNI.hasMoreElements())
-            {
+            while (enumNI.hasMoreElements()) {
                 NetworkInterface ifc = enumNI.nextElement();
-                if (ifc.isUp())
-                {
+                if (ifc.isUp()) {
                     Enumeration<InetAddress> enumAdds = ifc.getInetAddresses();
-                    while (enumAdds.hasMoreElements())
-                    {
+                    while (enumAdds.hasMoreElements()) {
                         InetAddress addr = enumAdds.nextElement();
                         addrList.add(addr);
                     }
@@ -46,20 +40,17 @@ public class Utils
             }
             return addrList;
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static int getPortFromEndpoint(String endpoint)
-    {
+    public static int getPortFromEndpoint(String endpoint) {
         int i = endpoint.indexOf(':');
         return Integer.valueOf(endpoint.substring(i + 1)); // TODO: validation
     }
 
-    public static String getHostFromEndpoint(String endpoint)
-    {
+    public static String getHostFromEndpoint(String endpoint) {
         int i = endpoint.indexOf(':');
         return endpoint.substring(0, i);
     }

@@ -31,16 +31,14 @@ import java.util.Collection;
 import java.util.UUID;
 
 
-public class StreamTask extends WrappedRunnable
-{
+public class StreamTask extends WrappedRunnable {
     private static final Logger logger = LoggerFactory.getLogger(StreamTask.class);
     private final DiskMovement movement;
     private final MountPoint disk;
     private final DataTracker datatracker;
     private final StemClient clusterClient;
 
-    public StreamTask(DiskMovement movement)
-    {
+    public StreamTask(DiskMovement movement) {
         // TODO: null check
         this.movement = movement;
         this.disk = Layout.instance.getMountPoint(movement.getDiskId());
@@ -50,8 +48,7 @@ public class StreamTask extends WrappedRunnable
     }
 
     @Override
-    protected void runMayThrow() throws Exception
-    {
+    protected void runMayThrow() throws Exception {
         // TODO: validate progress, total
         // TODO: resume functionality
         // TODO: what if task has failed but it's possible to recover? (network occasions, other bullshit)
@@ -61,22 +58,18 @@ public class StreamTask extends WrappedRunnable
         long duration = System.currentTimeMillis() - started;
     }
 
-    private void start() throws IOException
-    {
+    private void start() throws IOException {
         clusterClient.start();
         Collection<FatFile> fatFiles = disk.findFullOrActive();
 
         int moved = 0;
-        for (FatFile ff : fatFiles)
-        {
+        for (FatFile ff : fatFiles) {
             FFScanner scanner = new FFScanner(ff);
-            while (scanner.hasNext())
-            {
+            while (scanner.hasNext()) {
                 Blob blob = scanner.next();
                 long bucket = datatracker.getVBucket(blob.key());
                 BucketStreamingPart part = movement.get(bucket);
-                if (null != part)
-                {
+                if (null != part) {
                     moveBlob(blob, disk.uuid, part.getEndpoint(), part.getDiskId());
                     moved++;
                 }
@@ -86,8 +79,7 @@ public class StreamTask extends WrappedRunnable
         logger.info("Streaming has been completed, blobs streamed: {}", moved);
     }
 
-    private void moveBlob(Blob blob, UUID localDiskId, String remoteEndpoint, UUID remoteDiskId) throws IOException
-    {
+    private void moveBlob(Blob blob, UUID localDiskId, String remoteEndpoint, UUID remoteDiskId) throws IOException {
         StorageNodeClient client = new StorageNodeClient(remoteEndpoint); // TODO: create pool of clients to reuse them
         client.start();
 

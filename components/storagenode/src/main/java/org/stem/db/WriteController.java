@@ -30,8 +30,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class WriteController extends IOController
-{
+public class WriteController extends IOController {
     private static final Logger logger = LoggerFactory.getLogger(WriteController.class);
     private boolean pureAllocated = false;
 
@@ -40,42 +39,34 @@ public class WriteController extends IOController
     FatFile activeFF;
 
     @VisibleForTesting
-    public int getWriteCandidates()
-    {
+    public int getWriteCandidates() {
         return candidatesProvider.candidates.size();
     }
 
-    public WriteController(MountPoint mp)
-    {
+    public WriteController(MountPoint mp) {
         super(mp);
 
         executor = new ThreadPoolExecutor(1, 1, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
         candidatesProvider = new CandidatesProvider(mp.findBlankOrActive());
         activeFF = nextFile();
 
-        if (activeFF.isBlank())
-        {
+        if (activeFF.isBlank()) {
             this.pureAllocated = true;
         }
 
-        try
-        {
+        try {
             activeFF.seek(activeFF.getPointer());
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     private static int writes = 0;
 
-    public synchronized BlobDescriptor write(WriteBlobMessage message)
-    {
-        try
-        {
-            if (!activeFF.hasSpaceFor(message.getBlobSize()))
-            {
+    public synchronized BlobDescriptor write(WriteBlobMessage message) {
+        try {
+            if (!activeFF.hasSpaceFor(message.getBlobSize())) {
                 long freeSpace = activeFF.getFreeSpace();
                 activeFF.writeIndex();
                 activeFF.writeFullMarker();
@@ -90,11 +81,9 @@ public class WriteController extends IOController
                 return write(message);
             }
 
-            if (0 == activeFF.getPointer())
-            {
+            if (0 == activeFF.getPointer()) {
                 activeFF.writeActiveMarker();
-                if (pureAllocated)
-                {
+                if (pureAllocated) {
                     pureAllocated = false;
                     mp.getDataTracker().turnIntoActive();
                 }
@@ -102,28 +91,23 @@ public class WriteController extends IOController
 
             return activeFF.writeBlob(message.key, message.blob);
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private FatFile nextFile()
-    {
+    private FatFile nextFile() {
         return candidatesProvider.provide();
     }
 
-    public void submitBlankFF(FatFile ff)
-    {
+    public void submitBlankFF(FatFile ff) {
         candidatesProvider.put(ff);
     }
 
-    public static class CandidatesProvider
-    {
+    public static class CandidatesProvider {
         private Queue<FatFile> candidates;
 
-        public CandidatesProvider(Collection<FatFile> list)
-        {
+        public CandidatesProvider(Collection<FatFile> list) {
             candidates = new LinkedList<FatFile>();
             candidates.addAll(list);
         }
@@ -136,13 +120,11 @@ public class WriteController extends IOController
             return candidate;
         }
 
-        public synchronized void add(FatFile candidate)
-        {
+        public synchronized void add(FatFile candidate) {
             candidates.add(candidate);
         }
 
-        public synchronized void put(FatFile ff)
-        {
+        public synchronized void put(FatFile ff) {
             candidates.add(ff);
         }
     }

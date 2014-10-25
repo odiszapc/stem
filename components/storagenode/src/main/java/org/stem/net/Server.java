@@ -30,8 +30,7 @@ import org.stem.transport.*;
 
 import java.net.InetSocketAddress;
 
-public class Server
-{
+public class Server {
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
     InetSocketAddress socket;
@@ -43,13 +42,11 @@ public class Server
     private ChannelFuture future;
     private Channel channel;
 
-    public Server(String host, int port)
-    {
+    public Server(String host, int port) {
         socket = new InetSocketAddress(host, port);
     }
 
-    public void start()
-    {
+    public void start() {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
@@ -60,11 +57,9 @@ public class Server
                 .option(ChannelOption.SO_BACKLOG, 100)
                 .childOption(ChannelOption.SO_KEEPALIVE, true)
                 .handler(new LoggingHandler(LogLevel.INFO))
-                .childHandler(new ChannelInitializer<SocketChannel>()
-                {
+                .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
-                    protected void initChannel(SocketChannel ch) throws Exception
-                    {
+                    protected void initChannel(SocketChannel ch) throws Exception {
                         ch.pipeline()
                                 .addLast(new PacketDecoder())
                                 .addLast(new PacketEncoder())
@@ -76,8 +71,7 @@ public class Server
                     }
                 });
 
-        try
-        {
+        try {
             future = bootstrap.bind(socket).sync();
             logger.info("Starting listening for clients on {}...", socket);
             channel = future.channel();
@@ -85,16 +79,14 @@ public class Server
             // Wait until server socket is closed.
             // channel.closeFuture().sync();
         }
-        catch (InterruptedException e)
-        {
+        catch (InterruptedException e) {
             e.printStackTrace();
             throw new RuntimeException("Can't start server: ", e);
         }
 
     }
 
-    public void stop()
-    {
+    public void stop() {
         channel.close();
         //future.awaitUninterruptibly();
     }

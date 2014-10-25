@@ -27,14 +27,12 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class StemCluster
-{
+public class StemCluster {
     private static final Logger logger = LoggerFactory.getLogger(StemCluster.class);
     private static final int DEFAULT_THREAD_KEEP_ALIVE = 30;
     final Manager manager;
 
-    public StemCluster(Configuration configuration)
-    {
+    public StemCluster(Configuration configuration) {
         manager = new Manager(configuration);
     }
 
@@ -42,13 +40,11 @@ public class StemCluster
         return destUnit.convert(System.nanoTime() - startNanos, TimeUnit.NANOSECONDS);
     }
 
-    private static ThreadFactory threadFactory(String nameFormat)
-    {
+    private static ThreadFactory threadFactory(String nameFormat) {
         return new ThreadFactoryBuilder().setNameFormat(nameFormat).build();
     }
 
-    private static ListeningExecutorService newExecutor(int threads, String name)
-    {
+    private static ListeningExecutorService newExecutor(int threads, String name) {
         ThreadPoolExecutor executor = new ThreadPoolExecutor(threads,
                 threads,
                 DEFAULT_THREAD_KEEP_ALIVE,
@@ -59,24 +55,21 @@ public class StemCluster
         return MoreExecutors.listeningDecorator(executor);
     }
 
-    class Manager
-    {
+    class Manager {
         Configuration configuration;
         final Connection.Factory connectionFactory;
 
         final ListeningExecutorService executor;
         final ListeningExecutorService blockingExecutor;
 
-        public Manager(Configuration configuration)
-        {
+        public Manager(Configuration configuration) {
             this.configuration = configuration;
             this.connectionFactory = new Connection.Factory(configuration);
             this.executor = newExecutor(Runtime.getRuntime().availableProcessors(), "Stem Client worker-%d");
             this.blockingExecutor = newExecutor(2, "Stem Client blocking tasks worker-%d");
         }
 
-        public Connection.Factory getConnectionFactory()
-        {
+        public Connection.Factory getConnectionFactory() {
             return connectionFactory;
         }
     }

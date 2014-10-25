@@ -35,8 +35,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Queue;
 
-public class CompactionManager
-{
+public class CompactionManager {
     private static final Logger logger = LoggerFactory.getLogger(CompactionManager.class);
 
     public static final CompactionManager instance;
@@ -44,36 +43,29 @@ public class CompactionManager
     private float threshold = StorageNodeDescriptor.getCompactionThreshold();
     private static MetaStoreClient client;
 
-    static
-    {
+    static {
         instance = new CompactionManager();
     }
 
-    public CompactionManager()
-    {
+    public CompactionManager() {
         client = new MetaStoreClient();
         client.start(); // TODO: close ?
     }
 
-    public void performMajorCompaction()
-    {
-        try
-        {
+    public void performMajorCompaction() {
+        try {
             Collection<MountPoint> mountPoints = Layout.getInstance().getMountPoints().values();
-            for (MountPoint mp : mountPoints)
-            {
+            for (MountPoint mp : mountPoints) {
                 performSinglePassCompaction(mp); // TODO: every disk should be compacted in a separate thread
             }
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             throw new RuntimeException("Compaction was stopped unexpectedly", e);
         }
     }
 
     // TODO: update DataTracker
-    private void performSinglePassCompaction(MountPoint mp) throws IOException
-    {
+    private void performSinglePassCompaction(MountPoint mp) throws IOException {
         if (!exceedThreshold(mp))
             return;
 
@@ -88,17 +80,14 @@ public class CompactionManager
         FatFile temporaryFF = null;
         int iterated = 0;
         int omitted = 0;
-        for (FatFile currentFF : scanReadyFFs)
-        {
+        for (FatFile currentFF : scanReadyFFs) {
             FFScanner scanner = new FFScanner(currentFF);
 
-            while (scanner.hasNext())
-            {
+            while (scanner.hasNext()) {
                 iterated += 1;
                 Blob blob = scanner.next();
                 String blobKey = Hex.encodeHexString(blob.key());
-                if (blob.deleted())
-                {
+                if (blob.deleted()) {
                     omitted += 1;
                     mp.getDataTracker().removeDeletes(blob.key(), blob.size(), currentFF.id);
                     logger.info("key 0x{} omitted as deleted", Hex.encodeHexString(blob.key()));
@@ -107,26 +96,22 @@ public class CompactionManager
 
                 ExtendedBlobDescriptor localDescriptor = new ExtendedBlobDescriptor(blob.key(), blob.size(), mp.uuid, blob.getDescriptor());
                 ExtendedBlobDescriptor remoteDescriptor = client.readMeta(blob.key(), mp.uuid);
-                if (null == remoteDescriptor)
-                {
+                if (null == remoteDescriptor) {
                     omitted += 1;
                     logger.info("key 0x{} omitted as no meta info", Hex.encodeHexString(blob.key()));
                     continue;
                 }
                 // As we eventual consistent then: if blob.hasInvalidOffset -> continue
-                if (!descriptorsAreConsistent(localDescriptor, remoteDescriptor))
-                {
+                if (!descriptorsAreConsistent(localDescriptor, remoteDescriptor)) {
                     logger.info("key 0x{} omitted as inconsistent meta", Hex.encodeHexString(blob.key()));
                     continue;
                 }
 
-                if (null == temporaryFF)
-                {
+                if (null == temporaryFF) {
                     temporaryFF = createTemporaryFF(currentFF.id);
                 }
 
-                if (temporaryFF.hasSpaceFor(blob))
-                {
+                if (temporaryFF.hasSpaceFor(blob)) {
                     BlobDescriptor descriptor = temporaryFF.writeBlob(blob); // TODO: hold descriptors for a subsequent MetaStore updates
                     logger.info("key 0x{} is written to temporaryFF", Hex.encodeHexString(blob.key()));
                     continue;
@@ -159,12 +144,10 @@ public class CompactionManager
 
         // All candidates are iterated
         // Write the rest of TMP FatFile to StorageNode as usual and mark iterated FFs as BLANK
-        if (null != temporaryFF)
-        {
+        if (null != temporaryFF) {
             FFScanner scanner = new FFScanner(temporaryFF);
             int restBlobs = 0;
-            while (scanner.hasNext())
-            {
+            while (scanner.hasNext()) {
 
                 restBlobs += 1;
                 Blob blob = scanner.next();
@@ -185,8 +168,7 @@ public class CompactionManager
 
         // Mark the rest of files as BLANK
         markAllOriginalFFsAsBlank(originalFFs, mp);
-        if (null != temporaryFF)
-        {
+        if (null != temporaryFF) {
             FileUtils.forceDelete(new File(temporaryFF.getPath())); // remove file
             temporaryFF = null;
         }
@@ -195,25 +177,21 @@ public class CompactionManager
         // TODO: delete temporary file
     }
 
-    private static boolean descriptorsAreConsistent(ExtendedBlobDescriptor local, ExtendedBlobDescriptor remote)
-    {
+    private static boolean descriptorsAreConsistent(ExtendedBlobDescriptor local, ExtendedBlobDescriptor remote) {
         return local.getDisk().equals(remote.getDisk()) &
                 local.getBodyOffset() == remote.getBodyOffset() &
                 local.getLength() == remote.getLength();
     }
 
-    private static void markAllOriginalFFsAsBlank(Queue<FatFile> originalFFs, MountPoint mp) throws IOException
-    {
-        while (!originalFFs.isEmpty())
-        {
+    private static void markAllOriginalFFsAsBlank(Queue<FatFile> originalFFs, MountPoint mp) throws IOException {
+        while (!originalFFs.isEmpty()) {
             FatFile ff = originalFFs.poll();
             ff.reallocate();
             StorageService.instance.submitFF(ff, mp); // TODO: inside we must re-count DataTracker
         }
     }
 
-    private static boolean exceedThreshold(MountPoint mp)
-    {
+    private static boolean exceedThreshold(MountPoint mp) {
         long deletesSizeInBytes = mp.getDataTracker().getDeletesSizeInBytes();
         long totalSizeInBytes = mp.getDataTracker().getTotalSizeInBytes();
 
@@ -225,8 +203,7 @@ public class CompactionManager
         return true;
     }
 
-    private boolean exceedCandidatesThreshold(Collection<FatFile> candidates)
-    {
+    private boolean exceedCandidatesThreshold(Collection<FatFile> candidates) {
         if (candidates.isEmpty())
             return false;
 
@@ -236,8 +213,7 @@ public class CompactionManager
         return true;
     }
 
-    private static void replaceFF(FatFile original, FatFile replacement) throws IOException
-    {
+    private static void replaceFF(FatFile original, FatFile replacement) throws IOException {
         assert original.size() == replacement.size();
         FileOutputStream out = new FileOutputStream(original.getPath());
         FileInputStream in = new FileInputStream(replacement.getPath());
@@ -247,12 +223,10 @@ public class CompactionManager
     }
 
     // TODO: mount point should be extracted from FatFile instance because the last one is attached to the first one
-    private static void updateMeta(FatFile original, MountPoint mp)
-    {
+    private static void updateMeta(FatFile original, MountPoint mp) {
         // Update meta
         FFExtendedScanner scanner = new FFExtendedScanner(original);
-        while (scanner.hasNext())
-        {
+        while (scanner.hasNext()) {
             ExtendedBlobDescriptor d = scanner.next();
             d.setDisk(mp.uuid);
 
@@ -260,8 +234,7 @@ public class CompactionManager
         }
     }
 
-    private static FatFile createTemporaryFF(int id) throws IOException
-    {
+    private static FatFile createTemporaryFF(int id) throws IOException {
         String path = TMP_DIR + File.separator + FatFileAllocator.buildFileName(id);
         File file = new File(path);
         FileUtils.deleteQuietly(file);

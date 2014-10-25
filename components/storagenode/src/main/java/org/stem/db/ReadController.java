@@ -18,36 +18,28 @@ package org.stem.db;
 
 import java.io.IOException;
 
-public class ReadController extends IOController
-{
-    public ReadController(MountPoint mp)
-    {
+public class ReadController extends IOController {
+    public ReadController(MountPoint mp) {
         super(mp);
     }
 
-    public byte[] read(Integer fatFileIndex, Integer offset, Integer length)
-    {
-        try
-        {
+    public byte[] read(Integer fatFileIndex, Integer offset, Integer length) {
+        try {
             return getFatFile(fatFileIndex)
                     .readBlob(offset, length);
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void delete(Integer fatFileIndex, Integer offset)
-    {
-        try
-        {
+    public void delete(Integer fatFileIndex, Integer offset) {
+        try {
             getFatFile(fatFileIndex)
                     .deleteBlob(offset);
 
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

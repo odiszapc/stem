@@ -23,8 +23,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class DiskMovement
-{
+public class DiskMovement {
     UUID diskId;
     AtomicLong completed;
     AtomicLong total;
@@ -35,104 +34,85 @@ public class DiskMovement
     private StreamSession session; // Let's do a simple link
     Map<Long, BucketStreamingPart> bucketStreams = new HashMap<Long, BucketStreamingPart>();
 
-    public void setSession(StreamSession session)
-    {
+    public void setSession(StreamSession session) {
         this.session = session;
     }
 
-    public DiskMovement()
-    {
+    public DiskMovement() {
         completed = new AtomicLong(-1);
         total = new AtomicLong(-1);
     }
 
-    public DiskMovement(UUID diskId)
-    {
+    public DiskMovement(UUID diskId) {
         this();
         this.diskId = diskId;
     }
 
-    public void put(Long vBucket, BucketStreamingPart part)
-    {
+    public void put(Long vBucket, BucketStreamingPart part) {
         bucketStreams.put(vBucket, part);
     }
 
-    public BucketStreamingPart get(Long vBucket)
-    {
+    public BucketStreamingPart get(Long vBucket) {
         return bucketStreams.get(vBucket);
     }
 
-    public UUID getDiskId()
-    {
+    public UUID getDiskId() {
         return diskId;
     }
 
-    public void setDiskId(UUID diskId)
-    {
+    public void setDiskId(UUID diskId) {
         this.diskId = diskId;
     }
 
-    public Map<Long, BucketStreamingPart> getBucketStreams()
-    {
+    public Map<Long, BucketStreamingPart> getBucketStreams() {
         return bucketStreams;
     }
 
-    public void setBucketStreams(Map<Long, BucketStreamingPart> bucketStreams)
-    {
+    public void setBucketStreams(Map<Long, BucketStreamingPart> bucketStreams) {
         this.bucketStreams = bucketStreams;
     }
 
 
     // TODO: isn't it a part of interface like Progressable?
     @JsonIgnore
-    public boolean isInitialized()
-    {
+    public boolean isInitialized() {
         return completed.get() != -1 && total.get() != -1;
     }
 
-    public void progress(long delta)
-    {
+    public void progress(long delta) {
         completed.addAndGet(delta);
-        if (null != session)
-        {
+        if (null != session) {
             session.progress(delta);
         }
     }
 
-    public void setProgress(long value)
-    {
+    public void setProgress(long value) {
         long before = completed.get();
         completed.set(value);
-        if (null != session)
-        {
+        if (null != session) {
             session.progress(-before);
             session.progress(completed.get());
         }
     }
 
-    public long getCompleted()
-    {
+    public long getCompleted() {
         return completed.get();
     }
 
-    public long getTotal()
-    {
+    public long getTotal() {
         return total.get();
     }
 
-    public void setTotal(long value)
-    {
+    public void setTotal(long value) {
         long before = total.get();
         total.set(value);
-        if (null != session)
-        {
+        if (null != session) {
             session.addTotal(-before);
             session.addTotal(total.get());
         }
     }
 
-    public void init(StreamSession session, int progress, long total)
-    {
+    public void init(StreamSession session, int progress, long total) {
         setSession(session);
         setProgress(progress);
         setTotal(total);

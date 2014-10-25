@@ -23,55 +23,45 @@ import org.stem.domain.ExtendedBlobDescriptor;
 import java.io.IOException;
 import java.util.Iterator;
 
-public class FFExtendedScanner implements Iterator<ExtendedBlobDescriptor>
-{
+public class FFExtendedScanner implements Iterator<ExtendedBlobDescriptor> {
     private FatFile ff;
     private ExtendedBlobDescriptor currentBlob;
     int nextOffset = FatFile.PAYLOAD_OFFSET;
 
-    public FFExtendedScanner(FatFile ff)
-    {
+    public FFExtendedScanner(FatFile ff) {
         this.ff = ff;
         if (!ff.isFull())
             throw new RuntimeException("Non-FULL FatFiles can not be iterated with FFScanner");
     }
 
     @Override
-    public boolean hasNext()
-    {
+    public boolean hasNext() {
         ff.readLock.lock();
-        try
-        {
+        try {
             ExtendedBlobDescriptor blob = Blob.deserializeDescriptor(ff, nextOffset);
-            if (null != blob)
-            {
+            if (null != blob) {
                 currentBlob = blob;
                 nextOffset += Blob.Header.SIZE + blob.getLength();
                 return true;
-            } else
-            {
+            } else {
                 return false;
             }
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             throw new RuntimeException(e);
         }
-        finally
-        {
+        finally {
             ff.readLock.unlock(); // TODO: this is an unreasoned action. Why we lock here!?
         }
     }
 
     @Override
-    public ExtendedBlobDescriptor next()
-    {
+    public ExtendedBlobDescriptor next() {
         return currentBlob;
     }
 
     @Override
-    public void remove()
-    {
+    public void remove() {
         throw new UnsupportedOperationException();
     }
 }

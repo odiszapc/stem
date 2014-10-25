@@ -112,35 +112,35 @@
         </executions>
       </plugin>
       <!--<plugin>-->
-        <!--<groupId>org.codehaus.mojo</groupId>-->
-        <!--<artifactId>cassandra-maven-plugin</artifactId>-->
-        <!--<version>2.0.0-1</version>-->
-        <!--<dependencies>-->
-          <!--<dependency>-->
-            <!--<groupId>com.google.guava</groupId>-->
-            <!--<artifactId>guava</artifactId>-->
-            <!--<version>15.0</version>-->
-          <!--</dependency>-->
-        <!--</dependencies>-->
+      <!--<groupId>org.codehaus.mojo</groupId>-->
+      <!--<artifactId>cassandra-maven-plugin</artifactId>-->
+      <!--<version>2.0.0-1</version>-->
+      <!--<dependencies>-->
+      <!--<dependency>-->
+      <!--<groupId>com.google.guava</groupId>-->
+      <!--<artifactId>guava</artifactId>-->
+      <!--<version>15.0</version>-->
+      <!--</dependency>-->
+      <!--</dependencies>-->
       <!--</plugin>-->
 
       <!--<plugin>-->
-        <!--<artifactId>maven-surefire-plugin</artifactId>-->
-        <!--<version>2.14.1</version>-->
-        <!--<executions>-->
-          <!--<execution>-->
-            <!--<id>default-test</id>-->
-            <!--<phase>test</phase>-->
-            <!--<goals>-->
-              <!--<goal>test</goal>-->
-            <!--</goals>-->
-            <!--&lt;!&ndash;<configuration>&ndash;&gt;-->
-              <!--&lt;!&ndash;<redirectTestOutputToFile>true</redirectTestOutputToFile>&ndash;&gt;-->
-              <!--&lt;!&ndash;<forkMode>always</forkMode>&ndash;&gt;-->
-              <!--&lt;!&ndash;<argLine>-Xms512M -Xmx512M -XX:MaxPermSize=128m</argLine>&ndash;&gt;-->
-            <!--&lt;!&ndash;</configuration>&ndash;&gt;-->
-          <!--</execution>-->
-        <!--</executions>-->
+      <!--<artifactId>maven-surefire-plugin</artifactId>-->
+      <!--<version>2.14.1</version>-->
+      <!--<executions>-->
+      <!--<execution>-->
+      <!--<id>default-test</id>-->
+      <!--<phase>test</phase>-->
+      <!--<goals>-->
+      <!--<goal>test</goal>-->
+      <!--</goals>-->
+      <!--&lt;!&ndash;<configuration>&ndash;&gt;-->
+      <!--&lt;!&ndash;<redirectTestOutputToFile>true</redirectTestOutputToFile>&ndash;&gt;-->
+      <!--&lt;!&ndash;<forkMode>always</forkMode>&ndash;&gt;-->
+      <!--&lt;!&ndash;<argLine>-Xms512M -Xmx512M -XX:MaxPermSize=128m</argLine>&ndash;&gt;-->
+      <!--&lt;!&ndash;</configuration>&ndash;&gt;-->
+      <!--</execution>-->
+      <!--</executions>-->
       <!--</plugin>-->
     </plugins>
   </build>
