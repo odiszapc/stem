@@ -17,6 +17,7 @@
 package org.stem.client.v2;
 
 import com.datastax.driver.core.Host;
+import com.google.common.util.concurrent.ListeningExecutorService;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -40,4 +41,8 @@ public class Session
     Connection.Factory connectionFactory() {
             return cluster.manager.connectionFactory;
         }
+
+    ListeningExecutorService blockingExecutor() {
+        return cluster.manager.blockingExecutor;
+    }
 }

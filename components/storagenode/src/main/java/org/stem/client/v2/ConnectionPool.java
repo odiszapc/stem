@@ -16,6 +16,7 @@
 
 package org.stem.client.v2;
 
+import com.sun.jndi.ldap.pool.Pool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.exceptions.ConnectionException;
@@ -23,6 +24,8 @@ import org.stem.exceptions.ConnectionException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
@@ -32,6 +35,8 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ConnectionPool
 {
     private static final Logger logger = LoggerFactory.getLogger(ConnectionPool.class);
+
+    private static final int MAX_SIMULTANEOUS_CREATION = 1;
 
     final Host host;
 
@@ -79,6 +84,113 @@ public class ConnectionPool
         return session.configuration().getPoolingOpts();
     }
 
+    public PooledConnection borrowConnection(long timeout, TimeUnit unit) throws ConnectionException, TimeoutException
+    {
+        if (isClosed())
+            throw new ConnectionException(host.getSocketAddress(), "Pool is down");
+
+        if (connections.isEmpty())
+        {
+            for (int i = 0; i < options().getStartConnectionsPerHost(); i++)
+            {
+                scheduledForCreation.incrementAndGet();
+                session.blockingExecutor().submit(newConnectionTask);
+            }
+            PooledConnection c = waitForConnection(timeout, unit);
+            return c;
+        }
+
+        int minInFlight = Integer.MAX_VALUE;
+        PooledConnection leastBusy = null;
+        for (PooledConnection connection : connections)
+        {
+            int inFlight = connection.inFlight.get();
+            if (inFlight < minInFlight)
+            {
+                minInFlight = inFlight;
+                leastBusy = connection;
+            }
+        }
+
+        if (minInFlight >= options().getMaxSimultaneousRequestsPerConnection() && connections.size() < options().getMaxConnectionsPerHost())
+            maybeSpawnNewConnection();
+
+        if (null == leastBusy)
+        {
+            if (isClosed())
+                throw new ConnectionException(host.getSocketAddress(), "Pool is shutdown");
+            leastBusy = waitForConnection(timeout, unit);
+        } else
+        {
+            while (true)
+            {
+                int inFlight = leastBusy.inFlight.get();
+
+                if (inFlight >= leastBusy.maxAvailableStreams())
+                {
+                    leastBusy = waitForConnection(timeout, unit);
+                    break;
+                }
+
+                if (leastBusy.inFlight.compareAndSet(inFlight, inFlight + 1))
+                    break;
+            }
+        }
+        return leastBusy;
+    }
+
+    private PooledConnection waitForConnection(long timeout, TimeUnit unit) throws ConnectionException, TimeoutException
+    {
+        long start = System.nanoTime();
+        long remaining = timeout;
+        do
+        {
+            try
+            {
+                awaitAvailableConnection(remaining, unit);
+            }
+            catch (InterruptedException e)
+            {
+                Thread.currentThread().interrupt();
+                timeout = 0;
+            }
+
+            if (isClosed())
+                throw new ConnectionException(host.getSocketAddress(), "Pool is shutdown");
+
+            // Looking for a less busy connection
+            int minInFlight = Integer.MAX_VALUE;
+            PooledConnection leastBusy = null;
+            for (PooledConnection connection : connections)
+            {
+                int inFlight = connection.inFlight.get();
+                if (inFlight < minInFlight)
+                {
+                    minInFlight = inFlight;
+                    leastBusy = connection;
+                }
+            }
+
+            if (null != leastBusy)
+            {
+                while (true)
+                {
+                    int inFlight = leastBusy.inFlight.get();
+
+                    if (inFlight >= leastBusy.maxAvailableStreams())
+                        break;
+
+                    if (leastBusy.inFlight.compareAndSet(inFlight, inFlight + 1))
+                        return leastBusy;
+                }
+            }
+
+            remaining = timeout - StemCluster.timeSince(start, unit);
+        } while (remaining > 0);
+
+        throw new TimeoutException();
+    }
+
     private boolean addConnectionIfUnderMaximum()
     {
         for (; ; )
@@ -108,6 +220,38 @@ public class ConnectionPool
             open.decrementAndGet();
             logger.debug("Connection error to {} while creating additional connection", host);
             return false;
+        }
+
+    }
+
+
+    private void maybeSpawnNewConnection()
+    {
+        while (true)
+        {
+            int inCreation = scheduledForCreation.get();
+            if (inCreation >= MAX_SIMULTANEOUS_CREATION)
+                return;
+            if (scheduledForCreation.compareAndSet(inCreation, inCreation + 1))
+                break;
+        }
+
+        logger.debug("Creating new connection on busy pool to {}", host);
+        session.blockingExecutor().submit(newConnectionTask);
+    }
+
+    private void awaitAvailableConnection(long timeout, TimeUnit unit) throws InterruptedException
+    {
+        waitLock.lock();
+        waiter++;
+        try
+        {
+            hasAvailableConnection.await(timeout, unit);
+        }
+        finally
+        {
+            waiter--;
+            waitLock.unlock();
         }
 
     }

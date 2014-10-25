@@ -54,6 +54,8 @@ public class Connection
     private volatile boolean isReady;
     private volatile boolean isDeactivated;
     private final AtomicReference<ConnectionCloseFuture> closeFutureRef = new AtomicReference<>();
+
+    public final AtomicInteger inFlight = new AtomicInteger(0);
     private final AtomicInteger writeCounter = new AtomicInteger(0);
 
     private final Object terminationLock = new Object();
@@ -178,6 +180,11 @@ public class Connection
     public boolean isClosed()
     {
         return closeFutureRef.get() != null;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Connection[%s, inFlight=%d, closed=%b]", name, inFlight.get(), isClosed());
     }
 
     private class ConnectionCloseFuture extends CloseFuture
