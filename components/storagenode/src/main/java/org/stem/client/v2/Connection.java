@@ -93,6 +93,10 @@ public class Connection {
         return e;
     }
 
+    public boolean isDeactivated() {
+        return isDeactivated;
+    }
+
     public Future write(Message.Request request) throws ConnectionBusyException, ConnectionException {
         Future future = new Future(request);
         write(future);

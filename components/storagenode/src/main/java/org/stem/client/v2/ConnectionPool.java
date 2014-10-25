@@ -16,13 +16,16 @@
 
 package org.stem.client.v2;
 
+import com.google.common.util.concurrent.MoreExecutors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.exceptions.ConnectionException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,10 +38,12 @@ public class ConnectionPool {
     private static final Logger logger = LoggerFactory.getLogger(ConnectionPool.class);
 
     private static final int MAX_SIMULTANEOUS_CREATION = 1;
+    private static final int MIN_AVAILABLE_STREAMS = 96;
 
     final Host host;
 
     final List<PooledConnection> connections;
+    private final Set<Connection> trash = new CopyOnWriteArraySet<>();
     private Session session;
     private final AtomicInteger open;
     private volatile int waiter = 0;
@@ -121,6 +126,107 @@ public class ConnectionPool {
             }
         }
         return leastBusy;
+    }
+
+    public void returnConnection(PooledConnection connection) {
+        if (isClosed()) {
+            close(connection);
+            return;
+        }
+
+        int inFlight = connection.inFlight.decrementAndGet();
+
+        if (!connection.isDeactivated()) {
+            if (trash.contains(connection) && 0 == inFlight) {
+                if (trash.remove(connection))
+                    close(connection);
+                return;
+            }
+
+            if (connections.size() > options().getStartConnectionsPerHost() && inFlight <= options().getMinSimultaneousRequestsPerConnection()) {
+                trashConnection(connection);
+            } else if (connection.maxAvailableStreams() < MIN_AVAILABLE_STREAMS) {
+                replaceConnection(connection);
+            } else {
+                signalAvailableConnection();
+            }
+        }
+    }
+
+    private void replaceConnection(PooledConnection connection) {
+        open.decrementAndGet();
+        maybeSpawnNewConnection();
+        doTrashConnection(connection);
+    }
+
+    private boolean trashConnection(PooledConnection connection) {
+        for (; ; ) {
+            int opened = open.get();
+            if (opened <= options().getStartConnectionsPerHost())
+                return false;
+
+            if (open.compareAndSet(opened, opened - 1))
+                break;
+        }
+
+        doTrashConnection(connection);
+        return true;
+    }
+
+    private void doTrashConnection(PooledConnection connection) {
+        trash.add(connection);
+        connections.remove(connection);
+        if (0 == connection.inFlight.get() && trash.remove(connection))
+            close(connection);
+    }
+
+    void replace(final Connection connection) {
+        connections.remove(connection);
+        connection.close();
+        session.blockingExecutor().submit(new Runnable() {
+            @Override
+            public void run() {
+                addConnectionIfUnderMaximum();
+            }
+        });
+    }
+
+    public int opened() {
+        return open.get();
+    }
+
+    private List<CloseFuture> discardAvailableConnections() {
+
+        List<CloseFuture> futures = new ArrayList<CloseFuture>(connections.size());
+        for (Connection connection : connections) {
+            CloseFuture future = connection.close();
+            future.addListener(new Runnable() {
+                public void run() {
+                    open.decrementAndGet();
+                }
+            }, MoreExecutors.sameThreadExecutor());
+            futures.add(future);
+        }
+        return futures;
+    }
+
+    public void ensureCoreConnections() {
+        if (isClosed())
+            return;
+
+        int opened = open.get();
+        for (int i = opened; i < options().getStartConnectionsPerHost(); i++) {
+            scheduledForCreation.incrementAndGet();
+            session.blockingExecutor().submit(newConnectionTask);
+        }
+    }
+
+    private void close(final Connection connection) {
+        connection.close();
+    }
+
+    public boolean isClosed() {
+        return closeFuture.get() != null;
     }
 
     private PooledConnection waitForConnection(long timeout, TimeUnit unit) throws ConnectionException, TimeoutException {
@@ -233,10 +339,20 @@ public class ConnectionPool {
         finally {
             waitLock.unlock();
         }
-
     }
 
-    public boolean isClosed() {
-        return closeFuture.get() != null;
+    private void signalAllAvailableConnection() {
+        if (waiter == 0)
+            return;
+
+        waitLock.lock();
+        try {
+            hasAvailableConnection.signalAll();
+        }
+        finally {
+            waitLock.unlock();
+        }
     }
+
+
 }
