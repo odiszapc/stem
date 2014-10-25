@@ -7,12 +7,14 @@ STEM is designed as a cheap solution for cloud hosting providers and can easily 
 With STEM you can persist up to 100-200TB+ of binary data on each machine in cluster.
 
 #### Features
-- Linux/Windows compatible (HotSpot JVM)
+- Linear scalability
+- High availability (x3 replication by default)
 - Heterogeneous design of cluster (binary dataset is separated from meta data)
+- Linux/Windows compatible (HotSpot JVM)
 - Low cost — store up to 200TB of data on storage node
 - Stray forward compaction with no overhead (it takes few hours to free up space after deletion of data on a 3TB disk)
-- Replication (x3 by default)
-- Automated cluster re-balancing logic — turn on new node and that's all
+- Automated cluster re-balancing logic — join a new node to cluster and power on it
+- Data repairing process has no overhead while calculating deltas of data
 - Tolerance to disk fragmentation (pre-allocation of disk space)
 - True sequential writes
 - Adjustable consistency on reads
@@ -20,11 +22,11 @@ With STEM you can persist up to 100-200TB+ of binary data on each machine in clu
 - Uses Cassandra 2.0 as registry of meta data
 - Cluster management user interface
 - Hierarchical cluster topology
-- Using CRUSH algorithm to control data distribution
+- Data distribution logic uses CRUSH algorithm to compute data flow
 - REST API (PUT, GET, DELETE)
 
 #### Use cases
-STEM can be a key component in following types of services:
+Linear scalability, high availability and zer-overhead compaction and repair make STEM perfect platform for the following production cases:
 - File storage backend
 - Storage for a large amount of small blocks of data
 - Core engine for image hosting
