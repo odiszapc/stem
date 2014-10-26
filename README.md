@@ -19,10 +19,10 @@ With STEM you can persist up to 100-200TB+ of binary data on each machine in clu
 - True sequential writes
 - Adjustable consistency on reads
 - Coordination and monitoring of data movement with Zookeeper
-- Uses Cassandra 2.0 as registry of meta data
+- Uses Cassandra 2.0 as meta-data registry
 - Cluster management user interface
 - Hierarchical cluster topology
-- Data distribution logic uses CRUSH algorithm to compute data flow
+- Data distribution logic is based on CRUSH algorithm to compute data flow
 - REST API (PUT, GET, DELETE)
 
 #### Use cases
