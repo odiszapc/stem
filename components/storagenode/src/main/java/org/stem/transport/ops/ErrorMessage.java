@@ -64,7 +64,6 @@ public class ErrorMessage extends Message.Response {
         this.error = error;
     }
 
-
     @Override
     public ByteBuf encode() {
         return codec.encode(this);
