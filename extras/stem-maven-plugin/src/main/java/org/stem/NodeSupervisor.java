@@ -43,16 +43,14 @@ public class NodeSupervisor extends Thread {
                 socket.setSoLinger(false, 0);
                 LineNumberReader lin = new LineNumberReader(new InputStreamReader(socket.getInputStream()));
                 String key = lin.readLine();
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
             finally {
                 if (socket != null) {
                     try {
                         socket.close();
-                    }
-                    catch (IOException e) {
+                    } catch (IOException e) {
                         // ignore
                     }
                 }

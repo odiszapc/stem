@@ -47,8 +47,7 @@ public class FFScanner implements Iterator<Blob> {
             } else {
                 return false;
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         finally {

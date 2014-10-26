@@ -58,8 +58,7 @@ public class FatFileAllocator {
                 rw.seek(rw.length() - 1);
                 rw.writeByte(FatFile.MARKER_BLANK);
             }
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             throw closer.rethrow(e);
         }
         finally {

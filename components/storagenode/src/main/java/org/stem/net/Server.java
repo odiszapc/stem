@@ -78,8 +78,7 @@ public class Server {
 
             // Wait until server socket is closed.
             // channel.closeFuture().sync();
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
             throw new RuntimeException("Can't start server: ", e);
         }

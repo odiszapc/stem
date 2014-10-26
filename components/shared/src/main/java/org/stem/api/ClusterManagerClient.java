@@ -42,8 +42,7 @@ public class ClusterManagerClient extends BaseHttpClient {
 
             StemResponse send = send(request, msg, StemResponse.class);
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Can't join cluster, ClusterManager response: " + e.getMessage());
         }
     }

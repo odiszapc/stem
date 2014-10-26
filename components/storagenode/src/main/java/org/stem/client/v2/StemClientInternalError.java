@@ -16,8 +16,6 @@
 
 package org.stem.client.v2;
 
-import java.util.concurrent.ExecutionException;
-
 public class StemClientInternalError extends StemClientException {
     public StemClientInternalError(String message) {
         super(message);

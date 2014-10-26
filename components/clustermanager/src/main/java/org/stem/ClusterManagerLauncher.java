@@ -59,8 +59,7 @@ public class ClusterManagerLauncher {
             loadClusterConfiguration();
             configureWebServer();
             startWebServer();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Error while starting Cluster Manager web server", e);
         }
     }
@@ -119,8 +118,7 @@ public class ClusterManagerLauncher {
             client.createIfNotExists(ZooConstants.CLUSTER);
             client.listenForChildren(ZooConstants.CLUSTER, new StorageStatListener());
             //client.createIfNotExists(ZooConstants.CLUSTER_DESCRIPTOR_PATH);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Can't init Zookeeper", e);
         }
     }

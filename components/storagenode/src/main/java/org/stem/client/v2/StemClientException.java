@@ -34,7 +34,7 @@ public class StemClientException extends RuntimeException {
         super(message, cause);
     }
 
-    public StemClientException copy () {
+    public StemClientException copy() {
         return new StemClientException(getMessage(), this);
     }
 }

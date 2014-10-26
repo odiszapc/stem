@@ -46,8 +46,7 @@ public class StreamManager {
     public void listenForSessions() {
         try {
             client.listenForChildren(ZooConstants.OUT_SESSIONS, new NewSessionsListener());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Can't start listen for sessions");
         }
     }

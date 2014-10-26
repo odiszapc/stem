@@ -46,8 +46,7 @@ public class FFExtendedScanner implements Iterator<ExtendedBlobDescriptor> {
             } else {
                 return false;
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         finally {

@@ -54,8 +54,7 @@ public class JsonResponseHandler implements ResponseHandler<StemResponse> {
                 throw new HttpResponseException(
                         statusLine.getStatusCode(),
                         message);
-            }
-            catch (RuntimeException e) {
+            } catch (RuntimeException e) {
                 throw new HttpResponseException(
                         statusLine.getStatusCode(),
                         statusLine.getReasonPhrase());

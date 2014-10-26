@@ -56,8 +56,7 @@ public class WriteController extends IOController {
 
         try {
             activeFF.seek(activeFF.getPointer());
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -90,8 +89,7 @@ public class WriteController extends IOController {
             }
 
             return activeFF.writeBlob(message.key, message.blob);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

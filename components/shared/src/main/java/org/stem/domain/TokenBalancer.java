@@ -42,8 +42,7 @@ public class TokenBalancer<T> {
     public T getToken(String key) {
         try {
             return getToken(Hex.decodeHex(key.toCharArray()));
-        }
-        catch (DecoderException e) {
+        } catch (DecoderException e) {
             throw new RuntimeException(e);
         }
     }

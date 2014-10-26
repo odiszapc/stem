@@ -44,8 +44,7 @@ public abstract class BaseHttpClient {
         try {
             this.root = new URI(uri);
             client = HttpClients.createDefault();
-        }
-        catch (URISyntaxException e) {
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
     }
@@ -58,8 +57,7 @@ public abstract class BaseHttpClient {
     protected static StringEntity prepareJsonBody(Object obj) {
         try {
             return new StringEntity(JsonUtils.encode(obj));
-        }
-        catch (UnsupportedEncodingException e) {
+        } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
     }
@@ -72,8 +70,7 @@ public abstract class BaseHttpClient {
             request.setEntity(body);
             return (T) client.execute(request, getResponseHandler(clazz));
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -84,8 +81,7 @@ public abstract class BaseHttpClient {
             setHeaders(request);
             return (T) client.execute(request, getResponseHandler(clazz));
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
     }
@@ -97,8 +93,7 @@ public abstract class BaseHttpClient {
 
             setHeaders(request);
             return (T) client.execute(request, getResponseHandler(clazz));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
     }
@@ -112,8 +107,7 @@ public abstract class BaseHttpClient {
             return new URIBuilder(root)
                     .setPath(relativeUri)
                     .build();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

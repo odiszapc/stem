@@ -113,8 +113,7 @@ public class StorageNodeClient {
             float duration = (float) (System.nanoTime() - start) / 1000000;
             //logger.debug("Request took {} ms", String.format("%.3f", duration));
             return response;
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
         //channel.flush();
@@ -166,8 +165,7 @@ public class StorageNodeClient {
             }
 
             return response;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             RuntimeException reason;
             if (e.getCause() instanceof TimeoutException) {
                 reason = new RuntimeException("Timeout: ", e);
@@ -196,8 +194,7 @@ public class StorageNodeClient {
             dispatcher.add(requestFuture.callback);
             channel.writeAndFlush(request); // TODO: .addListener(futureListener());
             return requestFuture;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             RuntimeException reason;
             if (e.getCause() instanceof TimeoutException) {
                 reason = new RuntimeException("Timeout: ", e);
@@ -261,8 +258,7 @@ public class StorageNodeClient {
         protected void channelRead0(ChannelHandlerContext ctx, Message.Response message) throws Exception {
             try {
                 responses.put(message);
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }

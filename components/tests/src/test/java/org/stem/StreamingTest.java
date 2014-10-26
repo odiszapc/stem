@@ -112,8 +112,7 @@ public class StreamingTest extends IntegrationTestBase {
             try {
                 client.start();
                 break;
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 System.out.println(String.format("Node %s has not started yet", endpoint));
                 Thread.sleep(100);
             }

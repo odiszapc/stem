@@ -116,8 +116,8 @@ public class RequestHandler implements Connection.ResponseCallback {
                 case RESULT:
                     setFinalResult(connection, response);
                 case ERROR:
-                    ErrorMessage err = (ErrorMessage)response;
-
+                    ErrorMessage err = (ErrorMessage) response;
+                    StemClientException e = err.error;
             }
         }
     }

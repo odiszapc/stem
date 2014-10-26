@@ -57,8 +57,7 @@ public class StemClient implements TopoMapSubscriber {
             mappingChanged(mapping);
 
             zooClient.listenForZNode(ZooConstants.TOPOLOGY + "/" + ZooConstants.TOPO_MAP, mappingListener);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Can't start Stem client", e);
         }
     }

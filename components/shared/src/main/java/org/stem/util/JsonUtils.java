@@ -39,8 +39,7 @@ public class JsonUtils {
     public static String encode(Object obj) {
         try {
             return mapper.writeValueAsString(obj);
-        }
-        catch (JsonProcessingException e) {
+        } catch (JsonProcessingException e) {
             throw new RuntimeException("Can't serialize object", e);
         }
     }
@@ -48,8 +47,7 @@ public class JsonUtils {
     public static byte[] encodeBytes(Object obj) {
         try {
             return mapper.writeValueAsBytes(obj);
-        }
-        catch (JsonProcessingException e) {
+        } catch (JsonProcessingException e) {
             throw new RuntimeException("Can't serialize object", e);
         }
     }
@@ -57,8 +55,7 @@ public class JsonUtils {
     public static <T> T decode(String json, Class<T> clazz) {
         try {
             return mapper.readValue(json, clazz);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException("Can't serialize object", e);
         }
     }
@@ -66,8 +63,7 @@ public class JsonUtils {
     public static <T> T decode(byte[] json, Class<T> clazz) {
         try {
             return mapper.readValue(json, clazz);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException("Can't serialize object", e);
         }
     }
@@ -75,8 +71,7 @@ public class JsonUtils {
     public static <T> T decode(InputStream jsonStream, Class<T> clazz) {
         try {
             return mapper.readValue(jsonStream, clazz);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException("Can't serialize object", e);
         }
     }
@@ -84,8 +79,7 @@ public class JsonUtils {
     public static <T> T decode(InputStream jsonStream, SimpleType typeInfo) {
         try {
             return mapper.readValue(jsonStream, typeInfo);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException("Can't serialize object", e);
         }
     }
@@ -93,8 +87,7 @@ public class JsonUtils {
     public static <T> T decode(String json, JavaType type) {
         try {
             return mapper.readValue(json, type);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException("Can't serialize object", e);
         }
     }

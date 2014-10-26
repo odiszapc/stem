@@ -48,8 +48,7 @@ public class StorageService {
                 throw new RuntimeException(String.format("Mount point %s can not be found", message.disk));
 
             return wc.write(message);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Error writing blob", e);
             throw new RuntimeException(e);
         }

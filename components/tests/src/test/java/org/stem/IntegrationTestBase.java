@@ -139,8 +139,7 @@ public class IntegrationTestBase {
             }
             br.close();
             return cqlQueries;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -176,8 +175,7 @@ public class IntegrationTestBase {
             if (count >= maxCount) {
                 throw new RuntimeException("Timed out waiting for Blob Manager to start");
             }
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             throw new RuntimeException("Error while waiting for Blob manager instance to be started", e);
         }
     }
@@ -187,8 +185,7 @@ public class IntegrationTestBase {
             StemResponse info = ClusterManagerClient
                     .create("http://localhost:9997")
                     .info();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return false;
         }
         return true;
@@ -197,8 +194,7 @@ public class IntegrationTestBase {
     protected void startZookeeperEmbedded() {
         try {
             zookeeperInstance = new TestingServer(2181);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Cant start Zookeeper instance", e);
         }
     }
@@ -207,8 +203,7 @@ public class IntegrationTestBase {
     protected void stopZookeeperEmbedded() {
         try {
             zookeeperInstance.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException("Cant stop Zookeeper instance", e);
         }
     }

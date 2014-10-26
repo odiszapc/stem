@@ -318,8 +318,7 @@ public class ProtocolTest extends IntegrationTestBase {
                     try {
                         client.put(key, in);
                         counter.incrementAndGet();
-                    }
-                    catch (Throwable ex) {
+                    } catch (Throwable ex) {
                         int a = 1;
                     }
                 }
@@ -344,8 +343,7 @@ public class ProtocolTest extends IntegrationTestBase {
                         countBefore = countNow;
 
                         Thread.sleep(2000);
-                    }
-                    catch (InterruptedException e) {
+                    } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }

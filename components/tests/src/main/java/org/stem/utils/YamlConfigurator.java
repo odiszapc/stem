@@ -39,8 +39,7 @@ public class YamlConfigurator {
     public static YamlConfigurator open(String configPath) {
         try {
             return new YamlConfigurator(configPath);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -52,8 +51,7 @@ public class YamlConfigurator {
     public URI getURI() {
         try {
             return url.toURI();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -69,8 +67,7 @@ public class YamlConfigurator {
             InputStream stream = url.openStream();
             config = yaml.loadAs(stream, Config.class);
             stream.close(); // TODO; utilize the power of Guava
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -131,8 +128,7 @@ public class YamlConfigurator {
             String newPath = file.getParentFile().getAbsolutePath() + File.separator + index + ".yaml";
             save(newPath);
             return newPath;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -143,8 +139,7 @@ public class YamlConfigurator {
             String path = dir + File.separator + index + ".yaml";
             save(path);
             return path;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -159,8 +154,7 @@ public class YamlConfigurator {
             Yaml yamlDumper = new Yaml();
             FileWriter writer = new FileWriter(newFile);
             yamlDumper.dump(config, writer);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -171,8 +165,7 @@ public class YamlConfigurator {
             if (null == url)
                 throw new Exception(configPath + " can not be found");
             return url;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Can not convert String path to URL object", e);
         }
 

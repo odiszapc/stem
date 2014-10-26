@@ -49,8 +49,7 @@ public class StorageNodeDescriptor {
         InputStream stream;
         try {
             stream = url.openStream();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new AssertionError(e);
         }
 
@@ -70,8 +69,7 @@ public class StorageNodeDescriptor {
             File file = new File(configPath);
             url = file.toURI().toURL();
             url.openStream().close();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Cannot load " + configPath);
         }
         return url;

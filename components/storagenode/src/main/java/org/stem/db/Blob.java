@@ -127,8 +127,7 @@ public class Blob // TODO: integrate all descriptors (mountpoint, fatfile, etc)
             byte[] keyBytes;
             try {
                 keyBytes = Hex.decodeHex(key.toCharArray());
-            }
-            catch (DecoderException e) {
+            } catch (DecoderException e) {
                 throw new IOException("Can not decode the key " + key, e);
             }
             assert keyBytes.length == 16;

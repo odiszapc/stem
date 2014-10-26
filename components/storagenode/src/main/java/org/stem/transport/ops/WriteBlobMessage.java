@@ -92,8 +92,7 @@ public class WriteBlobMessage extends Message.Request {
                     desc.getFFIndex(),
                     desc.getBodyOffset());
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ErrorMessage.fromException(e);
         }
     }

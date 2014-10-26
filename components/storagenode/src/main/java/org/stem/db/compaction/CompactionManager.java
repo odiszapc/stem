@@ -58,8 +58,7 @@ public class CompactionManager {
             for (MountPoint mp : mountPoints) {
                 performSinglePassCompaction(mp); // TODO: every disk should be compacted in a separate thread
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Compaction was stopped unexpectedly", e);
         }
     }

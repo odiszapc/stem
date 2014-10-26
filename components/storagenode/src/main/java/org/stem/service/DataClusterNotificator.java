@@ -39,8 +39,7 @@ public class DataClusterNotificator implements Runnable {
         while (true) {
             try {
                 doWork();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 logger.warn("Error occurred during notify Zookeeper", e);
             }
 
@@ -74,8 +73,7 @@ public class DataClusterNotificator implements Runnable {
 
 
             Thread.sleep(1000);
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }

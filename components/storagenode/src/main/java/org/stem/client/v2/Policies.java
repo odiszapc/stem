@@ -26,6 +26,6 @@ public class Policies {
     }
 
     public ReconnectionPolicy getReconnectionPolicy() {
-            return reconnectionPolicy;
-        }
+        return reconnectionPolicy;
+    }
 }

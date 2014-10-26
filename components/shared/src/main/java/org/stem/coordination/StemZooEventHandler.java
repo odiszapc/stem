@@ -35,8 +35,7 @@ public abstract class StemZooEventHandler<T> {
             public void onChildAdded(String path, byte[] data, Stat stat) {
                 try {
                     StemZooEventHandler.this.onChildAdded(decode(data));
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     onError(e);
                 }
             }
@@ -45,8 +44,7 @@ public abstract class StemZooEventHandler<T> {
             public void onChildUpdated(String path, byte[] data, Stat stat) {
                 try {
                     StemZooEventHandler.this.onChildUpdated(decode(data));
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     onError(e);
                 }
             }
@@ -55,8 +53,7 @@ public abstract class StemZooEventHandler<T> {
             public void onChildRemoved(String path, byte[] data, Stat stat) {
                 try {
                     StemZooEventHandler.this.onChildRemoved(decode(data));
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     onError(e);
                 }
             }
@@ -65,8 +62,7 @@ public abstract class StemZooEventHandler<T> {
             public void onNodeUpdated(String path, byte[] data, Stat stat) {
                 try {
                     StemZooEventHandler.this.onNodeUpdated(decode(data));
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     onError(e);
                 }
             }

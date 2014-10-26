@@ -118,8 +118,7 @@ public class ZookeeperClient {
             if (null == stat) {
                 client.create().creatingParentsIfNeeded().forPath(path, new byte[]{});
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new Exception("Error occurred during interaction with Zookeeper", e);
         }
     }
@@ -153,8 +152,7 @@ public class ZookeeperClient {
                 return null;
             }
             return JsonUtils.decode(data, clazz);
-        }
-        catch (KeeperException.NoNodeException e) {
+        } catch (KeeperException.NoNodeException e) {
             return null;
         }
     }

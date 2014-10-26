@@ -67,8 +67,7 @@ public class Layout {
 
                 mountPoints.put(mp.uuid, mp);
 
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 logger.error("Can't load mount point {}", path);
                 throw e;
             }

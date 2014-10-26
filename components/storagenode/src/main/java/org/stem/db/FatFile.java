@@ -176,8 +176,7 @@ public class FatFile {
         try {
             index = FatFileIndex.deserialize(channel, indexHeaderOffset);
             tracker.count(index);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new IOException("Can't load index for #" + id, e);
         }
     }
@@ -229,8 +228,7 @@ public class FatFile {
             this.capacity = writer.length();
             this.indexHeaderOffset = capacity - 1 - FatFileIndex.Header.SIZE;
 
-        }
-        catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             throw new IOException("Can open fat file: ", e);
         }
 
@@ -281,8 +279,7 @@ public class FatFile {
     public void writeBlob(String key, byte[] body) throws IOException {
         try {
             writeBlob(Hex.decodeHex(key.toCharArray()), ByteBuffer.wrap(body));
-        }
-        catch (DecoderException e) {
+        } catch (DecoderException e) {
             throw new RuntimeException(e);
         }
     }
@@ -381,8 +378,7 @@ public class FatFile {
         try {
             reader.close();
             writer.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logger.error("Can't close {}, {}", reader, writer);
 
         }

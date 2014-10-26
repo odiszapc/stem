@@ -40,8 +40,7 @@ public class StemDaemon {
         try {
             setup();
             startService();
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             e.printStackTrace();
             System.out.println("Error occurred during startup: " + e.getMessage());
             System.exit(3);
@@ -64,8 +63,7 @@ public class StemDaemon {
             StorageNodeDescriptor.joinCluster();
             StreamManager.instance.listenForSessions();
 
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logger.error("Error during initialization", e);
             e.printStackTrace();
             System.exit(100);

@@ -58,11 +58,9 @@ public class Session extends AbstractSession {
         for (Host host : cluster.getMetadata().allHosts()) {
             try {
                 maybeAddPool(host, executor()).get();
-            }
-            catch (ExecutionException e) {
+            } catch (ExecutionException e) {
                 throw new StemClientInternalError(e);
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
         }
@@ -156,8 +154,7 @@ public class Session extends AbstractSession {
                             newPool.closeAsync();
 
                         return true;
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         logger.error("Error creating pool to " + host, e);
                         return false;
                     }
@@ -208,8 +205,7 @@ public class Session extends AbstractSession {
                             return true;
                         }
                     }
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     logger.error("Error creating pool to " + host, e);
                     return false;
                 }
@@ -241,11 +237,9 @@ public class Session extends AbstractSession {
                 poolRemovalFutures.add(removePool(h));
 
             Futures.allAsList(poolRemovalFutures).get();
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-        }
-        catch (ExecutionException e) {
+        } catch (ExecutionException e) {
             logger.error("Unexpected error while refreshing connection pools", e.getCause());
         }
     }

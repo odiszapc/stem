@@ -47,8 +47,7 @@ public class StreamIdPoolTest {
             pool.borrow(); // Should throw busy error
 
             throw new AssertionError("No more IDs should be available");
-        }
-        catch (ConnectionBusyException e) {
+        } catch (ConnectionBusyException e) {
         }
     }
 }

@@ -64,8 +64,7 @@ public class Cluster {
                 init(descriptor.getName(), descriptor.getvBuckets(), descriptor.getRf());
             }
             int a = 1;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new StemException("Can't load cluster configuration", e);
         }
         return null; // TODO: load cluster topology from zookeeper
@@ -76,8 +75,7 @@ public class Cluster {
         try {
             zookeeperClientSafeStart();
             client.createNode(ZooConstants.CLUSTER, descriptor);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new StemException("Can't save cluster configuration", e);
         }
     }
@@ -121,8 +119,7 @@ public class Cluster {
 
         try {
             instance.initZookeeper();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new StemException("Error while initializing cluster", e);
         }
 
@@ -164,8 +161,7 @@ public class Cluster {
 
             try {
                 client.createNodeIfNotExists(ZooConstants.CLUSTER, nodeStat);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 throw new StemException(e);
             }
         }
@@ -208,8 +204,7 @@ public class Cluster {
                 client.createNodeIfNotExists(ZooConstants.OUT_SESSIONS, s);
             }
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new StemException("Can't compute mapping. Reason: " + e.getMessage());
         }
     }

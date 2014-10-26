@@ -89,8 +89,7 @@ public class RequestFuture extends AbstractFuture<Message.Response> {
     public Message.Response getUninterruptibly() {
         try {
             return Uninterruptibles.getUninterruptibly(this);
-        }
-        catch (ExecutionException e) {
+        } catch (ExecutionException e) {
             throw new RuntimeException(e.getCause());
         }
     }

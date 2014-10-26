@@ -22,7 +22,7 @@ import java.net.InetSocketAddress;
 public class Host {
     private InetSocketAddress address;
 
-    enum State { ADDED, DOWN, SUSPECT, UP }
+    enum State {ADDED, DOWN, SUSPECT, UP}
 
     volatile State state;
 
@@ -36,8 +36,8 @@ public class Host {
     }
 
     public InetAddress getAddress() {
-            return address.getAddress();
-        }
+        return address.getAddress();
+    }
 
     public InetSocketAddress getSocketAddress() {
         return address;

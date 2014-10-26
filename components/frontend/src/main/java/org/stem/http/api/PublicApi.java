@@ -32,8 +32,7 @@ public class PublicApi {
         try {
             PublicApi api = new PublicApi();
             api.start();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.err.println(e);
         }
     }
@@ -42,8 +41,7 @@ public class PublicApi {
         server = new HttpServer();
         try {
             server.start();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

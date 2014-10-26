@@ -67,8 +67,7 @@ public class ExternalNode {
             for (Map.Entry prop : properties.entrySet()) {
                 env.put((String) prop.getKey(), (String) prop.getValue());
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             log.error("Could not assign default system environment variables.", e);
         }
         env.put("stem.config", new File(new File(nodeDir, "conf"), "stem.yaml").getAbsolutePath());
@@ -101,8 +100,7 @@ public class ExternalNode {
 //                e.printStackTrace();
 //            }
             return execHandler;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new MojoExecutionException("Command execution failed.", e);
         }
     }
@@ -159,8 +157,7 @@ public class ExternalNode {
             if (toolchainManager != null) {
                 toolchain = toolchainManager.getToolchainFromBuildContext("jdk", mvnContext.session);
             }
-        }
-        catch (ComponentLookupException e) {
+        } catch (ComponentLookupException e) {
             //
         }
 

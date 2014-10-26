@@ -62,8 +62,7 @@ public class DeleteBlobMessage extends Message.Request {
             StorageService.instance.delete(this);
             return new ResultMessage.Void();
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ErrorMessage.fromException(e);
         }
     }

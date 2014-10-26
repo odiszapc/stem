@@ -24,7 +24,8 @@ import java.util.List;
 
 public abstract class CloseFuture extends AbstractFuture<Void> {
 
-    CloseFuture() {}
+    CloseFuture() {
+    }
 
     static CloseFuture immediateFuture() {
         CloseFuture future = new CloseFuture() {

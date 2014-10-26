@@ -74,8 +74,7 @@ public class ReadBlobMessage extends Message.Request {
 
             return new ResultMessage.ReadBlob(data);
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ErrorMessage.fromException(e);
         }
     }

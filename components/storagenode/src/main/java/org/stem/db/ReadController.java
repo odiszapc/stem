@@ -27,8 +27,7 @@ public class ReadController extends IOController {
         try {
             return getFatFile(fatFileIndex)
                     .readBlob(offset, length);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -38,8 +37,7 @@ public class ReadController extends IOController {
             getFatFile(fatFileIndex)
                     .deleteBlob(offset);
 
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

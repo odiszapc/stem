@@ -89,8 +89,7 @@ public class StartStemNode
             ExternalNode node = new ExternalNode(nodeDir, configurator, mvnContext, getLog());
 
             node.start();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new MojoExecutionException(e.getLocalizedMessage(), e);
         }
 

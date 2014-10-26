@@ -39,8 +39,7 @@ public class Utils {
                 }
             }
             return addrList;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

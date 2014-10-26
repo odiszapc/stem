@@ -237,8 +237,8 @@ public class ConnectionPool {
         future = new CloseFuture.Forwarding(discardAvailableConnections());
 
         return closeFuture.compareAndSet(null, future)
-             ? future
-             : closeFuture.get(); // We raced, it's ok, return the future that was actually set
+                ? future
+                : closeFuture.get(); // We raced, it's ok, return the future that was actually set
     }
 
     public boolean isClosed() {
@@ -251,8 +251,7 @@ public class ConnectionPool {
         do {
             try {
                 awaitAvailableConnection(remaining, unit);
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 timeout = 0;
             }
@@ -308,8 +307,7 @@ public class ConnectionPool {
             connections.add(session.connectionFactory().open(this));
             signalAvailableConnection();
             return true;
-        }
-        catch (ConnectionException e) {
+        } catch (ConnectionException e) {
             open.decrementAndGet();
             logger.debug("Connection error to {} while creating additional connection", host);
             return false;
