@@ -19,6 +19,15 @@ package org.stem.client.v2;
 import org.stem.transport.Message;
 
 public class RequestHandler implements Connection.ResponseCallback {
+    private final Session session;
+    private final Callback callback;
+
+    public RequestHandler(Session session, Callback callback) {
+
+        this.session = session;
+        this.callback = callback;
+    }
+
     @Override
     public Message.Request request() {
         return null;

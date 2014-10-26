@@ -234,7 +234,7 @@ public class Connection {
         }
 
         public Connection open(Host host) throws ConnectionException {
-            address = host.getSocketAddress();
+            address = host.getAddress();
             if (isShutdown)
                 throw new ConnectionException(address, "Connection factory is shut down");
 
@@ -243,7 +243,7 @@ public class Connection {
         }
 
         public PooledConnection open(ConnectionPool pool) throws ConnectionException {
-            InetSocketAddress address = pool.host.getSocketAddress();
+            InetSocketAddress address = pool.host.getAddress();
 
             if (isShutdown)
                 throw new ConnectionException(address, "Connection factory is shut down");

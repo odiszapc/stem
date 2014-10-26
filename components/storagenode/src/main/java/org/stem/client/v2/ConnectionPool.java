@@ -84,7 +84,7 @@ public class ConnectionPool {
 
     public PooledConnection borrowConnection(long timeout, TimeUnit unit) throws ConnectionException, TimeoutException {
         if (isClosed())
-            throw new ConnectionException(host.getSocketAddress(), "Pool is down");
+            throw new ConnectionException(host.getAddress(), "Pool is down");
 
         if (connections.isEmpty()) {
             for (int i = 0; i < options().getStartConnectionsPerHost(); i++) {
@@ -110,7 +110,7 @@ public class ConnectionPool {
 
         if (null == leastBusy) {
             if (isClosed())
-                throw new ConnectionException(host.getSocketAddress(), "Pool is shutdown");
+                throw new ConnectionException(host.getAddress(), "Pool is shutdown");
             leastBusy = waitForConnection(timeout, unit);
         } else {
             while (true) {
@@ -225,6 +225,22 @@ public class ConnectionPool {
         connection.close();
     }
 
+    public CloseFuture closeAsync() {
+
+        CloseFuture future = closeFuture.get();
+        if (future != null)
+            return future;
+
+        // Wake up all threads that waits
+        signalAllAvailableConnection();
+
+        future = new CloseFuture.Forwarding(discardAvailableConnections());
+
+        return closeFuture.compareAndSet(null, future)
+             ? future
+             : closeFuture.get(); // We raced, it's ok, return the future that was actually set
+    }
+
     public boolean isClosed() {
         return closeFuture.get() != null;
     }
@@ -242,7 +258,7 @@ public class ConnectionPool {
             }
 
             if (isClosed())
-                throw new ConnectionException(host.getSocketAddress(), "Pool is shutdown");
+                throw new ConnectionException(host.getAddress(), "Pool is shutdown");
 
             // Looking for a less busy connection
             int minInFlight = Integer.MAX_VALUE;

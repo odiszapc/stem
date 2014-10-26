@@ -72,5 +72,9 @@ public class StemCluster {
         public Connection.Factory getConnectionFactory() {
             return connectionFactory;
         }
+
+        public ReconnectionPolicy reconnectionPolicy() {
+            return configuration.getPolicies().getReconnectionPolicy();
+        }
     }
 }

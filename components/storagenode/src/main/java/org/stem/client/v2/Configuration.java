@@ -19,21 +19,29 @@ package org.stem.client.v2;
 import java.net.InetSocketAddress;
 
 public class Configuration {
-    SocketOpts socketOpts;
-    ProtocolOpts protocolOpts;
-    PoolingOpts poolingOpts;
+
+    private final Policies policies;
+
+    private final SocketOpts socketOpts;
+    private final ProtocolOpts protocolOpts;
+    private final PoolingOpts poolingOpts;
 
     InetSocketAddress clusterManagerHost;
     InetSocketAddress zookeeperHost;
 
     public Configuration() {
-        this(new SocketOpts(), new ProtocolOpts(), new PoolingOpts());
+        this(new Policies(), new SocketOpts(), new ProtocolOpts(), new PoolingOpts());
     }
 
-    public Configuration(SocketOpts socketOpts, ProtocolOpts protocolOpts, PoolingOpts poolingOpts) {
+    public Configuration(Policies policies, SocketOpts socketOpts, ProtocolOpts protocolOpts, PoolingOpts poolingOpts) {
+        this.policies = policies;
         this.socketOpts = socketOpts;
         this.protocolOpts = protocolOpts;
         this.poolingOpts = poolingOpts;
+    }
+
+    public Policies getPolicies() {
+        return policies;
     }
 
     public SocketOpts getSocketOpts() {

@@ -19,13 +19,29 @@ package org.stem.client.v2;
 import java.net.InetSocketAddress;
 
 public class Host {
-    private InetSocketAddress socketAddress;
+    private InetSocketAddress address;
 
-    public Host(InetSocketAddress socketAddress) {
-        this.socketAddress = socketAddress;
+    enum State { ADDED, DOWN, SUSPECT, UP }
+
+    volatile State state;
+
+    public Host(InetSocketAddress address) {
+        this.address = address;
+        this.state = State.ADDED;
     }
 
-    public InetSocketAddress getSocketAddress() {
-        return socketAddress;
+    public boolean isUp() {
+        // Consider a suspected host UP until proved otherwise to avoid
+        // having the status flapping if it turns out the host is not really down.
+        return state == State.UP || state == State.SUSPECT;
+    }
+
+    public InetSocketAddress getAddress() {
+        return address;
+    }
+
+    @Override
+    public int hashCode() {
+        return address.hashCode();
     }
 }
