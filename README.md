@@ -4,7 +4,7 @@ STEM is a distributed scalable storage of immutable binary objects of arbitary s
 
 STEM is designed as a cheap solution for cloud hosting providers and can easily be deployed on commodity hardware. STEM does not need any vendor specific staff like RAID or SAN, it uses plain formatted disks to store binary data.
 
-With STEM you can persist up to 100-200TB+ of binary data on each machine in cluster.
+With STEM each machine in cluster can store up to 100-200TB of data.
 
 #### Features
 - Linear scalability
@@ -19,10 +19,10 @@ With STEM you can persist up to 100-200TB+ of binary data on each machine in clu
 - True sequential writes
 - Adjustable consistency on reads
 - Coordination and monitoring of data movement with Zookeeper
-- Uses Cassandra 2.0 as registry of meta data
+- Uses Cassandra 2.0 as meta-data registry
 - Cluster management user interface
 - Hierarchical cluster topology
-- Data distribution logic uses CRUSH algorithm to compute data flow
+- Data distribution logic is based on CRUSH algorithm to compute data flow
 - REST API (PUT, GET, DELETE)
 
 #### Use cases
