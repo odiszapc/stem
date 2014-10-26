@@ -4,7 +4,7 @@ STEM is a distributed scalable storage of immutable binary objects of arbitary s
 
 STEM is designed as a cheap solution for cloud hosting providers and can easily be deployed on commodity hardware. STEM does not need any vendor specific staff like RAID or SAN, it uses plain formatted disks to store binary data.
 
-With STEM you can persist up to 100-200TB+ of binary data on each machine in cluster.
+With STEM each machine in cluster can store up to 100-200TB of data.
 
 #### Features
 - Linear scalability
