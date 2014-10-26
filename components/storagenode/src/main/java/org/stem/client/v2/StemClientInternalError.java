@@ -17,6 +17,7 @@
 package org.stem.client.v2;
 
 public class StemClientInternalError extends StemClientException {
+
     public StemClientInternalError(String message) {
         super(message);
     }

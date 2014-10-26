@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class StreamSession extends AbstractSession {
+
     String endpoint;
     Map<UUID, DiskMovement> movements; // session covers many disks
 

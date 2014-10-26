@@ -32,6 +32,7 @@ import org.stem.transport.ops.WriteBlobMessage;
 import java.util.*;
 
 public class StemClient implements TopoMapSubscriber {
+
     private MetaStoreClient metaClient;
     private ZookeeperClient zooClient;
     private TopoMapListener mappingListener; // Updated from Zookeeper size by ClusterManager

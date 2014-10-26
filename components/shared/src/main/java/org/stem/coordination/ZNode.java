@@ -17,6 +17,7 @@
 package org.stem.coordination;
 
 public interface ZNode {
+
     String nodeName();
 
     byte[] encode();

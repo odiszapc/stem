@@ -25,6 +25,7 @@ import java.io.File;
 import static org.stem.utils.TestUtil.temporize;
 
 public class AllocatorTest extends IntegrationTestBase {
+
     @Test
     public void testSize() throws Exception {
         String fatFilePath = temporize("000001.db");

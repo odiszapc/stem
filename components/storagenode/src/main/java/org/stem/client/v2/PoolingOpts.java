@@ -17,6 +17,7 @@
 package org.stem.client.v2;
 
 public class PoolingOpts {
+
     private static final int START_CONNECTIONS_PER_HOST = 1;
     private static final int MAX_CONNECTIONS_PER_HOST = 5;
     private static final int MIN_REQUESTS_DEFAULT = 10;

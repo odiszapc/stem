@@ -20,6 +20,7 @@ package org.stem.transport;
 import io.netty.channel.Channel;
 
 public class Connection {
+
     public Channel channel;
 
     public void setChannel(Channel channel) {

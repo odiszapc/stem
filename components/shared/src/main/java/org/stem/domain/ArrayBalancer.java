@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ArrayBalancer extends TokenBalancer<Integer> {
+
     public ArrayBalancer(int arraySize) {
         List<Integer> keySet = new ArrayList<Integer>(arraySize);
         for (int i = 1; i <= arraySize; i++) {

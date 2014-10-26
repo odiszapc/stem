@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class CompactionTest extends IntegrationTestBase {
+
     final String host = "localhost";
     final int port = 9999;
 

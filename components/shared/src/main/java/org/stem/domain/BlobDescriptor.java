@@ -17,6 +17,7 @@
 package org.stem.domain;
 
 public class BlobDescriptor {
+
     final int FFIndex;
     final int offset;
     final int bodyOffset;

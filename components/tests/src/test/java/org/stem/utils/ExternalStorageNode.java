@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ExternalStorageNode {
+
     public static ExternalStorageNode create(File nodeDir, YamlConfigurator configurator) {
         return new ExternalStorageNode(nodeDir, configurator);
     }

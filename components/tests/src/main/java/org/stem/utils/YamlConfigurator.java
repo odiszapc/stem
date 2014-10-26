@@ -32,6 +32,7 @@ import java.util.Random;
  * YamlConfigurator.open("stem.yaml")
  */
 public class YamlConfigurator {
+
     public static YamlConfigurator open(URL configUrl) {
         return new YamlConfigurator(configUrl);
     }

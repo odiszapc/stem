@@ -36,6 +36,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class CompactionManager {
+
     private static final Logger logger = LoggerFactory.getLogger(CompactionManager.class);
 
     public static final CompactionManager instance;

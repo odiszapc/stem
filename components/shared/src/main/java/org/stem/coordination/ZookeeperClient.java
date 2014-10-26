@@ -31,6 +31,7 @@ import org.apache.zookeeper.data.Stat;
 import org.stem.util.JsonUtils;
 
 public class ZookeeperClient {
+
     CuratorFramework client;
 
     private static final String HOST_DEFAULT = "localhost";

@@ -18,6 +18,7 @@ package org.stem.coordination;
 
 // TODO: integrate into org.stem.domain.Cluster ?
 public class ClusterDescriptor extends ZNodeAbstract {
+
     String name;
     int vBuckets;
     int rf;

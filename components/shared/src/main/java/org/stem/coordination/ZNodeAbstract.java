@@ -19,6 +19,7 @@ package org.stem.coordination;
 import org.stem.util.JsonUtils;
 
 public abstract class ZNodeAbstract implements ZNode {
+
     // TODO: Make these methods static
     @Override
     public byte[] encode() {

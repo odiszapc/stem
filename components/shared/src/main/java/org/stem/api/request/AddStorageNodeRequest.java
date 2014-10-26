@@ -19,6 +19,7 @@ package org.stem.api.request;
 import java.util.List;
 
 public class AddStorageNodeRequest extends ClusterManagerRequest {
+
     String ipAddress;
     int port;
     List<Disk> disks;
@@ -51,6 +52,7 @@ public class AddStorageNodeRequest extends ClusterManagerRequest {
     }
 
     public static class Disk {
+
         String id;
         long usedBytes;
         long totalBytes;

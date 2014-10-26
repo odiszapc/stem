@@ -19,6 +19,7 @@ package org.stem.domain;
 import java.util.UUID;
 
 public class ExtendedBlobDescriptor extends BlobDescriptor {
+
     final byte[] key;
     final int length;
     UUID disk = null;

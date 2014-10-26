@@ -304,6 +304,7 @@ public class ProtocolTest extends IntegrationTestBase {
         }
 
         public class Writer implements Runnable {
+
             byte[] in = TestUtil.generateRandomBlob(65536);
 
             @Override
@@ -326,6 +327,7 @@ public class ProtocolTest extends IntegrationTestBase {
         }
 
         public class Logger implements Runnable {
+
             long tickBefore = System.nanoTime();
             long countBefore = 0;
 

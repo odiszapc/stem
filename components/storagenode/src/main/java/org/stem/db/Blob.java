@@ -29,6 +29,7 @@ import java.util.zip.CRC32;
 
 public class Blob // TODO: integrate all descriptors (mountpoint, fatfile, etc)
 {
+
     Header header;
     byte[] data;
 
@@ -101,6 +102,7 @@ public class Blob // TODO: integrate all descriptors (mountpoint, fatfile, etc)
     }
 
     public static class Header {
+
         private static final int KEY_SIZE = 16;
         private static final int LENGTH_SIZE = 4;
         private static final int CRC32_SIZE = 4;

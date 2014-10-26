@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TopoMapListener extends StemZooEventHandler<TopoMapping> {
+
     List<TopoMapSubscriber> subscribers = new ArrayList<TopoMapSubscriber>();
 
     @Override

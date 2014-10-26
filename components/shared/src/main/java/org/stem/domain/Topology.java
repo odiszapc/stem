@@ -26,6 +26,7 @@ import org.stem.util.TopologyUtils;
 import java.util.*;
 
 public class Topology {
+
     private Node crunchTopology;
     private Map<Long, List<Node>> CRUSHMap;
     private Map<Long, List<MappingDiff.Value<Node>>> mappingDiff = null;

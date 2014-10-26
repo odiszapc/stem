@@ -27,6 +27,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class NodeSupervisor extends Thread {
+
     private ServerSocket serverSocket;
 
     public NodeSupervisor() throws IOException {

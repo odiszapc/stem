@@ -19,6 +19,7 @@ package org.stem.coordination;
 import org.stem.domain.Cluster;
 
 public class StorageStatListener extends StemZooEventHandler<StorageStat> {
+
     @Override
     public Class<StorageStat> getBaseClass() {
         return StorageStat.class;

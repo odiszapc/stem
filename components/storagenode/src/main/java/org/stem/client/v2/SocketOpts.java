@@ -17,6 +17,7 @@
 package org.stem.client.v2;
 
 public class SocketOpts {
+
     public static final int DEFAULT_CONNECT_TIMEOUT_MS = 3000;
     public static final int DEFAULT_READ_TIMEOUT_MS = 8000;
 

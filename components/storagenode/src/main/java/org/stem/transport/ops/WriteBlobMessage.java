@@ -25,6 +25,7 @@ import org.stem.transport.Message;
 import java.util.UUID;
 
 public class WriteBlobMessage extends Message.Request {
+
     public UUID disk;
     public byte[] key;
     public byte[] blob;

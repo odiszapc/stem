@@ -40,6 +40,7 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
 public class ExternalNode {
+
     private MavenContext mvnContext;
     private Log log;
 

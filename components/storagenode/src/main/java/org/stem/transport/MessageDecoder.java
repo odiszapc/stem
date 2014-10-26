@@ -22,6 +22,7 @@ import io.netty.handler.codec.MessageToMessageDecoder;
 import java.util.List;
 
 public class MessageDecoder extends MessageToMessageDecoder<Frame> {
+
     @Override
     protected void decode(ChannelHandlerContext ctx, Frame frame, List<Object> out) throws Exception {
         boolean isRequest = frame.header.opType.direction == Message.Direction.REQUEST;

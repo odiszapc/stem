@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.RandomAccessFile;
 
 public class RandomAccessReader extends RandomAccessFile {
+
     public RandomAccessReader(String name, String mode) throws FileNotFoundException {
         super(name, mode);
     }

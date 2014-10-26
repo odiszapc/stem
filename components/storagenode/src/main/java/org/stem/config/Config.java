@@ -17,6 +17,7 @@
 package org.stem.config;
 
 public class Config {
+
     public Boolean auto_allocate = false;
     public String[] blob_mount_points;
     public String cluster_manager_endpoint;

@@ -35,6 +35,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ConnectionPool {
+
     private static final Logger logger = LoggerFactory.getLogger(ConnectionPool.class);
 
     private static final int MAX_SIMULTANEOUS_CREATION = 1;

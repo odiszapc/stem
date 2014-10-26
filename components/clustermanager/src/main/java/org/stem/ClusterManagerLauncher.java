@@ -45,6 +45,7 @@ import java.net.URISyntaxException;
 
 
 public class ClusterManagerLauncher {
+
     HttpServer server;
 
     public static void main(String[] args) throws InterruptedException {

@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class StorageService {
+
     private static final Logger logger = LoggerFactory.getLogger(StorageService.class);
 
     public static final StorageService instance = new StorageService();

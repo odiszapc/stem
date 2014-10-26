@@ -44,6 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Connection {
+
     private static final Logger logger = LoggerFactory.getLogger(Connection.class);
     private String name;
     private InetSocketAddress address;
@@ -205,6 +206,7 @@ public class Connection {
      *
      */
     public static class ChannelHandler extends ChannelInitializer<SocketChannel> {
+
         private static final PacketDecoder packetDecoder = new PacketDecoder();
         private static final PacketEncoder packetEncoder = new PacketEncoder();
         private static final MessageDecoder messageDecoder = new MessageDecoder();
@@ -230,6 +232,7 @@ public class Connection {
      *
      */
     public static class Factory {
+
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
         private final Configuration configuration;
@@ -327,6 +330,7 @@ public class Connection {
      *
      */
     private class Dispatcher extends SimpleChannelInboundHandler<Message.Response> {
+
         private final ConcurrentMap<Integer, ResponseHandler> pending = new ConcurrentHashMap<Integer, ResponseHandler>();
         public final StreamIdPool streamIdPool = new StreamIdPool();
 
@@ -434,6 +438,7 @@ public class Connection {
      *
      */
     static class Future extends AbstractFuture<Message.Response> implements RequestHandler.Callback {
+
         private final Message.Request request;
         private volatile InetSocketAddress address;
 
@@ -483,6 +488,7 @@ public class Connection {
      *
      */
     interface ResponseCallback {
+
         public Message.Request request();
 
         public void onSet(Connection connection, Message.Response response, long latency);
@@ -496,6 +502,7 @@ public class Connection {
      *
      */
     static class ResponseHandler {
+
         public final Connection connection;
         public final ResponseCallback callback;
         public final int streamId;

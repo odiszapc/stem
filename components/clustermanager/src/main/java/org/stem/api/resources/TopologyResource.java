@@ -31,6 +31,7 @@ import javax.ws.rs.core.Response;
 @Path(RESTConstants.Api.Topology.URI)
 @Produces(MediaType.APPLICATION_JSON)
 public class TopologyResource {
+
     @PUT
     @Path(RESTConstants.Api.Topology.Hello.BASE)
     public Response hello(JoinRequest request) // TODO: remove this bullshit

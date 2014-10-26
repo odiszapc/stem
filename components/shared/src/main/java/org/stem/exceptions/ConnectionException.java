@@ -19,6 +19,7 @@ package org.stem.exceptions;
 import java.net.InetSocketAddress;
 
 public class ConnectionException extends Exception {
+
     public final InetSocketAddress address;
 
     public ConnectionException(InetSocketAddress address, String message, Throwable cause) {

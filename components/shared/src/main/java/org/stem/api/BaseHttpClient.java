@@ -36,6 +36,7 @@ import java.net.URISyntaxException;
 
 
 public abstract class BaseHttpClient {
+
     protected URI root;
     protected CloseableHttpClient client;
 

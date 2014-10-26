@@ -17,6 +17,7 @@
 package org.stem.exceptions;
 
 public class StemException extends RuntimeException {
+
     public StemException(String message) {
         super(message);
     }

@@ -17,6 +17,7 @@
 package org.stem.client.v2;
 
 public class ProtocolOpts {
+
     public static final int DEFAULT_PORT = 9998;
     private final int port;
 

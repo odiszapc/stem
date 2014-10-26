@@ -24,6 +24,7 @@ import org.stem.db.MountPoint;
 import org.stem.db.StorageNodeDescriptor;
 
 public class DataClusterNotificator implements Runnable {
+
     private static final Logger logger = LoggerFactory.getLogger(DataClusterNotificator.class);
 
     ZookeeperClient client; // TODO: the client instance must be a singleton ???

@@ -25,6 +25,7 @@ import org.stem.domain.StorageNode;
 import javax.ws.rs.core.Response;
 
 public class RestUtils {
+
     public static Response ok() {
 
         return ok(new StemResponse());

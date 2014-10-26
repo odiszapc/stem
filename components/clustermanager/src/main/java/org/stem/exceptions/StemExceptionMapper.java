@@ -25,6 +25,7 @@ import javax.ws.rs.ext.Provider;
 @Provider
 // TODO: handle any other exceptions
 public class StemExceptionMapper implements ExceptionMapper<StemException> {
+
     @Override
     public Response toResponse(StemException e) {
         ErrorResponse resp = new ErrorResponse();

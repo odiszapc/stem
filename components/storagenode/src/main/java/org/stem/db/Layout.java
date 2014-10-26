@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 // TODO: remove synchronized
 public class Layout {
+
     private static final Logger logger = LoggerFactory.getLogger(Layout.class);
     public static Layout instance;
 

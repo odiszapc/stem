@@ -21,6 +21,7 @@ import io.netty.buffer.Unpooled;
 import org.stem.transport.Message;
 
 public abstract class ResultMessage extends Message.Response {
+
     public enum Kind {
         VOID(1, Void.subcodec),
         WRITE_BLOB(2, WriteBlob.subcodec),
@@ -63,6 +64,7 @@ public abstract class ResultMessage extends Message.Response {
      * Empty message
      */
     public static class Void extends ResultMessage {
+
         public static final Message.Codec<ResultMessage> subcodec = new Message.Codec<ResultMessage>() {
             @Override
             public ByteBuf encode(ResultMessage op) {
@@ -128,6 +130,7 @@ public abstract class ResultMessage extends Message.Response {
      * Write blob result message
      */
     public static class WriteBlob extends ResultMessage {
+
         final int fatFileIndex;
         final int offset;
 

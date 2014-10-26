@@ -38,6 +38,7 @@ import java.util.*;
 
 @Ignore
 public class StreamingTest extends IntegrationTestBase {
+
     private int portIndex = 1;
 
     @Override

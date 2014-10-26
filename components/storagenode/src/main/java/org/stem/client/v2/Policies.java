@@ -17,6 +17,7 @@
 package org.stem.client.v2;
 
 public class Policies {
+
     private static final ReconnectionPolicy DEFAULT_RECONNECTION_POLICY = new ConstantReconnectionPolicy(1000);
 
     private final ReconnectionPolicy reconnectionPolicy;

@@ -24,6 +24,7 @@ import java.io.File;
 import java.util.List;
 
 public class MavenContext {
+
     MavenProject project;
     File classesDir;
     List<Artifact> pluginDependencies;

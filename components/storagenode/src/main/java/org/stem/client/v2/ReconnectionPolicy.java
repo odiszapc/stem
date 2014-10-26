@@ -17,6 +17,7 @@
 package org.stem.client.v2;
 
 public interface ReconnectionPolicy {
+
     public ReconnectionSchedule newSchedule();
 
     /**

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class JoinRequest extends ClusterManagerRequest {
+
     private int port;
     private List<String> ipAddresses = new ArrayList<String>();
     private String host;
@@ -61,6 +62,7 @@ public class JoinRequest extends ClusterManagerRequest {
     }
 
     public static class Disk {
+
         private String id;
         private String path;
         private long totalSizeInBytes;

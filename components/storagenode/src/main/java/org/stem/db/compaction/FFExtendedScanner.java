@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.Iterator;
 
 public class FFExtendedScanner implements Iterator<ExtendedBlobDescriptor> {
+
     private FatFile ff;
     private ExtendedBlobDescriptor currentBlob;
     int nextOffset = FatFile.PAYLOAD_OFFSET;

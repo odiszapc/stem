@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 public class FatFileAllocator {
+
     private static final Logger logger = LoggerFactory.getLogger(MountPoint.class);
 
     private static final String FAT_FILE_NAME_TEMPLATE = "stem-ff-%06d.db";

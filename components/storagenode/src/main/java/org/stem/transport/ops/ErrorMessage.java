@@ -25,6 +25,7 @@ import org.stem.transport.Message;
 import org.stem.util.BBUtils;
 
 public class ErrorMessage extends Message.Response {
+
     public static final Message.Codec<ErrorMessage> codec = new Message.Codec<ErrorMessage>() {
         @Override
         public ByteBuf encode(ErrorMessage message) {

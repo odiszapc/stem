@@ -27,6 +27,7 @@ import org.stem.api.response.StemResponse;
 import java.net.URI;
 
 public class ClusterManagerClient extends BaseHttpClient {
+
     public static ClusterManagerClient create(String uri) {
         return new ClusterManagerClient(uri);
     }

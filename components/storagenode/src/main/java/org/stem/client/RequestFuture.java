@@ -39,6 +39,7 @@ public class RequestFuture extends AbstractFuture<Message.Response> {
     }
 
     class ResponseCallback {
+
         final int streamId;
         public final HashedWheelTimer timer = new HashedWheelTimer(
                 new ThreadFactoryBuilder().setNameFormat("Timeouter-%d").build(),

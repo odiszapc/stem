@@ -20,4 +20,5 @@ package org.stem.domain;
  * Created by Alex on 09.03.14.
  */
 public class SessionManager {
+
 }

@@ -25,6 +25,7 @@ import org.stem.util.BBUtils;
 import java.util.UUID;
 
 public class DeleteBlobMessage extends Message.Request {
+
     public UUID disk;
     public Integer fatFileIndex;
     public Integer offset;

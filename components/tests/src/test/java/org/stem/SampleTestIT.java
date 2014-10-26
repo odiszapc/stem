@@ -19,6 +19,7 @@ package org.stem;
 import org.junit.Test;
 
 public class SampleTestIT {
+
     @Test
     public void testName() throws Exception {
 

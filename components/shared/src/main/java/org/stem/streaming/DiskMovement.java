@@ -24,6 +24,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class DiskMovement {
+
     UUID diskId;
     AtomicLong completed;
     AtomicLong total;

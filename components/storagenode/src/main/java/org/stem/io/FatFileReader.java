@@ -19,6 +19,7 @@ package org.stem.io;
 import java.io.FileNotFoundException;
 
 public class FatFileReader extends RandomAccessReader {
+
     public FatFileReader(String name) throws FileNotFoundException {
         super(name, "rw");
     }

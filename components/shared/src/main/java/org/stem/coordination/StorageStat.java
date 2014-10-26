@@ -21,6 +21,7 @@ import java.util.List;
 
 public class StorageStat extends ZNodeAbstract // TODO: rethink StorageNode and StorageStat. Statistics is for last one
 {
+
     String endpoint;
     List<DiskStat> disks = new ArrayList<DiskStat>();
 

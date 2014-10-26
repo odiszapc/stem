@@ -17,6 +17,7 @@
 package org.stem.exceptions;
 
 public class ServerError extends RuntimeException implements TransportException {
+
     public ServerError(Throwable e) {
         super(e.toString());
     }

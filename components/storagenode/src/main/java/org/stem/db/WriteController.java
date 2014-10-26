@@ -31,6 +31,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class WriteController extends IOController {
+
     private static final Logger logger = LoggerFactory.getLogger(WriteController.class);
     private boolean pureAllocated = false;
 
@@ -103,6 +104,7 @@ public class WriteController extends IOController {
     }
 
     public static class CandidatesProvider {
+
         private Queue<FatFile> candidates;
 
         public CandidatesProvider(Collection<FatFile> list) {

@@ -35,6 +35,7 @@ import java.util.List;
  */
 public class StartStemNode
         extends AbstractMojo {
+
     /**
      * Location of the file.
      *

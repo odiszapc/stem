@@ -18,6 +18,7 @@ package org.stem.api.response;
 
 
 public class InfoResponse extends StemResponse {
+
     public String state = "RUNNING";
 
 }

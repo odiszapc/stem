@@ -17,14 +17,18 @@
 package org.stem.domain;
 
 public class Schema {
+
     public static final String CLUSTER = "Stem Meta Store";
     public static final String KEYSPACE = "stem";
 
     public static final class Tables {
+
         public static final class BlobsMeta {
+
             public static final String NAME = "blobs_meta";
 
             public static final class Columns {
+
                 public static final String BLOB = "blob";
                 public static final String DISK = "disk";
                 public static final String DATA = "data";

@@ -24,6 +24,7 @@ import java.util.List;
 
 
 public class Utils {
+
     public static List<InetAddress> getIpAddresses() {
         try {
             List<InetAddress> addrList = new ArrayList<InetAddress>();

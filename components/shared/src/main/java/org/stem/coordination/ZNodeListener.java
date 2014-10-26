@@ -21,6 +21,7 @@ import org.apache.curator.framework.recipes.cache.*;
 import org.apache.curator.utils.ZKPaths;
 
 public class ZNodeListener implements PathChildrenCacheListener, NodeCacheListener {
+
     private ZNodeEventHandler handler;
     private NodeCache nodeCache;
 

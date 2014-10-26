@@ -17,6 +17,7 @@
 package org.stem.domain;
 
 public class Disk {
+
     String id;
     String path;
     long usedBytes;

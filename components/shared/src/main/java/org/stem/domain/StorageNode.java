@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class StorageNode {
+
     String ipAddress;
     int port;
     List<Disk> disks;

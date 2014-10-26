@@ -156,6 +156,7 @@ public class RequestHandler implements Connection.ResponseCallback {
     }
 
     interface Callback extends Connection.ResponseCallback {
+
         public void onSet(Connection connection, Message.Response response, ExecutionInfo info, long latency);
 
         public void register(RequestHandler handler);

@@ -24,6 +24,7 @@ import org.stem.utils.YamlConfigurator;
 import java.io.File;
 
 public class ExternalNodeTest {
+
     @Test
     public void testName() throws Exception {
         YamlConfigurator configurator = YamlConfigurator.open("stem.yaml");

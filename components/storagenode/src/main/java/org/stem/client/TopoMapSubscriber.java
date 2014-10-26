@@ -19,5 +19,6 @@ package org.stem.client;
 import org.stem.coordination.TopoMapping;
 
 public interface TopoMapSubscriber {
+
     void mappingChanged(TopoMapping mapping);
 }

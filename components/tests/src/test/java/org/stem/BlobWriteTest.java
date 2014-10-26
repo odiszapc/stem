@@ -24,6 +24,7 @@ import org.stem.db.FatFileAllocator;
 import org.stem.utils.TestUtil;
 
 public class BlobWriteTest extends IntegrationTestBase {
+
     @Test
     public void testWriteSingleBlob() throws Exception {
         String path = TestUtil.temporize("stem-ff-000001.db");

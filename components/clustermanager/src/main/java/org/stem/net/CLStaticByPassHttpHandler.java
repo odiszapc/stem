@@ -21,6 +21,7 @@ import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 
 public class CLStaticByPassHttpHandler extends CLStaticHttpHandler {
+
     /**
      * Create <tt>HttpHandler</tt>, which will handle requests
      * to the static resources resolved by the given class loader.

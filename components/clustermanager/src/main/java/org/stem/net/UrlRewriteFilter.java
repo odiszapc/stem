@@ -24,6 +24,7 @@ import java.io.IOException;
  * Created by Alex on 11.01.14.
  */
 public class UrlRewriteFilter implements ContainerRequestFilter {
+
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
 

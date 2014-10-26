@@ -30,6 +30,7 @@ import java.lang.reflect.Type;
 @Consumes("multipart/form-data")
 @Provider
 public class MimeMultipartReader implements MessageBodyReader<Object> {
+
     @Override
     public boolean isReadable(Class<?> aClass, Type type, Annotation[] annotations, MediaType mediaType) {
         return false;

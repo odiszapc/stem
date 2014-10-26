@@ -32,6 +32,7 @@ import java.util.UUID;
 
 
 public class StreamTask extends WrappedRunnable {
+
     private static final Logger logger = LoggerFactory.getLogger(StreamTask.class);
     private final DiskMovement movement;
     private final MountPoint disk;

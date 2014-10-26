@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
 public class StreamIdPool {
+
     static final int MAX_STREAMS = 128;
     private final AtomicIntegerArray streamsIds = new AtomicIntegerArray(MAX_STREAMS);
     private final AtomicInteger marked = new AtomicInteger(0);

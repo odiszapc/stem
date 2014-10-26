@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class ConsequentWriter extends RandomAccessReader {
+
     public ConsequentWriter(String name) throws IOException {
         this(name, 0);
     }

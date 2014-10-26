@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class IntegrationTestBase {
+
     ClusterManagerLauncher clusterManagerInstance;
     private TestingServer zookeeperInstance;
     protected ClusterManagerClient clusterManagerClient;

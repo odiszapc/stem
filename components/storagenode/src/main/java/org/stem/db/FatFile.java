@@ -47,6 +47,7 @@ import java.util.zip.CRC32;
  * +--------+
  */
 public class FatFile {
+
     private static final Logger logger = LoggerFactory.getLogger(FatFile.class);
     private DataTracker tracker;
 

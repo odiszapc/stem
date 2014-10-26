@@ -20,4 +20,5 @@ package org.stem.streaming;
  * Created by Alex on 03.03.14.
  */
 public class CompactionSession {
+
 }

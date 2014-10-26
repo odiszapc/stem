@@ -28,6 +28,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class StemCluster {
+
     private static final Logger logger = LoggerFactory.getLogger(StemCluster.class);
     private static final int DEFAULT_THREAD_KEEP_ALIVE = 30;
     final Manager manager;
@@ -56,6 +57,7 @@ public class StemCluster {
     }
 
     class Manager {
+
         Configuration configuration;
         final Connection.Factory connectionFactory;
 

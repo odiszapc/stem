@@ -34,6 +34,7 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
  * BODY is a byte array of `length` bytes
  */
 public class PacketDecoder extends LengthFieldBasedFrameDecoder {
+
     private static final int MAX_FRAME_SIZE = 64 * 1024 * 1024;
     Connection connection;
 

@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class JsonResponseHandler implements ResponseHandler<StemResponse> {
+
     private Class<? extends StemResponse> clazz;
 
     public JsonResponseHandler(Class<? extends StemResponse> clazz) {

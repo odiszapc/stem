@@ -18,4 +18,5 @@ package org.stem.api.request;
 
 
 public class ClusterManagerRequest {
+
 }

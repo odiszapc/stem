@@ -21,6 +21,7 @@ import org.stem.transport.ops.*;
 
 
 abstract public class Message {
+
     public final Type type;
     private Connection connection;
     private volatile int streamId;
@@ -65,12 +66,14 @@ abstract public class Message {
     }
 
     public interface Codec<O extends Message> {
+
         ByteBuf encode(O op);
 
         O decode(ByteBuf buf);
     }
 
     public static abstract class Request extends Message {
+
         protected Request(Type type) {
             super(type);
             assert type.direction == Direction.REQUEST;

@@ -48,6 +48,7 @@ import java.util.zip.CRC32;
  * +--------------+--------------+
  */
 public class FatFileIndex {
+
     public static final int LENGTH_SIZE = 4;
     public static final int CRC32_SIZE = 4;
 
@@ -140,6 +141,7 @@ public class FatFileIndex {
     }
 
     public static class Header {
+
         public static final int CRC32_SIZE = 4;
         public static final int LENGTH_SIZE = 4;
         public static final int SIZE = LENGTH_SIZE + CRC32_SIZE;
@@ -176,6 +178,7 @@ public class FatFileIndex {
     }
 
     public static class Entry {
+
         public static final int KEY_SIZE = 16;
         public static final int OFFSET_SIZE = 4;
         public static final int LENGTH_SIZE = 4;

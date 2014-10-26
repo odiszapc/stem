@@ -21,6 +21,7 @@ import org.stem.transport.Message;
 import java.io.Closeable;
 
 public abstract class AbstractSession implements Closeable {
+
     public Message.Response execute(Message.Request request) {
         return executeAsync(request).getUninterruptibly();
     }

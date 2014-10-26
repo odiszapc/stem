@@ -26,6 +26,7 @@ import java.util.UUID;
 
 public class NewClientTest //extends IntegrationTestBase
 {
+
     @Test
     public void testName() throws Exception {
         Connection connection = new Connection("connection",

@@ -17,39 +17,48 @@
 package org.stem.api;
 
 public class RESTConstants {
+
     public static class Api {
+
         public static final String BASE = "/api";
 
         public static class Cluster {
+
             public static final String BASE = "/cluster";
             public static final String URI = Api.BASE + BASE;
 
             public static class Init {
+
                 public static final String BASE = "/init";
                 public static final String URI = Cluster.URI + BASE;
             }
 
             public static class Join {
+
                 public static final String BASE = "/join";
                 public static final String URI = Cluster.URI + BASE;
             }
 
             public static class Get {
+
                 public static final String BASE = "/";
                 public static final String URI = Cluster.URI + BASE;
             }
         }
 
         public static class Topology {
+
             public static final String BASE = "/topology";
             public static final String URI = Api.BASE + BASE;
 
             public static class Hello {
+
                 public static final String BASE = "/hello";
                 public static final String URI = Topology.URI + BASE;
             }
 
             public static class Build {
+
                 public static final String BASE = "/build";
                 public static final String URI = Topology.URI + BASE;
             }

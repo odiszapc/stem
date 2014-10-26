@@ -22,6 +22,7 @@ import org.apache.maven.plugin.logging.Log;
 
 
 public class MavenLogOutputStream extends LogOutputStream {
+
     private Log outputLog;
 
     public MavenLogOutputStream(Log outputLog) {

@@ -17,6 +17,7 @@
 package org.stem.api.request;
 
 public class InitClusterRequest extends ClusterManagerRequest {
+
     String name;
     int vBuckets;
     int rf;

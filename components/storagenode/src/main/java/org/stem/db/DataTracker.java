@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class DataTracker {
+
     ConcurrentMap<Long, AtomicLong> totalCountMap = new ConcurrentHashMap<Long, AtomicLong>();
     ConcurrentMap<Long, AtomicLong> liveCountMap = new ConcurrentHashMap<Long, AtomicLong>();
     ConcurrentMap<Long, AtomicLong> totalSizeMap = new ConcurrentHashMap<Long, AtomicLong>();

@@ -23,6 +23,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class AbstractSession extends ZNodeAbstract {
+
     protected final UUID sessionId;
     protected final AtomicLong completed;
     protected final AtomicLong total;

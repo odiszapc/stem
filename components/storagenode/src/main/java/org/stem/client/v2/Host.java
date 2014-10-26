@@ -20,6 +20,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 public class Host {
+
     private InetSocketAddress address;
 
     enum State {ADDED, DOWN, SUSPECT, UP}

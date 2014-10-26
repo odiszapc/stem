@@ -19,6 +19,7 @@ package org.stem.util;
 import org.stem.coordination.ZNode;
 
 public class ZooUtils {
+
     public static ZNode decode(byte[] data, Class<? extends ZNode> clazz) {
         return JsonUtils.decode(data, clazz);
     }

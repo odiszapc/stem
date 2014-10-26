@@ -28,6 +28,7 @@ import javax.ws.rs.core.Response;
 @Path(RESTConstants.Api.BASE)
 @Produces(MediaType.APPLICATION_JSON)
 public class RootResource {
+
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)

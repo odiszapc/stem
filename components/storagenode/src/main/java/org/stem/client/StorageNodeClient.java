@@ -227,6 +227,7 @@ public class StorageNodeClient {
     }
 
     private class ChannelFactory extends ChannelInitializer<SocketChannel> {
+
         private boolean init;
 
         @Override
@@ -252,6 +253,7 @@ public class StorageNodeClient {
     }
 
     private static class SimpleDispatcher extends SimpleChannelInboundHandler<Message.Response> {
+
         public final BlockingQueue<Message.Response> responses = new SynchronousQueue<Message.Response>(true);
 
         @Override
@@ -270,6 +272,7 @@ public class StorageNodeClient {
     }
 
     private static class Dispatcher extends SimpleChannelInboundHandler<Message.Response> {
+
         public final BlockingQueue<Message.Response> responses = new SynchronousQueue<Message.Response>(true);
 
         final ConcurrentMap<Integer, RequestFuture.ResponseCallback> pending = new ConcurrentHashMap<Integer, RequestFuture.ResponseCallback>();

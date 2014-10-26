@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class MetaStoreClient {
+
     private static final String INSERT_STATEMENT = "INSERT INTO stem.blobs_meta (blob, disk, data) VALUES (?, ?, ?)";
     private static final String SELECT_STATEMENT = "SELECT * FROM stem.blobs_meta WHERE blob = ?";
     private static final String SELECT_REPLICA_STATEMENT = "SELECT * FROM stem.blobs_meta WHERE blob = ? AND disk = ?";

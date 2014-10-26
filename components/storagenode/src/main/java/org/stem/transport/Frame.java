@@ -20,6 +20,7 @@ import io.netty.buffer.ByteBuf;
 
 public class Frame // TODO: rename to Packet
 {
+
     public final Header header;
     public final ByteBuf body;
     public Connection connection;
@@ -48,6 +49,7 @@ public class Frame // TODO: rename to Packet
 
 
     public static class Header {
+
         public static final int LENGTH = 1 + 4 + 4;
         public Message.Type opType;
         int streamId;

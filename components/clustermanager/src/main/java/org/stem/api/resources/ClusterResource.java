@@ -31,6 +31,7 @@ import javax.ws.rs.core.Response;
 
 @Path(RESTConstants.Api.Cluster.URI)
 public class ClusterResource {
+
     /**
      * Init cluster
      *

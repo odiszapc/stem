@@ -21,6 +21,7 @@ import com.google.common.collect.Lists;
 import java.util.List;
 
 public class ZookeeperClientFactory {
+
     private static List<ZookeeperClient> registry = Lists.newArrayList();
 
     public static ZookeeperClient create() {

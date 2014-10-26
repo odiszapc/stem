@@ -17,6 +17,7 @@
 package org.stem.api.response;
 
 public class ErrorResponse extends StemResponse {
+
     int errorCode;
     String error;
 

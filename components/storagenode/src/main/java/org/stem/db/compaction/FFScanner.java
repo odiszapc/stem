@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Iterator;
 
 public class FFScanner implements Iterator<Blob> {
+
     private FatFile ff;
     private Blob currentBlob;
     int nextOffset = FatFile.PAYLOAD_OFFSET;

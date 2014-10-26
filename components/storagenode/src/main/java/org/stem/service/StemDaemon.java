@@ -26,6 +26,7 @@ import org.stem.streaming.StreamManager;
 import java.io.IOException;
 
 public class StemDaemon {
+
     public static final StemDaemon instance = new StemDaemon();
 
     private static final Logger logger = LoggerFactory.getLogger(StemDaemon.class);

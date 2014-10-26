@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public interface ResponseFuture extends ListenableFuture<Message.Response> {
+
     public Message.Response getUninterruptibly();
 
     public Message.Response getUninterruptibly(long timeout, TimeUnit unit) throws TimeoutException;

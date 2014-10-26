@@ -19,6 +19,7 @@ package org.stem.streaming;
 import java.util.UUID;
 
 public class BucketStreamingPart {
+
     long vBucket;
     String endpoint; // Node to stream to
     UUID diskId; // Particular disk to stream to

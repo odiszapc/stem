@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class Cluster {
+
     protected static Cluster instance = null;
     private final ClusterDescriptor descriptor;
     private static ZookeeperClient client;

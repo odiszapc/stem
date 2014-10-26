@@ -23,6 +23,7 @@ import io.netty.handler.codec.MessageToMessageEncoder;
 import java.util.List;
 
 public class MessageEncoder extends MessageToMessageEncoder<Message> {
+
     @Override
     protected void encode(ChannelHandlerContext ctx, Message message, List<Object> out) throws Exception {
         ByteBuf body = message.encode();

@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.stem.util.JsonUtils;
 
 public abstract class StemZooEventHandler<T> {
+
     private static final Logger logger = LoggerFactory.getLogger(StemZooEventHandler.class);
     private ZNodeEventHandler handler;
 

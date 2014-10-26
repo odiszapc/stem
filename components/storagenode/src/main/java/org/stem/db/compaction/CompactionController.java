@@ -17,4 +17,5 @@
 package org.stem.db.compaction;
 
 public class CompactionController {
+
 }

@@ -22,6 +22,7 @@ import org.stem.domain.ArrayBalancer;
 
 
 public class BalancerTest {
+
     @Test
     public void testArrayBalancer() throws Exception {
         ArrayBalancer balancer = new ArrayBalancer(100000);

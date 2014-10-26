@@ -32,6 +32,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class StreamManager {
+
     private static final Logger logger = LoggerFactory.getLogger(StreamManager.class);
     public static final StreamManager instance = new StreamManager();
     private Executor pool = Executors.newFixedThreadPool(1);
@@ -73,6 +74,7 @@ public class StreamManager {
     }
 
     private class NewSessionsListener extends StemZooEventHandler<StreamSession> {
+
         @Override
         public Class<? extends StreamSession> getBaseClass() {
             return StreamSession.class;

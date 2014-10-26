@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClusterResponse extends StemResponse {
+
     Cluster cluster = new Cluster();
 
     public Cluster getCluster() {
@@ -28,6 +29,7 @@ public class ClusterResponse extends StemResponse {
     }
 
     public static class Cluster {
+
         String name;
         int vBucketsNum;
         int rf;
@@ -98,6 +100,7 @@ public class ClusterResponse extends StemResponse {
     }
 
     public static class Storage {
+
         String endpoint;
         long usedBytes;
         long totalBytes;
@@ -147,6 +150,7 @@ public class ClusterResponse extends StemResponse {
     }
 
     public static class Disk {
+
         String id;
         String path;
         long usedBytes;
