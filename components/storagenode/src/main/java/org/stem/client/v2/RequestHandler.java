@@ -16,26 +16,123 @@
 
 package org.stem.client.v2;
 
+import com.codahale.metrics.Timer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.stem.exceptions.ConnectionBusyException;
+import org.stem.exceptions.ConnectionException;
 import org.stem.transport.Message;
+import org.stem.transport.ops.ErrorMessage;
+
+import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class RequestHandler implements Connection.ResponseCallback {
+
+    private static final Logger logger = LoggerFactory.getLogger(RequestHandler.class);
+
     private final Session session;
     private final Callback callback;
+
+    private volatile Host current;
+    private volatile ConnectionPool currentPool;
+
+    private volatile Map<InetSocketAddress, Throwable> errors;
+
+    private volatile boolean isCanceled;
+    private volatile Connection.ResponseHandler connectionHandler;
+
+    private final Timer.Context timerContext;
+    private final long startTime;
 
     public RequestHandler(Session session, Callback callback) {
 
         this.session = session;
         this.callback = callback;
+
+        callback.register(this);
+
+        this.timerContext = null; // TODO: metrics support
+        this.startTime = System.nanoTime();
+    }
+
+    private boolean query(Host host) {
+        currentPool = session.pools.get(host);
+        if (currentPool == null || currentPool.isClosed())
+            return false;
+
+        PooledConnection connection = null;
+        try {
+            connection = currentPool.borrowConnection(session.configuration().getSocketOpts().getConnectTimeoutMs(), TimeUnit.MILLISECONDS);
+            current = host;
+            connectionHandler = connection.write(this);
+            return true;
+        } catch (ConnectionException e) {
+            if (null != connection)
+                connection.release();
+            logError(host.getSocketAddress(), e);
+            return false;
+        } catch (ConnectionBusyException e) {
+            if (connection != null)
+                connection.release();
+            logError(host.getSocketAddress(), e);
+            return false;
+        } catch (TimeoutException e) {
+            logError(host.getSocketAddress(), new StemClientException("Timeout while trying to acquire available connection (you may want to increase the number of per-host connections)"));
+            return false;
+        } catch (RuntimeException e) {
+            if (connection != null)
+                connection.release();
+            logger.error("Unexpected error while querying " + host.getAddress(), e);
+            logError(host.getSocketAddress(), e);
+            return false;
+        }
+    }
+
+    private void logError(InetSocketAddress address, Throwable exception) {
+        logger.debug("Error querying {}, trying next host (error is: {})", address, exception.toString());
+        if (errors == null)
+            errors = new HashMap<InetSocketAddress, Throwable>();
+        errors.put(address, exception);
     }
 
     @Override
     public Message.Request request() {
-        return null;
+        Message.Request request = callback.request();
+        return request;
     }
 
     @Override
     public void onSet(Connection connection, Message.Response response, long latency) {
+        Host queriedHost = current;
+        try {
+            if (connection instanceof PooledConnection)
+                ((PooledConnection) connection).release();
 
+            switch (response.type) {
+                case RESULT:
+                    setFinalResult(connection, response);
+                case ERROR:
+                    ErrorMessage err = (ErrorMessage)response;
+
+            }
+        }
+    }
+
+    private void setFinalResult(Connection connection, Message.Response response) {
+        try {
+            if (timerContext != null)
+                timerContext.stop();
+
+            ExecutionInfo info = current.defaultExecutionInfo;
+
+            callback.onSet(connection, response, info, System.nanoTime() - startTime);
+        } catch (Exception e) {
+            callback.onException(connection, new StemClientInternalError("Unexpected exception while setting final result from " + response, e), System.nanoTime() - startTime);
+        }
     }
 
     @Override
@@ -46,6 +143,16 @@ public class RequestHandler implements Connection.ResponseCallback {
     @Override
     public void onTimeout(Connection connection, long latency) {
 
+    }
+
+    public void sendRequest() {
+
+    }
+
+    public void cancel() {
+        isCanceled = true;
+        if (connectionHandler != null)
+            connectionHandler.cancelHandler();
     }
 
     interface Callback extends Connection.ResponseCallback {

@@ -27,4 +27,20 @@ public class PooledConnection extends Connection {
         super(name, address, factory);
         this.pool = pool;
     }
+
+    public void release() {
+        pool.returnConnection(this);
+    }
+
+    @Override
+    protected void notifyOwnerWhenDefunct(boolean hostIsDown) {
+        if (pool == null)
+            return;
+
+        if (hostIsDown) {
+            pool.closeAsync().force();
+        } else {
+            pool.replace(this);
+        }
+    }
 }

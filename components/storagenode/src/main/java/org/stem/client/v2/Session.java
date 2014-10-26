@@ -87,7 +87,7 @@ public class Session extends AbstractSession {
     void execute(RequestHandler.Callback callback) {
         if (!isInit)
             init();
-        new RequestHandler(this, callback);
+        new RequestHandler(this, callback).sendRequest();
     }
 
     @Override

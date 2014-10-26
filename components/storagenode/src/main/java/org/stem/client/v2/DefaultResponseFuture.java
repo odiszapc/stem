@@ -17,14 +17,20 @@
 package org.stem.client.v2;
 
 import com.google.common.util.concurrent.AbstractFuture;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.stem.transport.Message;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class DefaultResponseFuture extends AbstractFuture<Message.Response> implements ResponseFuture, RequestHandler.Callback {
+
+    private static final Logger logger = LoggerFactory.getLogger(ResponseFuture.class);
+
     private final Session session;
     private final Message.Request request;
+    private volatile RequestHandler handler;
 
     public DefaultResponseFuture(Session session, Message.Request request) {
 
@@ -39,12 +45,12 @@ public class DefaultResponseFuture extends AbstractFuture<Message.Response> impl
 
     @Override
     public void register(RequestHandler handler) {
-
+        this.handler = handler;
     }
 
     @Override
     public Message.Request request() {
-        return null;
+        return request;
     }
 
     @Override

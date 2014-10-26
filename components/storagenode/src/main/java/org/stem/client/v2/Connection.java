@@ -103,7 +103,7 @@ public class Connection {
         return future;
     }
 
-    private ResponseHandler write(ResponseCallback callback) throws ConnectionBusyException, ConnectionException {
+    public ResponseHandler write(ResponseCallback callback) throws ConnectionBusyException, ConnectionException {
         Message.Request request = callback.request();
         ResponseHandler responseHandler = new ResponseHandler(this, callback);
         dispatcher.addHandler(responseHandler);
@@ -166,11 +166,18 @@ public class Connection {
         return closeFutureRef.get() != null;
     }
 
+    protected void notifyOwnerWhenDefunct(boolean hostIsDown) {
+    }
+
     @Override
     public String toString() {
         return String.format("Connection[%s, inFlight=%d, closed=%b]", name, inFlight.get(), isClosed());
     }
 
+
+    /**
+     *
+     */
     private class ConnectionCloseFuture extends CloseFuture {
 
         @Override
@@ -194,6 +201,9 @@ public class Connection {
         }
     }
 
+    /**
+     *
+     */
     public static class ChannelHandler extends ChannelInitializer<SocketChannel> {
         private static final PacketDecoder packetDecoder = new PacketDecoder();
         private static final PacketEncoder packetEncoder = new PacketEncoder();
@@ -234,7 +244,7 @@ public class Connection {
         }
 
         public Connection open(Host host) throws ConnectionException {
-            address = host.getAddress();
+            address = host.getSocketAddress();
             if (isShutdown)
                 throw new ConnectionException(address, "Connection factory is shut down");
 
@@ -243,7 +253,7 @@ public class Connection {
         }
 
         public PooledConnection open(ConnectionPool pool) throws ConnectionException {
-            InetSocketAddress address = pool.host.getAddress();
+            InetSocketAddress address = pool.host.getSocketAddress();
 
             if (isShutdown)
                 throw new ConnectionException(address, "Connection factory is shut down");

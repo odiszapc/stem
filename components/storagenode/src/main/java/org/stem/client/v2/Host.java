@@ -16,6 +16,7 @@
 
 package org.stem.client.v2;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 public class Host {
@@ -31,12 +32,14 @@ public class Host {
     }
 
     public boolean isUp() {
-        // Consider a suspected host UP until proved otherwise to avoid
-        // having the status flapping if it turns out the host is not really down.
         return state == State.UP || state == State.SUSPECT;
     }
 
-    public InetSocketAddress getAddress() {
+    public InetAddress getAddress() {
+            return address.getAddress();
+        }
+
+    public InetSocketAddress getSocketAddress() {
         return address;
     }
 

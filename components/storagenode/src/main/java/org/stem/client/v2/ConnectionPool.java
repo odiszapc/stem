@@ -84,7 +84,7 @@ public class ConnectionPool {
 
     public PooledConnection borrowConnection(long timeout, TimeUnit unit) throws ConnectionException, TimeoutException {
         if (isClosed())
-            throw new ConnectionException(host.getAddress(), "Pool is down");
+            throw new ConnectionException(host.getSocketAddress(), "Pool is down");
 
         if (connections.isEmpty()) {
             for (int i = 0; i < options().getStartConnectionsPerHost(); i++) {
@@ -110,7 +110,7 @@ public class ConnectionPool {
 
         if (null == leastBusy) {
             if (isClosed())
-                throw new ConnectionException(host.getAddress(), "Pool is shutdown");
+                throw new ConnectionException(host.getSocketAddress(), "Pool is shutdown");
             leastBusy = waitForConnection(timeout, unit);
         } else {
             while (true) {
@@ -258,7 +258,7 @@ public class ConnectionPool {
             }
 
             if (isClosed())
-                throw new ConnectionException(host.getAddress(), "Pool is shutdown");
+                throw new ConnectionException(host.getSocketAddress(), "Pool is shutdown");
 
             // Looking for a less busy connection
             int minInFlight = Integer.MAX_VALUE;
