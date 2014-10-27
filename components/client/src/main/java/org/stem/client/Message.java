@@ -50,6 +50,7 @@ abstract class Message {
     }
 
     public interface Decoder<R extends Response> {
+
         public R decode(ByteBuf body);
     }
 
