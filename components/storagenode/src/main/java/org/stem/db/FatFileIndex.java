@@ -126,8 +126,7 @@ public class FatFileIndex {
             }
 
             return index;
-        }
-        finally {
+        } finally {
             lock.release();
         }
     }

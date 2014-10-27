@@ -190,8 +190,7 @@ public class Blob // TODO: integrate all descriptors (mountpoint, fatfile, etc)
                 int crc32 = buf.getInt();
                 byte deleteFlag = buf.get();
                 return Header.create(key, length, crc32, deleteFlag);
-            }
-            finally {
+            } finally {
                 lock.release();
             }
 

@@ -49,8 +49,7 @@ public class FFExtendedScanner implements Iterator<ExtendedBlobDescriptor> {
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }
-        finally {
+        } finally {
             ff.readLock.unlock(); // TODO: this is an unreasoned action. Why we lock here!?
         }
     }

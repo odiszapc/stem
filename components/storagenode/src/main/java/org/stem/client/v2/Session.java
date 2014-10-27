@@ -180,8 +180,7 @@ public class Session extends AbstractSession {
                 newPool.closeAsync();
 
             return true;
-        }
-        finally {
+        } finally {
             l.unlock();
         }
     }

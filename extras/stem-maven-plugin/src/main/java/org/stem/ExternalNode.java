@@ -221,8 +221,7 @@ public class ExternalNode {
 
             man.write(jos);
 
-        }
-        finally {
+        } finally {
             IOUtil.close(jos);
             IOUtil.close(fos);
         }

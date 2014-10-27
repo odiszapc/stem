@@ -61,8 +61,7 @@ public class FatFileAllocator {
             }
         } catch (Throwable e) {
             throw closer.rethrow(e);
-        }
-        finally {
+        } finally {
             closer.close();
             logger.debug("{} was allocated in {} ms", filePath, System.currentTimeMillis() - started);
         }

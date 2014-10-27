@@ -50,8 +50,7 @@ public class FFScanner implements Iterator<Blob> {
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }
-        finally {
+        } finally {
             ff.readLock.unlock();
         }
     }

@@ -75,8 +75,7 @@ public class Connection {
             if (!future.isSuccess()) {
                 throw deactivate(new ClientTransportException(address, "Can't connect", future.cause()));
             }
-        }
-        finally {
+        } finally {
             writeCounter.decrementAndGet();
         }
         isReady = true;

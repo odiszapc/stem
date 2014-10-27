@@ -325,8 +325,7 @@ public class FatFile {
             reader.seek(offset);
             reader.read(data);
             return data;
-        }
-        finally {
+        } finally {
             readLock.unlock();
         }
     }
@@ -360,8 +359,7 @@ public class FatFile {
             }
 
             return header.key;
-        }
-        finally {
+        } finally {
             readLock.unlock();
         }
     }

@@ -46,8 +46,7 @@ public class NodeSupervisor extends Thread {
                 String key = lin.readLine();
             } catch (IOException e) {
                 e.printStackTrace();
-            }
-            finally {
+            } finally {
                 if (socket != null) {
                     try {
                         socket.close();

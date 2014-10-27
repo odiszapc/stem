@@ -335,8 +335,7 @@ public class ConnectionPool {
         waiter++;
         try {
             hasAvailableConnection.await(timeout, unit);
-        }
-        finally {
+        } finally {
             waiter--;
             waitLock.unlock();
         }
@@ -350,8 +349,7 @@ public class ConnectionPool {
         waitLock.lock();
         try {
             hasAvailableConnection.signal();
-        }
-        finally {
+        } finally {
             waitLock.unlock();
         }
     }
@@ -363,8 +361,7 @@ public class ConnectionPool {
         waitLock.lock();
         try {
             hasAvailableConnection.signalAll();
-        }
-        finally {
+        } finally {
             waitLock.unlock();
         }
     }
