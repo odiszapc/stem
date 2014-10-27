@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package org.stem.client.v2;
+package org.stem.client;
 
 import com.google.common.util.concurrent.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.exceptions.ConnectionException;
-import org.stem.transport.Message;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -180,7 +179,8 @@ public class Session extends AbstractSession {
                 newPool.closeAsync();
 
             return true;
-        } finally {
+        }
+        finally {
             l.unlock();
         }
     }

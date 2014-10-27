@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-package org.stem.client.v2;
+package org.stem.client;
 
-public class ExecutionInfo {
+public class MetaStoreClient {
 
 }

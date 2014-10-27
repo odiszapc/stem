@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.stem.client.v2;
+package org.stem.client;
 
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.FutureCallback;

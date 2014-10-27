@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-package org.stem.client.v2;
+package org.stem.client;
 
-public class ProtocolOpts {
+public interface ReconnectionPolicy {
 
-    public static final int DEFAULT_PORT = 9998;
-    private final int port;
+    public ReconnectionSchedule newSchedule();
 
-    public ProtocolOpts() {
-        this(DEFAULT_PORT);
-    }
+    /**
+     * Schedules reconnection attempts to a node.
+     */
+    public interface ReconnectionSchedule {
 
-    public ProtocolOpts(int port) {
-        this.port = port;
+        public long nextDelayMs();
     }
 }

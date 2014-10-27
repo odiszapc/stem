@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.stem.client.v2;
+package org.stem.client;
 
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 import org.stem.exceptions.ClientTransportException;
 import org.stem.exceptions.ConnectionBusyException;
 import org.stem.exceptions.ConnectionException;
-import org.stem.transport.*;
 
 import java.net.InetSocketAddress;
 import java.nio.channels.ClosedChannelException;
@@ -75,7 +74,8 @@ public class Connection {
             if (!future.isSuccess()) {
                 throw deactivate(new ClientTransportException(address, "Can't connect", future.cause()));
             }
-        } finally {
+        }
+        finally {
             writeCounter.decrementAndGet();
         }
         isReady = true;

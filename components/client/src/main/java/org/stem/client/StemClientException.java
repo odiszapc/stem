@@ -14,19 +14,27 @@
  * limitations under the License.
  */
 
-package org.stem.client.v2;
+package org.stem.client;
 
-import org.stem.transport.Message;
+public class StemClientException extends RuntimeException {
 
-import java.io.Closeable;
-
-public abstract class AbstractSession implements Closeable {
-
-    public Message.Response execute(Message.Request request) {
-        return executeAsync(request).getUninterruptibly();
+    public StemClientException() {
+        super();
     }
 
-    public abstract DefaultResponseFuture executeAsync(Message.Request operation);
+    public StemClientException(String message) {
+        super(message);
+    }
 
-    public abstract void close();
+    public StemClientException(Throwable cause) {
+        super(cause);
+    }
+
+    public StemClientException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public StemClientException copy() {
+        return new StemClientException(getMessage(), this);
+    }
 }

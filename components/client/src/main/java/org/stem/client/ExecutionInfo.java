@@ -14,17 +14,8 @@
  * limitations under the License.
  */
 
-package org.stem.client.v2;
+package org.stem.client;
 
-public interface ReconnectionPolicy {
+public class ExecutionInfo {
 
-    public ReconnectionSchedule newSchedule();
-
-    /**
-     * Schedules reconnection attempts to a node.
-     */
-    public interface ReconnectionSchedule {
-
-        public long nextDelayMs();
-    }
 }

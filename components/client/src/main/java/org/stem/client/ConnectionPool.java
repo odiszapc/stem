@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.stem.client.v2;
+package org.stem.client;
 
 import com.google.common.util.concurrent.MoreExecutors;
 import org.slf4j.Logger;
@@ -335,7 +335,8 @@ public class ConnectionPool {
         waiter++;
         try {
             hasAvailableConnection.await(timeout, unit);
-        } finally {
+        }
+        finally {
             waiter--;
             waitLock.unlock();
         }
@@ -349,7 +350,8 @@ public class ConnectionPool {
         waitLock.lock();
         try {
             hasAvailableConnection.signal();
-        } finally {
+        }
+        finally {
             waitLock.unlock();
         }
     }
@@ -361,7 +363,8 @@ public class ConnectionPool {
         waitLock.lock();
         try {
             hasAvailableConnection.signalAll();
-        } finally {
+        }
+        finally {
             waitLock.unlock();
         }
     }

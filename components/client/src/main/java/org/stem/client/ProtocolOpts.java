@@ -14,8 +14,18 @@
  * limitations under the License.
  */
 
-package org.stem.client.v2;
+package org.stem.client;
 
-public class MetaStoreClient {
+public class ProtocolOpts {
 
+    public static final int DEFAULT_PORT = 9998;
+    private final int port;
+
+    public ProtocolOpts() {
+        this(DEFAULT_PORT);
+    }
+
+    public ProtocolOpts(int port) {
+        this.port = port;
+    }
 }

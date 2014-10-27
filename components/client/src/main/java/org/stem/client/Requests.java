@@ -14,24 +14,8 @@
  * limitations under the License.
  */
 
-package org.stem.client.v2;
+package org.stem.client;
 
-public class StemClientInternalError extends StemClientException {
+public class Requests {
 
-    public StemClientInternalError(String message) {
-        super(message);
-    }
-
-    public StemClientInternalError(Throwable cause) {
-        super(cause);
-    }
-
-    public StemClientInternalError(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    @Override
-    public StemClientException copy() {
-        return new StemClientInternalError(getMessage(), this);
-    }
 }

@@ -14,38 +14,24 @@
  * limitations under the License.
  */
 
-package org.stem.client.v2;
+package org.stem.client;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
+public class StemClientInternalError extends StemClientException {
 
-public class Host {
-
-    private InetSocketAddress address;
-
-    enum State {ADDED, DOWN, SUSPECT, UP}
-
-    volatile State state;
-
-    public Host(InetSocketAddress address) {
-        this.address = address;
-        this.state = State.ADDED;
+    public StemClientInternalError(String message) {
+        super(message);
     }
 
-    public boolean isUp() {
-        return state == State.UP || state == State.SUSPECT;
+    public StemClientInternalError(Throwable cause) {
+        super(cause);
     }
 
-    public InetAddress getAddress() {
-        return address.getAddress();
-    }
-
-    public InetSocketAddress getSocketAddress() {
-        return address;
+    public StemClientInternalError(String message, Throwable cause) {
+        super(message, cause);
     }
 
     @Override
-    public int hashCode() {
-        return address.hashCode();
+    public StemClientException copy() {
+        return new StemClientInternalError(getMessage(), this);
     }
 }

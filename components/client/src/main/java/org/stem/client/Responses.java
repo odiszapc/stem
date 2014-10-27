@@ -14,27 +14,8 @@
  * limitations under the License.
  */
 
-package org.stem.client.v2;
+package org.stem.client;
 
-public class StemClientException extends RuntimeException {
+public class Responses {
 
-    public StemClientException() {
-        super();
-    }
-
-    public StemClientException(String message) {
-        super(message);
-    }
-
-    public StemClientException(Throwable cause) {
-        super(cause);
-    }
-
-    public StemClientException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public StemClientException copy() {
-        return new StemClientException(getMessage(), this);
-    }
 }

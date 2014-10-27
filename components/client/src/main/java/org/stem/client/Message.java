@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.stem.client.v2;
+package org.stem.client;
 
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
@@ -50,9 +50,31 @@ abstract class Message {
 
     public static abstract class Request extends Message {
 
+        public enum Type {
+            READ_BLOB(2, Requests.ReadBlob.coder),
+            WRITE_BLOB(2, Requests.WriteBlob.coder),
+            DELETE_BLOB(2, Requests.DeleteBlob.coder);
+
+            public final int opcode;
+            public final Coder<?> coder;
+
+            private Type(int opcode, Coder<?> coder) {
+                this.opcode = opcode;
+                this.coder = coder;
+            }
+        }
+
+        protected Request(Type type) {
+            this.type = type;
+        }
+
     }
 
     public static abstract class Response extends Message {
 
+        public enum Type {
+            ERROR(2, Responses.Error.coder),
+            RESULT(2, Responses.Error.coder);
+        }
     }
 }

@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-package org.stem.client.v2;
+package org.stem.client;
 
-import com.google.common.util.concurrent.ListenableFuture;
-import org.stem.transport.Message;
+import java.io.Closeable;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+public abstract class AbstractSession implements Closeable {
 
-public interface ResponseFuture extends ListenableFuture<Message.Response> {
+    public Message.Response execute(Message.Request request) {
+        return executeAsync(request).getUninterruptibly();
+    }
 
-    public Message.Response getUninterruptibly();
+    public abstract DefaultResponseFuture executeAsync(Message.Request operation);
 
-    public Message.Response getUninterruptibly(long timeout, TimeUnit unit) throws TimeoutException;
-
-    @Override
-    boolean cancel(boolean mayInterruptIfRunning);
+    public abstract void close();
 }

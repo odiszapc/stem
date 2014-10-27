@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package org.stem.client.v2;
+package org.stem.client;
 
 import com.codahale.metrics.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.exceptions.ConnectionBusyException;
 import org.stem.exceptions.ConnectionException;
-import org.stem.transport.Message;
 import org.stem.transport.ops.ErrorMessage;
 
 import java.net.InetSocketAddress;
@@ -113,9 +112,9 @@ public class RequestHandler implements Connection.ResponseCallback {
                 ((PooledConnection) connection).release();
 
             switch (response.type) {
-                case RESULT:
+                case Type.RESULT:
                     setFinalResult(connection, response);
-                case ERROR:
+                case Type.ERROR:
                     ErrorMessage err = (ErrorMessage) response;
                     StemClientException e = err.error;
             }

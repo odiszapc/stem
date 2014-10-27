@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package org.stem.client.v2;
+package org.stem.client;
 
 import com.google.common.util.concurrent.AbstractFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stem.transport.Message;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
