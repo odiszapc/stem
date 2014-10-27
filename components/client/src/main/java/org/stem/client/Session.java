@@ -58,7 +58,7 @@ public class Session extends AbstractSession {
             try {
                 maybeAddPool(host, executor()).get();
             } catch (ExecutionException e) {
-                throw new StemClientInternalError(e);
+                throw new ClientInternalError(e);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }

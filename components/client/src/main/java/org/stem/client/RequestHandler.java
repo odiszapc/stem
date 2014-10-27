@@ -130,7 +130,7 @@ public class RequestHandler implements Connection.ResponseCallback {
 
             callback.onSet(connection, response, info, System.nanoTime() - startTime);
         } catch (Exception e) {
-            callback.onException(connection, new StemClientInternalError("Unexpected exception while setting final result from " + response, e), System.nanoTime() - startTime);
+            callback.onException(connection, new ClientInternalError("Unexpected exception while setting final result from " + response, e), System.nanoTime() - startTime);
         }
     }
 

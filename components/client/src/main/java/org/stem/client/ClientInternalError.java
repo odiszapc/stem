@@ -16,22 +16,22 @@
 
 package org.stem.client;
 
-public class StemClientInternalError extends StemClientException {
+public class ClientInternalError extends StemClientException {
 
-    public StemClientInternalError(String message) {
+    public ClientInternalError(String message) {
         super(message);
     }
 
-    public StemClientInternalError(Throwable cause) {
+    public ClientInternalError(Throwable cause) {
         super(cause);
     }
 
-    public StemClientInternalError(String message, Throwable cause) {
+    public ClientInternalError(String message, Throwable cause) {
         super(message, cause);
     }
 
     @Override
     public StemClientException copy() {
-        return new StemClientInternalError(getMessage(), this);
+        return new ClientInternalError(getMessage(), this);
     }
 }

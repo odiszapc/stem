@@ -23,6 +23,7 @@ import io.netty.util.CharsetUtil;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.UUID;
 
 public class BBUtils {
 
@@ -68,6 +69,22 @@ public class BBUtils {
         return Unpooled.wrappedBuffer(shortToBB(bytes.readableBytes()), bytes);
     }
 
+    public static int sizeOfString(String str) {
+        return 4 + str.getBytes(CharsetUtil.UTF_8).length;
+    }
+
+    public static void writeUuid(UUID value, ByteBuf dest) {
+        dest
+                .writeLong(value.getMostSignificantBits())
+                .writeLong(value.getLeastSignificantBits());
+    }
+
+    public static UUID readUuid(ByteBuf in) {
+        long mostBits = in.readLong();
+        long leastBits = in.readLong();
+        return new UUID(mostBits, leastBits);
+    }
+
     public static ByteBuf intToBB(int value) {
         return Unpooled.buffer(4).writeInt(value);
     }
@@ -80,7 +97,6 @@ public class BBUtils {
         return Unpooled.wrappedBuffer(str.getBytes(CharsetUtil.UTF_8));
 
     }
-
 
     public static ByteBuffer fromInt(int value) {
         ByteBuffer buf = ByteBuffer.allocate(4);
