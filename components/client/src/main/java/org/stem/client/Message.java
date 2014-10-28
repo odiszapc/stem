@@ -92,8 +92,8 @@ abstract class Message {
         }
 
         public enum Type {
-            ERROR(2, Responses.Error.coder),
-            RESULT(2, Responses.Result.coder);
+            ERROR(2, Responses.Error.decoder),
+            RESULT(2, Responses.Result.decoder);
 
             public final int opcode;
             public final Decoder<?> decoder;

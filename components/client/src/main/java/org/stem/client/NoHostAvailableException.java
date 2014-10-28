@@ -16,25 +16,11 @@
 
 package org.stem.client;
 
-public class StemClientException extends RuntimeException {
+import com.datastax.driver.core.exceptions.DriverException;
 
-    public StemClientException() {
-        super();
-    }
+public class NoHostAvailableException extends DriverException {
 
-    public StemClientException(String message) {
+    public NoHostAvailableException(String message) {
         super(message);
-    }
-
-    public StemClientException(Throwable cause) {
-        super(cause);
-    }
-
-    public StemClientException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public StemClientException copy() {
-        return new StemClientException(getMessage(), this);
     }
 }

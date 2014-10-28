@@ -16,22 +16,25 @@
 
 package org.stem.client;
 
-public class ClientInternalError extends ClientException {
+public class ClientException extends RuntimeException {
 
-    public ClientInternalError(String message) {
+    public ClientException() {
+        super();
+    }
+
+    public ClientException(String message) {
         super(message);
     }
 
-    public ClientInternalError(Throwable cause) {
+    public ClientException(Throwable cause) {
         super(cause);
     }
 
-    public ClientInternalError(String message, Throwable cause) {
+    public ClientException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    @Override
     public ClientException copy() {
-        return new ClientInternalError(getMessage(), this);
+        return new ClientException(getMessage(), this);
     }
 }

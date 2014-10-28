@@ -45,11 +45,12 @@ import java.util.concurrent.atomic.AtomicReference;
 public class Connection {
 
     private static final Logger logger = LoggerFactory.getLogger(Connection.class);
-    private String name;
-    private InetSocketAddress address;
-    private Factory factory;
-    protected Channel channel;
-    private final Dispatcher dispatcher = new Dispatcher();
+
+    private final String name;
+    public final InetSocketAddress address;
+    private final Factory factory;
+    private final Channel channel;
+    private final Dispatcher dispatcher;
     private volatile boolean isReady;
     private volatile boolean isDeactivated;
     private final AtomicReference<ConnectionCloseFuture> closeFutureRef = new AtomicReference<>();
@@ -63,6 +64,7 @@ public class Connection {
         this.name = name;
         this.address = address;
         this.factory = factory;
+        dispatcher = new Dispatcher();
 
         Bootstrap bootstrap = factory.createNewBootstrap();
         bootstrap.handler(new ChannelHandler(this));
@@ -84,7 +86,7 @@ public class Connection {
         return dispatcher.streamIdPool.maxAvailableStreams();
     }
 
-    private <E extends Exception> E deactivate(E e) {
+    <E extends Exception> E deactivate(E e) {
         isDeactivated = true;
 
         close().force();
@@ -205,10 +207,6 @@ public class Connection {
      */
     public static class ChannelHandler extends ChannelInitializer<SocketChannel> {
 
-        private static final PacketDecoder packetDecoder = new PacketDecoder();
-        private static final PacketEncoder packetEncoder = new PacketEncoder();
-        private static final MessageDecoder messageDecoder = new MessageDecoder();
-        private static final MessageEncoder messageEncoder = new MessageEncoder();
         private Connection connection;
 
         public ChannelHandler(Connection connection) {
@@ -218,10 +216,12 @@ public class Connection {
         @Override
         protected void initChannel(SocketChannel ch) throws Exception {
             ChannelPipeline pipeline = ch.pipeline();
-            pipeline.addLast("packetDecoder", packetDecoder);
-            pipeline.addLast("packetEncoder", packetEncoder);
-            pipeline.addLast("messageDecoder", messageDecoder);
-            pipeline.addLast("messageEncoder", messageEncoder);
+            pipeline.addLast("packetDecoder", new Frame.Decoder());
+            pipeline.addLast("packetEncoder", new Frame.Encoder());
+
+            pipeline.addLast("messageDecoder", new Message.ProtocolDecoder());
+            pipeline.addLast("messageEncoder", new Message.ProtocolEncoder());
+
             pipeline.addLast("dispatcher", connection.dispatcher);
         }
     }
@@ -488,11 +488,8 @@ public class Connection {
     interface ResponseCallback {
 
         public Message.Request request();
-
         public void onSet(Connection connection, Message.Response response, long latency);
-
         public void onException(Connection connection, Exception exception, long latency);
-
         public void onTimeout(Connection connection, long latency);
     }
 

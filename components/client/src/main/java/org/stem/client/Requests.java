@@ -21,7 +21,7 @@ import org.stem.util.BBUtils;
 
 import java.util.UUID;
 
-public class Requests {
+class Requests {
 
     /**
      *

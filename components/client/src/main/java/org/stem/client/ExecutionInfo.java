@@ -18,4 +18,10 @@ package org.stem.client;
 
 public class ExecutionInfo {
 
+    private final Host host;
+
+    public ExecutionInfo(Host host) {
+
+        this.host = host;
+    }
 }

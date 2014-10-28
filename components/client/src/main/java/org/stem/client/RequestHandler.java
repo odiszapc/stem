@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.exceptions.ConnectionBusyException;
 import org.stem.exceptions.ConnectionException;
-import org.stem.transport.ops.ErrorMessage;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -58,6 +57,103 @@ public class RequestHandler implements Connection.ResponseCallback {
         this.startTime = System.nanoTime();
     }
 
+    private void logError(InetSocketAddress address, Throwable exception) {
+        logger.debug("Error querying {}, trying next host (error is: {})", address, exception.toString());
+        if (errors == null)
+            errors = new HashMap<InetSocketAddress, Throwable>();
+        errors.put(address, exception);
+    }
+
+    @Override
+    public Message.Request request() {
+        Message.Request request = callback.request();
+        return request;
+    }
+
+    @Override
+    public void onSet(Connection connection, Message.Response response, long latency) {
+        try {
+            if (connection instanceof PooledConnection)
+                ((PooledConnection) connection).release();
+
+            switch (response.type) {
+                case RESULT:
+                    setFinalResult(connection, response);
+                case ERROR:
+                    Responses.Error err = (Responses.Error) response;
+                    switch (err.code) {
+                        case SERVER_ERROR:
+                            logger.warn("{} replied with server error ({}), trying next host.", connection.address, err.message);
+                            ClientException exception = new ClientException("Host replied with server error: " + err.message);
+                            logError(connection.address, exception);
+                            connection.deactivate(exception);
+                            return;
+                        default:
+                            break;
+                    }
+                    setFinalResult(connection, response);
+                    break;
+                default:
+                    setFinalResult(connection, response);
+                    break;
+            }
+        } catch (Exception e) {
+            setFinalException(connection, e);
+        }
+    }
+
+    private void setFinalResult(Connection connection, Message.Response response) {
+        try {
+            if (timerContext != null)
+                timerContext.stop();
+
+            ExecutionInfo info = current.defaultExecutionInfo;
+
+            callback.onSet(connection, response, info, System.nanoTime() - startTime);
+        } catch (Exception e) {
+            callback.onException(connection, new ClientInternalError("Unexpected exception while setting final result from " + response, e), System.nanoTime() - startTime);
+        }
+    }
+
+    @Override
+    public void onException(Connection connection, Exception exception, long latency) {
+        try {
+            if (connection instanceof PooledConnection)
+                ((PooledConnection) connection).release();
+            if (exception instanceof ConnectionException) {
+                ConnectionException ce = (ConnectionException) exception;
+                logError(ce.address, ce);
+                return;
+            }
+            setFinalException(connection, exception);
+        } catch (Exception e) {
+            setFinalException(null, new ClientInternalError("An unexpected error happened while handling exception " + exception, e));
+        }
+    }
+
+    @Override
+    public void onTimeout(Connection connection, long latency) {
+        try {
+            ClientException timeoutException = new ClientException("Timed out waiting for server response");
+            connection.deactivate(timeoutException); // TODO: and what?
+            logError(connection.address, timeoutException);
+        } catch (Exception e) {
+            setFinalException(null, new ClientInternalError("An unexpected error happened while handling timeout", e));
+        }
+    }
+
+    public void sendRequest() {
+        try {
+            Host host = null; //TODO: get host!!!!
+            if (query(host))
+                return;
+
+            setFinalException(null, new ClientException("No hosts available"));
+        } catch (Exception e) {
+            setFinalException(null, new ClientInternalError("An unexpected error occurred while sending request", e));
+        }
+    }
+
     private boolean query(Host host) {
         currentPool = session.pools.get(host);
         if (currentPool == null || currentPool.isClosed())
@@ -80,7 +176,7 @@ public class RequestHandler implements Connection.ResponseCallback {
             logError(host.getSocketAddress(), e);
             return false;
         } catch (TimeoutException e) {
-            logError(host.getSocketAddress(), new StemClientException("Timeout while trying to acquire available connection (you may want to increase the number of per-host connections)"));
+            logError(host.getSocketAddress(), new ClientException("Timeout while trying to acquire available connection (you may want to increase the number of per-host connections)"));
             return false;
         } catch (RuntimeException e) {
             if (connection != null)
@@ -91,73 +187,24 @@ public class RequestHandler implements Connection.ResponseCallback {
         }
     }
 
-    private void logError(InetSocketAddress address, Throwable exception) {
-        logger.debug("Error querying {}, trying next host (error is: {})", address, exception.toString());
-        if (errors == null)
-            errors = new HashMap<InetSocketAddress, Throwable>();
-        errors.put(address, exception);
-    }
-
-    @Override
-    public Message.Request request() {
-        Message.Request request = callback.request();
-        return request;
-    }
-
-    @Override
-    public void onSet(Connection connection, Message.Response response, long latency) {
-        Host queriedHost = current;
-        try {
-            if (connection instanceof PooledConnection)
-                ((PooledConnection) connection).release();
-
-            switch (response.type) {
-                case Type.RESULT:
-                    setFinalResult(connection, response);
-                case Type.ERROR:
-                    ErrorMessage err = (ErrorMessage) response;
-                    StemClientException e = err.error;
-            }
-        }
-    }
-
-    private void setFinalResult(Connection connection, Message.Response response) {
-        try {
-            if (timerContext != null)
-                timerContext.stop();
-
-            ExecutionInfo info = current.defaultExecutionInfo;
-
-            callback.onSet(connection, response, info, System.nanoTime() - startTime);
-        } catch (Exception e) {
-            callback.onException(connection, new ClientInternalError("Unexpected exception while setting final result from " + response, e), System.nanoTime() - startTime);
-        }
-    }
-
-    @Override
-    public void onException(Connection connection, Exception exception, long latency) {
-
-    }
-
-    @Override
-    public void onTimeout(Connection connection, long latency) {
-
-    }
-
-    public void sendRequest() {
-
-    }
-
     public void cancel() {
         isCanceled = true;
         if (connectionHandler != null)
             connectionHandler.cancelHandler();
     }
 
+    private void setFinalException(Connection connection, Exception exception) {
+        try {
+            if (timerContext != null)
+                timerContext.stop();
+        } finally {
+            callback.onException(connection, exception, System.nanoTime() - startTime);
+        }
+    }
+
     interface Callback extends Connection.ResponseCallback {
 
         public void onSet(Connection connection, Message.Response response, ExecutionInfo info, long latency);
-
         public void register(RequestHandler handler);
     }
 }

@@ -30,7 +30,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 
-public class Session extends AbstractSession {
+class Session extends AbstractSession {
 
     private static final Logger logger = LoggerFactory.getLogger(ConnectionPool.class);
 
@@ -76,8 +76,9 @@ public class Session extends AbstractSession {
     }
 
     @Override
-    public DefaultResponseFuture executeAsync(Message.Request request) {
-        DefaultResponseFuture future = new DefaultResponseFuture(this, request);
+    public DefaultResultFuture executeAsync(Message.Request request) {
+        DefaultResultFuture future = new DefaultResultFuture(this, request);
+        execute(future);
         return future;
     }
 

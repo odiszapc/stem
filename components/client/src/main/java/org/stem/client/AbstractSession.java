@@ -24,7 +24,7 @@ public abstract class AbstractSession implements Closeable {
         return executeAsync(request).getUninterruptibly();
     }
 
-    public abstract DefaultResponseFuture executeAsync(Message.Request operation);
+    public abstract DefaultResultFuture executeAsync(Message.Request operation);
 
     public abstract void close();
 }

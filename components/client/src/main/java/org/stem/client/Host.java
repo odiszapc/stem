@@ -16,8 +16,12 @@
 
 package org.stem.client;
 
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Host {
 
@@ -27,9 +31,17 @@ public class Host {
 
     volatile State state;
 
+    final AtomicReference<ListenableFuture<?>> initialReconnectionAttempt = new AtomicReference<ListenableFuture<?>>(Futures.immediateFuture(null));
+
+    final AtomicReference<ListenableFuture<?>> reconnectionAttempt = new AtomicReference<ListenableFuture<?>>();
+
+    final ExecutionInfo defaultExecutionInfo;
+
     public Host(InetSocketAddress address) {
         this.address = address;
         this.state = State.ADDED;
+
+        defaultExecutionInfo = new ExecutionInfo(this);
     }
 
     public boolean isUp() {
