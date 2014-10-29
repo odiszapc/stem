@@ -69,7 +69,7 @@ public class ZookeeperClient {
         this.port = port;
         client = createClient();
         client.start();
-        waitForConnection(client, DEFAULT_CONNECTION_TIMEOUT_SEC, TimeUnit.SECONDS);
+        waitForConnectionEstablished(client, DEFAULT_CONNECTION_TIMEOUT_SEC, TimeUnit.SECONDS);
     }
 
     private String endpoint() {
@@ -89,7 +89,7 @@ public class ZookeeperClient {
 
     }
 
-    private void waitForConnection(CuratorFramework client, int timeout, TimeUnit unit) throws ZooException {
+    private void waitForConnectionEstablished(CuratorFramework client, int timeout, TimeUnit unit) throws ZooException {
         StateListeningFuture future = new StateListeningFuture(client, ConnectionState.CONNECTED);
         try {
             Long duration = Uninterruptibles.getUninterruptibly(future, timeout, unit);
