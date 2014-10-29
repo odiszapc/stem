@@ -102,7 +102,7 @@ public class ClusterManager {
         return url;
     }
 
-    HttpServer server;
+    private HttpServer server;
 
     public static void main(String[] args) throws InterruptedException {
         ClusterManager clusterManager = new ClusterManager();
