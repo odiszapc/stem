@@ -30,7 +30,7 @@ import org.stem.exceptions.TimeoutException;
 import org.stem.exceptions.TransportException;
 import org.stem.transport.*;
 import org.stem.transport.ops.*;
-import org.stem.util.Utils;
+import org.stem.utils.Utils;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -67,8 +67,8 @@ public class StorageNodeClient {
     }
 
     public StorageNodeClient(String endpoint) {
-        this.host = Utils.getHostFromEndpoint(endpoint);
-        this.port = Utils.getPortFromEndpoint(endpoint);
+        this.host = Utils.getHost(endpoint);
+        this.port = Utils.getPort(endpoint);
         initBootstrap();
     }
 

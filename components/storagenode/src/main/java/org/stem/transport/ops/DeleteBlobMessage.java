@@ -20,7 +20,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.stem.db.StorageService;
 import org.stem.transport.Message;
-import org.stem.util.BBUtils;
+import org.stem.utils.BBUtils;
 
 import java.util.UUID;
 

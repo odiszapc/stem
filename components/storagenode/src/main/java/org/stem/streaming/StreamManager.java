@@ -22,7 +22,7 @@ import org.stem.coordination.*;
 import org.stem.db.DataTracker;
 import org.stem.db.Layout;
 import org.stem.db.StorageNodeDescriptor;
-import org.stem.util.Utils;
+import org.stem.utils.Utils;
 
 import java.util.UUID;
 import java.util.concurrent.Executor;
@@ -84,8 +84,8 @@ public class StreamManager {
         @Override
         protected void onChildAdded(StreamSession session) {
             // TODO: if it's my session
-            String host = Utils.getHostFromEndpoint(session.endpoint);
-            int port = Utils.getPortFromEndpoint(session.endpoint);
+            String host = Utils.getHost(session.endpoint);
+            int port = Utils.getPort(session.endpoint);
             if (!(
                     StorageNodeDescriptor.getNodeListen().equals(host) &&
                             StorageNodeDescriptor.getNodePort() == port)) {

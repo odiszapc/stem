@@ -30,7 +30,7 @@ import org.stem.db.MountPoint;
 import org.stem.db.StorageNodeDescriptor;
 import org.stem.db.compaction.CompactionManager;
 import org.stem.domain.ExtendedBlobDescriptor;
-import org.stem.util.Utils;
+import org.stem.utils.Utils;
 
 import java.io.IOException;
 import java.net.InetAddress;

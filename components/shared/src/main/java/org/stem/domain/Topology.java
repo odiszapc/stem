@@ -21,7 +21,7 @@ import org.stem.streaming.BucketStreamingPart;
 import org.stem.streaming.DiskMovement;
 import org.stem.streaming.DiskMovementMap;
 import org.stem.streaming.StreamSession;
-import org.stem.util.TopologyUtils;
+import org.stem.utils.TopologyUtils;
 
 import java.util.*;
 

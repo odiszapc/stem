@@ -20,11 +20,10 @@ package org.stem.service;
 import org.stem.api.ClusterManagerClient;
 import org.stem.api.request.JoinRequest;
 import org.stem.api.response.ClusterResponse;
-import org.stem.coordination.ZooException;
 import org.stem.db.Layout;
 import org.stem.db.MountPoint;
 import org.stem.db.StorageNodeDescriptor;
-import org.stem.util.Utils;
+import org.stem.utils.Utils;
 
 import java.net.InetAddress;
 import java.util.List;

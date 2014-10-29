@@ -20,7 +20,7 @@ package org.stem.domain;
 import org.stem.coordination.*;
 import org.stem.exceptions.StemException;
 import org.stem.streaming.StreamSession;
-import org.stem.util.TopologyUtils;
+import org.stem.utils.TopologyUtils;
 
 import java.util.Collection;
 import java.util.List;

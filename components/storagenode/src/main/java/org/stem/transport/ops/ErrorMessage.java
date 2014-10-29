@@ -22,7 +22,7 @@ import org.stem.exceptions.ErrorCode;
 import org.stem.exceptions.ServerError;
 import org.stem.exceptions.TransportException;
 import org.stem.transport.Message;
-import org.stem.util.BBUtils;
+import org.stem.utils.BBUtils;
 
 public class ErrorMessage extends Message.Response {
 

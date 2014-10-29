@@ -28,7 +28,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.AbstractHttpMessage;
 import org.stem.api.request.ClusterManagerRequest;
 import org.stem.api.response.StemResponse;
-import org.stem.util.JsonUtils;
+import org.stem.utils.JsonUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;

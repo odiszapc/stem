@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.stem.util;
+package org.stem.utils;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -45,12 +45,12 @@ public class Utils {
         }
     }
 
-    public static int getPortFromEndpoint(String endpoint) {
+    public static int getPort(String endpoint) {
         int i = endpoint.indexOf(':');
         return Integer.valueOf(endpoint.substring(i + 1)); // TODO: validation
     }
 
-    public static String getHostFromEndpoint(String endpoint) {
+    public static String getHost(String endpoint) {
         int i = endpoint.indexOf(':');
         return endpoint.substring(0, i);
     }

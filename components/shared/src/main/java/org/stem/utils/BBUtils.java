@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.stem.util;
+package org.stem.utils;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;

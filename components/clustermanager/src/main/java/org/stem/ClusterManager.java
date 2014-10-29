@@ -55,6 +55,7 @@ public class ClusterManager {
 
     private static final String STEM_CONFIG_PROPERTY = "stem.cluster.config";
     private static final String DEFAULT_CONFIG = "cluster.yaml";
+    public static final String RESOURCES_PACKAGE = "org.stem.api.resources";
 
     static Config config;
 
@@ -126,14 +127,18 @@ public class ClusterManager {
     }
 
     private void configureWebServer() throws URISyntaxException, IOException {
-        URI uri = new URI("http://0.0.0.0:9997");
         ResourceConfig resourceCfg = new ResourceConfig();
         setupJsonSerialization(resourceCfg);
-        resourceCfg.packages("org.stem.api.resources");
+        resourceCfg.packages(RESOURCES_PACKAGE);
         resourceCfg.registerClasses(StemExceptionMapper.class);
         resourceCfg.registerClasses(DefaultExceptionMapper.class);
-        server = createServer(uri, resourceCfg);
+
+        server = createServer(webListenAddress(), resourceCfg);
         configureStaticResources(server, resourceCfg);
+    }
+
+    private URI webListenAddress() throws URISyntaxException {
+        return new URI("http://" + config.web_listen_address);
     }
 
     private void startWebServer() throws IOException {

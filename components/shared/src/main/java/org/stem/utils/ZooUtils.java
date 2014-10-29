@@ -14,20 +14,13 @@
  * limitations under the License.
  */
 
-package org.stem.util;
+package org.stem.utils;
 
-import com.google.common.base.Throwables;
+import org.stem.coordination.ZNode;
 
-public abstract class WrappedRunnable implements Runnable {
+public class ZooUtils {
 
-    @Override
-    public final void run() {
-        try {
-            runMayThrow();
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
+    public static ZNode decode(byte[] data, Class<? extends ZNode> clazz) {
+        return JsonUtils.decode(data, clazz);
     }
-
-    abstract protected void runMayThrow() throws Exception;
 }

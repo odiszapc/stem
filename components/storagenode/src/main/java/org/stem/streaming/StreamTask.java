@@ -24,7 +24,7 @@ import org.stem.client.StorageNodeClient;
 import org.stem.db.*;
 import org.stem.db.compaction.FFScanner;
 import org.stem.transport.ops.DeleteBlobMessage;
-import org.stem.util.WrappedRunnable;
+import org.stem.utils.WrappedRunnable;
 
 import java.io.IOException;
 import java.util.Collection;

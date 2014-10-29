@@ -18,7 +18,7 @@ package org.stem.streaming;
 
 import com.twitter.crunch.MappingDiff;
 import com.twitter.crunch.Node;
-import org.stem.util.TopologyUtils;
+import org.stem.utils.TopologyUtils;
 
 import java.util.*;
 

@@ -24,7 +24,7 @@ import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.ResponseHandler;
 import org.stem.api.response.ErrorResponse;
 import org.stem.api.response.StemResponse;
-import org.stem.util.JsonUtils;
+import org.stem.utils.JsonUtils;
 
 import java.io.IOException;
 import java.io.InputStream;

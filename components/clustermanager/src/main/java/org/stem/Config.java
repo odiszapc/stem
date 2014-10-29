@@ -19,4 +19,5 @@ package org.stem;
 public class Config {
 
     public String zookeeper_endpoint;
+    public String web_listen_address;
 }

@@ -16,7 +16,7 @@
 
 package org.stem.coordination;
 
-import org.stem.util.JsonUtils;
+import org.stem.utils.JsonUtils;
 
 public abstract class ZNodeAbstract implements ZNode {
 

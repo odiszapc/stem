@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.stem.util;
+package org.stem.utils;
 
 import com.google.common.collect.Lists;
 import com.twitter.crunch.Node;

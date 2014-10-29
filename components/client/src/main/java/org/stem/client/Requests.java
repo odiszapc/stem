@@ -17,7 +17,7 @@
 package org.stem.client;
 
 import io.netty.buffer.ByteBuf;
-import org.stem.util.BBUtils;
+import org.stem.utils.BBUtils;
 
 import java.util.UUID;
 
