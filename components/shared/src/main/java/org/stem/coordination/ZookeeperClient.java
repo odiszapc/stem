@@ -47,7 +47,7 @@ public class ZookeeperClient {
     private final String host;
     private final int port;
 
-    CuratorFramework client;
+    private CuratorFramework client;
 
     private static final String HOST_DEFAULT = "localhost";
     private static final int PORT_DEFAULT = 2181;
@@ -74,7 +74,6 @@ public class ZookeeperClient {
     }
 
     private CuratorFramework createClient(String endpoint) {
-        //return CuratorFrameworkFactory.newClient(endpoint, 1000, 3000, new ExponentialBackoffRetry(1000, 3));
         return CuratorFrameworkFactory.newClient(endpoint, new ExponentialBackoffRetry(1000, 3));
     }
 
