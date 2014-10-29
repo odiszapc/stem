@@ -9,7 +9,7 @@ With STEM each machine in cluster can store up to 100-200TB of data.
 #### Features
 - Linear scalability
 - High availability (x3 replication by default)
-- Heterogeneous design of cluster (binary dataset is separated from meta data)
+- Heterogeneous design of cluster (binary objects are separated from meta data)
 - Linux/Windows compatible (HotSpot JVM)
 - Low cost — store up to 200TB of data on storage node
 - Stray forward compaction with no overhead (it takes few hours to free up space after deletion of data on a 3TB disk)
