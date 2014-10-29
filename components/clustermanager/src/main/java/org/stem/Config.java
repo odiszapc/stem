@@ -14,19 +14,9 @@
  * limitations under the License.
  */
 
-package org.stem.api.resources;
+package org.stem;
 
-import org.glassfish.jersey.server.ResourceConfig;
-import org.stem.ClusterManager;
+public class Config {
 
-public class MyApplication extends ResourceConfig {
-
-    public MyApplication() {
-        // Resources.
-        register(RootResource.class);
-        register(TopologyResource.class);
-        register(ClusterResource.class);
-        register(ClusterManager.getJsonProvider());
-
-    }
+    public String zookeeper_endpoint;
 }

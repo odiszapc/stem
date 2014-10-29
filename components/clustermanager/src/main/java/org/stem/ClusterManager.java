@@ -30,27 +30,80 @@ import org.glassfish.grizzly.http.server.*;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.stem.coordination.StorageStatListener;
-import org.stem.coordination.ZooConstants;
-import org.stem.coordination.ZookeeperClient;
-import org.stem.coordination.ZookeeperClientFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.stem.coordination.*;
 import org.stem.domain.Cluster;
 import org.stem.exceptions.DefaultExceptionMapper;
+import org.stem.exceptions.StemException;
 import org.stem.exceptions.StemExceptionMapper;
 import org.stem.net.CLStaticByPassHttpHandler;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 
 
-public class ClusterManagerLauncher {
+public class ClusterManager {
+
+    private static final Logger logger = LoggerFactory.getLogger(ClusterManager.class);
+
+    private static final String STEM_CONFIG_PROPERTY = "stem.cluster.config";
+    private static final String DEFAULT_CONFIG = "cluster.yaml";
+
+    private static Config config;
+
+    static {
+        loadConfig();
+    }
+
+    public static void loadConfig() {
+        URL url = getConfigUrl();
+        logger.info("Loading settings from " + url);
+
+        InputStream stream;
+        try {
+            stream = url.openStream();
+        } catch (IOException e) {
+            throw new AssertionError(e);
+        }
+
+        Constructor constructor = new Constructor(Config.class);
+        Yaml yaml = new Yaml(constructor);
+        config = (Config) yaml.load(stream);
+    }
+
+    static URL getConfigUrl() {
+        String configPath = System.getProperty(STEM_CONFIG_PROPERTY);
+        if (null == configPath)
+            configPath = DEFAULT_CONFIG;
+
+        URL url;
+
+        try {
+            File file = new File(configPath);
+            url = file.toURI().toURL();
+            url.openStream().close();
+        } catch (Exception e) {
+            ClassLoader loader = ClusterManager.class.getClassLoader();
+            url = loader.getResource(configPath);
+            if (null == url)
+                throw new RuntimeException("Cannot load " + configPath + ". Ensure \"" + STEM_CONFIG_PROPERTY + "\" system property is set correctly.");
+        }
+
+        return url;
+    }
 
     HttpServer server;
 
     public static void main(String[] args) throws InterruptedException {
-        ClusterManagerLauncher launcher = new ClusterManagerLauncher();
-        launcher.start();
+        ClusterManager clusterManager = new ClusterManager();
+        clusterManager.start();
         Thread.currentThread().join();
     }
 
@@ -113,14 +166,17 @@ public class ClusterManagerLauncher {
     }
 
     private void initZookeeperPaths() {
-        ZookeeperClient client = ZookeeperClientFactory.create();
-        client.start();
+        ZookeeperClient client = ZookeeperClientFactory.newClient(config.zookeeper_endpoint);
+
         try {
+            client.start();
             client.createIfNotExists(ZooConstants.CLUSTER);
             client.listenForChildren(ZooConstants.CLUSTER, new StorageStatListener());
             //client.createIfNotExists(ZooConstants.CLUSTER_DESCRIPTOR_PATH);
+        } catch (ZooException e) {
+            throw new StemException("Failed connect to Zookeeper", e);
         } catch (Exception e) {
-            throw new RuntimeException("Can't init Zookeeper", e);
+            throw new StemException("Can not initialize Zookeeper paths", e);
         }
     }
 

@@ -81,16 +81,16 @@ public class Cluster {
         }
     }
 
-    private static void zookeeperClientSafeStart() {
+    private static void zookeeperClientSafeStart() throws ZooException {
         if (null == client) {
-            client = ZookeeperClientFactory.create();
+            client = ZookeeperClientFactory.newClient();
         }
 
         if (client.isUninitialized())
             client.start();
         else {
             client.close();
-            client = ZookeeperClientFactory.create();
+            client = ZookeeperClientFactory.newClient();
             client.start();
         }
     }

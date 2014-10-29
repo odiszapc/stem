@@ -14,19 +14,11 @@
  * limitations under the License.
  */
 
-package org.stem.api.resources;
+package org.stem.coordination;
 
-import org.glassfish.jersey.server.ResourceConfig;
-import org.stem.ClusterManager;
+public class ZooException extends Exception {
 
-public class MyApplication extends ResourceConfig {
-
-    public MyApplication() {
-        // Resources.
-        register(RootResource.class);
-        register(TopologyResource.class);
-        register(ClusterResource.class);
-        register(ClusterManager.getJsonProvider());
-
+    public ZooException(String message) {
+        super(message);
     }
 }

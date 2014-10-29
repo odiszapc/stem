@@ -46,7 +46,7 @@ public class StemClient implements TopoMapSubscriber {
         mappingListener = new TopoMapListener();
         mappingListener.listen(this);
         metaClient = new MetaStoreClient();
-        zooClient = ZookeeperClientFactory.create();
+        zooClient = ZookeeperClientFactory.newClient();
     }
 
     public void start() {

@@ -31,7 +31,7 @@ public class DataClusterNotificator implements Runnable {
 
 
     public DataClusterNotificator() {
-        client = ZookeeperClientFactory.create();
+        client = ZookeeperClientFactory.newClient();
         client.start();
     }
 

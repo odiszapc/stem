@@ -40,7 +40,7 @@ public class StreamManager {
     private ZookeeperClient client;
 
     public StreamManager() {
-        client = ZookeeperClientFactory.create();
+        client = ZookeeperClientFactory.newClient();
         client.start();
     }
 

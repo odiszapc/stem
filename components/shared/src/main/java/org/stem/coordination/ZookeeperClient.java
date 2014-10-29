@@ -17,49 +17,84 @@
 package org.stem.coordination;
 
 
+import com.google.common.util.concurrent.AbstractFuture;
+import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
+import org.apache.curator.framework.listen.Listenable;
 import org.apache.curator.framework.recipes.cache.NodeCache;
 import org.apache.curator.framework.recipes.cache.NodeCacheListener;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
+import org.apache.curator.framework.state.ConnectionState;
+import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.utils.ZKPaths;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.Stat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.stem.util.JsonUtils;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 public class ZookeeperClient {
+
+    private static final Logger logger = LoggerFactory.getLogger(ZookeeperClient.class);
+    private final String host;
+    private final int port;
 
     CuratorFramework client;
 
     private static final String HOST_DEFAULT = "localhost";
     private static final int PORT_DEFAULT = 2181;
 
+    private static final int DEFAULT_CONNECTION_TIMEOUT_SEC = 5;
+
+
     public ZookeeperClient() {
-        client = createClient(HOST_DEFAULT, PORT_DEFAULT);
+        this(HOST_DEFAULT, PORT_DEFAULT);
     }
 
     public ZookeeperClient(String host, int port) {
+        this.host = host;
+        this.port = port;
         client = createClient(host, port);
     }
 
-    public ZookeeperClient(String endpoint) {
-        client = createClient(endpoint);
+    private String endpoint() {
+        return host + ':' + port;
     }
 
-    private static CuratorFramework createClient(String host, int port) {
-        String endpoint = host + ":" + port;
-        return createClient(endpoint);
+    private CuratorFramework createClient(String host, int port) {
+        return createClient(endpoint());
     }
 
-    private static CuratorFramework createClient(String endpoint) {
+    private CuratorFramework createClient(String endpoint) {
+        //return CuratorFrameworkFactory.newClient(endpoint, 1000, 3000, new ExponentialBackoffRetry(1000, 3));
         return CuratorFrameworkFactory.newClient(endpoint, new ExponentialBackoffRetry(1000, 3));
     }
 
-    public void start() {
+    public synchronized void start() throws ZooException {
         client.start();
+        waitForConnection(client, DEFAULT_CONNECTION_TIMEOUT_SEC, TimeUnit.SECONDS);
+    }
+
+    private void waitForConnection(CuratorFramework client, int timeout, TimeUnit unit) throws ZooException {
+        StateListeningFuture future = new StateListeningFuture(client, ConnectionState.CONNECTED);
+        try {
+            Long duration = Uninterruptibles.getUninterruptibly(future, timeout, unit);
+            logger.info("Connected to Zookeeper in {}ms", duration / 1000000);
+        } catch (ExecutionException e) {
+            logger.error("Error while connecting to {}", endpoint());
+            throw new ZooException(String.format("Error while connecting to %s", endpoint()));
+        } catch (TimeoutException e) {
+            logger.error("Connection timeout ({}ms) to {}", future.duration() / 1000000, endpoint());
+            throw new ZooException(String.format("Connection timeout (%sms) to %s", future.duration() / 1000000, endpoint()));
+        }
     }
 
     public boolean isStarted() {
@@ -178,5 +213,38 @@ public class ZookeeperClient {
 
     public boolean isRunning() {
         return CuratorFrameworkState.STARTED == client.getState();
+    }
+
+
+    /**
+     *
+     */
+    private static class StateListeningFuture extends AbstractFuture<Long> {
+
+        private final long startTime;
+        private volatile long duration;
+
+        public StateListeningFuture(CuratorFramework client, final ConnectionState state) {
+            startTime = System.nanoTime();
+
+            Listenable<ConnectionStateListener> connectionStateListenable = client.getConnectionStateListenable();
+            connectionStateListenable.addListener(new ConnectionStateListener() {
+                @Override
+                public void stateChanged(CuratorFramework client, ConnectionState newState) {
+                    if (newState == state) {
+                        duration = System.nanoTime() - startTime;
+                        set(duration);
+                    }
+                }
+            });
+        }
+
+        public long duration() {
+            if (isDone()) {
+                return duration;
+            } else {
+                return System.nanoTime() - startTime;
+            }
+        }
     }
 }
