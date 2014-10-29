@@ -35,9 +35,9 @@ Linear scalability, high availability and zer-overhead compaction and repair mak
 STEM Object Storage will allow you to install as many disks to storage node as you want. Indexes are located in a separate cluster; you don't need to worry about running out of RAM — meta- and binary- clusters can be scaled out separately.
 
 #### Resources
-Web site: http://stemstorage.org
+Project home: http://stemstorage.org
 
-Issue tracker: http://tracker.stemstorage.org (JIRA)
+JIRA: http://tracker.stemstorage.org
 
 #### Authors
 Alexey Plotnik (odiszapc@gmail.com, http://twitter.com/odiszapc)
