@@ -9,7 +9,7 @@ With STEM each machine in cluster can store up to 100-200TB of data.
 #### Features
 - Linear scalability
 - High availability (x3 replication by default)
-- Heterogeneous design of cluster (binary dataset is separated from meta data)
+- Heterogeneous design of cluster (binary objects are separated from meta data)
 - Linux/Windows compatible (HotSpot JVM)
 - Low cost — store up to 200TB of data on storage node
 - Stray forward compaction with no overhead (it takes few hours to free up space after deletion of data on a 3TB disk)
@@ -35,9 +35,9 @@ Linear scalability, high availability and zer-overhead compaction and repair mak
 STEM Object Storage will allow you to install as many disks to storage node as you want. Indexes are located in a separate cluster; you don't need to worry about running out of RAM — meta- and binary- clusters can be scaled out separately.
 
 #### Resources
-Web site: http://stemstorage.org
+Project home: http://stemstorage.org
 
-Issue tracker: http://tracker.stemstorage.org (JIRA)
+JIRA: http://tracker.stemstorage.org
 
 #### Authors
 Alexey Plotnik (odiszapc@gmail.com, http://twitter.com/odiszapc)
