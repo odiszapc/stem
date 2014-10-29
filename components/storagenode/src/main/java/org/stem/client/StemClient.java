@@ -18,10 +18,7 @@ package org.stem.client;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
-import org.stem.coordination.TopoMapping;
-import org.stem.coordination.ZooConstants;
-import org.stem.coordination.ZookeeperClient;
-import org.stem.coordination.ZookeeperClientFactory;
+import org.stem.coordination.*;
 import org.stem.domain.ArrayBalancer;
 import org.stem.domain.ExtendedBlobDescriptor;
 import org.stem.transport.Message;
@@ -46,7 +43,11 @@ public class StemClient implements TopoMapSubscriber {
         mappingListener = new TopoMapListener();
         mappingListener.listen(this);
         metaClient = new MetaStoreClient();
-        zooClient = ZookeeperClientFactory.newClient();
+        try {
+            zooClient = ZookeeperClientFactory.newClient();
+        } catch (ZooException e) {
+            throw new RuntimeException("Error while initializeng STEM client", e);
+        }
     }
 
     public void start() {
@@ -59,7 +60,7 @@ public class StemClient implements TopoMapSubscriber {
 
             zooClient.listenForZNode(ZooConstants.TOPOLOGY + "/" + ZooConstants.TOPO_MAP, mappingListener);
         } catch (Exception e) {
-            throw new RuntimeException("Can't start Stem client", e);
+            throw new RuntimeException("Can not start Stem client", e);
         }
     }
 

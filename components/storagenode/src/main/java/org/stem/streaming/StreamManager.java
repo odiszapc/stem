@@ -18,10 +18,7 @@ package org.stem.streaming;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stem.coordination.StemZooEventHandler;
-import org.stem.coordination.ZooConstants;
-import org.stem.coordination.ZookeeperClient;
-import org.stem.coordination.ZookeeperClientFactory;
+import org.stem.coordination.*;
 import org.stem.db.DataTracker;
 import org.stem.db.Layout;
 import org.stem.db.StorageNodeDescriptor;
@@ -40,8 +37,12 @@ public class StreamManager {
     private ZookeeperClient client;
 
     public StreamManager() {
-        client = ZookeeperClientFactory.newClient();
-        client.start();
+        try {
+            client = ZookeeperClientFactory.newClient();
+            client.start();
+        } catch (ZooException e) {
+            throw new RuntimeException("Error occurred while initializing Stream Manager");
+        }
     }
 
     public void listenForSessions() {

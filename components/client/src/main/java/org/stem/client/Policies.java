@@ -22,6 +22,10 @@ public class Policies {
 
     private final ReconnectionPolicy reconnectionPolicy;
 
+    public Policies() {
+        this(DEFAULT_RECONNECTION_POLICY);
+    }
+
     public Policies(ReconnectionPolicy reconnectionPolicy) {
         this.reconnectionPolicy = reconnectionPolicy;
     }

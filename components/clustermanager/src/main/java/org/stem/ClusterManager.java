@@ -56,7 +56,9 @@ public class ClusterManager {
     private static final String STEM_CONFIG_PROPERTY = "stem.cluster.config";
     private static final String DEFAULT_CONFIG = "cluster.yaml";
 
-    private static Config config;
+    static Config config;
+
+    private ZookeeperClient zookeeperClient;
 
     static {
         loadConfig();
@@ -109,12 +111,13 @@ public class ClusterManager {
 
     public void start() {
         try {
+            connectToZookeeper();
             initZookeeperPaths();
             loadClusterConfiguration();
             configureWebServer();
             startWebServer();
         } catch (Exception e) {
-            throw new RuntimeException("Error while starting Cluster Manager web server", e);
+            throw new RuntimeException("Error while starting Cluster Manager", e);
         }
     }
 
@@ -165,13 +168,20 @@ public class ClusterManager {
         server.getServerConfiguration().addHttpHandler(handler, "/admin", "/static");
     }
 
-    private void initZookeeperPaths() {
-        ZookeeperClient client = ZookeeperClientFactory.newClient(config.zookeeper_endpoint);
-
+    private void connectToZookeeper() {
         try {
-            client.start();
-            client.createIfNotExists(ZooConstants.CLUSTER);
-            client.listenForChildren(ZooConstants.CLUSTER, new StorageStatListener());
+            zookeeperClient = ZookeeperClientFactory.newClient(config.zookeeper_endpoint);
+        } catch (ZooException e) {
+            throw new StemException("Failed to connect to Zookeeper", e);
+        } catch (Exception e) {
+            throw new StemException("Error while creating Zookeeper client", e);
+        }
+    }
+
+    private void initZookeeperPaths() {
+        try {
+            zookeeperClient.createIfNotExists(ZooConstants.CLUSTER);
+            zookeeperClient.listenForChildren(ZooConstants.CLUSTER, new StorageStatListener());
             //client.createIfNotExists(ZooConstants.CLUSTER_DESCRIPTOR_PATH);
         } catch (ZooException e) {
             throw new StemException("Failed connect to Zookeeper", e);

@@ -16,28 +16,31 @@
 
 package org.stem.coordination;
 
-import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ZookeeperClientFactory {
 
-    private static List<ZookeeperClient> registry = Lists.newArrayList(); // TODO: thread safety
+    private static Map<String, ZookeeperClient> registry = new ConcurrentHashMap<>();
+    private static AtomicInteger counter = new AtomicInteger(0);
 
-    public static ZookeeperClient newClient() {
+    @Deprecated
+    public static ZookeeperClient newClient() throws ZooException {
         ZookeeperClient client = new ZookeeperClient();
-        saveToRegistry(client);
+        saveToRegistry(computeName(), client);
         return client;
     }
 
-    public static ZookeeperClient newClient(String host, int port) {
+    public static ZookeeperClient newClient(String host, int port) throws ZooException {
         ZookeeperClient client = new ZookeeperClient(host, port);
-        saveToRegistry(client);
+        saveToRegistry(computeName(), client);
         return client;
     }
 
-    public static ZookeeperClient newClient(String endpoint) {
+    public static ZookeeperClient newClient(String endpoint) throws ZooException {
         String[] split = StringUtils.split(endpoint, ':');
         assert 2 == split.length : "Invalid Zookeeper endpoint!";
         String host = split[0];
@@ -46,15 +49,20 @@ public class ZookeeperClientFactory {
         return newClient(host, port);
     }
 
+    private static String computeName() {
+        return "ZooClient-" + counter.incrementAndGet();
+    }
+
     public static void closeAll() {
-        for (ZookeeperClient client : registry) {
+
+        for (ZookeeperClient client : registry.values()) {
             client.close();
         }
 
         registry.clear();
     }
 
-    private static void saveToRegistry(ZookeeperClient client) {
-        registry.add(client);
+    private static void saveToRegistry(String name, ZookeeperClient client) {
+        registry.put(name, client);
     }
 }

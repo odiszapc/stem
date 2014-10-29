@@ -55,21 +55,28 @@ public class ZookeeperClient {
     private static final int DEFAULT_CONNECTION_TIMEOUT_SEC = 5;
 
 
-    public ZookeeperClient() {
+    /**
+     * @deprecated use ZookeeperClient(host, port)
+     * @throws ZooException
+     */
+    @Deprecated
+    public ZookeeperClient() throws ZooException {
         this(HOST_DEFAULT, PORT_DEFAULT);
     }
 
-    public ZookeeperClient(String host, int port) {
+    public ZookeeperClient(String host, int port) throws ZooException {
         this.host = host;
         this.port = port;
-        client = createClient(host, port);
+        client = createClient();
+        client.start();
+        waitForConnection(client, DEFAULT_CONNECTION_TIMEOUT_SEC, TimeUnit.SECONDS);
     }
 
     private String endpoint() {
         return host + ':' + port;
     }
 
-    private CuratorFramework createClient(String host, int port) {
+    private CuratorFramework createClient() {
         return createClient(endpoint());
     }
 
@@ -77,9 +84,9 @@ public class ZookeeperClient {
         return CuratorFrameworkFactory.newClient(endpoint, new ExponentialBackoffRetry(1000, 3));
     }
 
-    public synchronized void start() throws ZooException {
-        client.start();
-        waitForConnection(client, DEFAULT_CONNECTION_TIMEOUT_SEC, TimeUnit.SECONDS);
+    @Deprecated
+    public synchronized void start() {
+
     }
 
     private void waitForConnection(CuratorFramework client, int timeout, TimeUnit unit) throws ZooException {
@@ -92,7 +99,7 @@ public class ZookeeperClient {
             throw new ZooException(String.format("Error while connecting to %s", endpoint()));
         } catch (TimeoutException e) {
             logger.error("Connection timeout ({}ms) to {}", future.duration() / 1000000, endpoint());
-            throw new ZooException(String.format("Connection timeout (%sms) to %s", future.duration() / 1000000, endpoint()));
+            throw new ZooException(String.format("Connection to %s timed out (%sms)", endpoint(), future.duration() / 1000000));
         }
     }
 
@@ -146,6 +153,11 @@ public class ZookeeperClient {
 
         cache.getListenable().addListener(cacheListener);
     }
+
+// TODO: ZNode must make the following thing possible
+//    public void listenForChildren(ZNode zNode, StemZooEventHandler listener) throws Exception {
+//
+//    }
 
     public void createIfNotExists(String path) throws Exception {
         try {

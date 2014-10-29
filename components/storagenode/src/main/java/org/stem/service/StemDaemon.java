@@ -64,9 +64,8 @@ public class StemDaemon {
             StorageNodeDescriptor.joinCluster();
             StreamManager.instance.listenForSessions();
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error("Error during initialization", e);
-            e.printStackTrace();
             System.exit(100);
         }
 

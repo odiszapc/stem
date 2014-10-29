@@ -30,9 +30,8 @@ public class DataClusterNotificator implements Runnable {
     ZookeeperClient client; // TODO: the client instance must be a singleton ???
 
 
-    public DataClusterNotificator() {
+    public DataClusterNotificator() throws ZooException {
         client = ZookeeperClientFactory.newClient();
-        client.start();
     }
 
     @Override
