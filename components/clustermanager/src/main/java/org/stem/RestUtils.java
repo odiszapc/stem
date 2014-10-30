@@ -45,6 +45,7 @@ public class RestUtils {
         response.getCluster().setName(cluster.getName());
         response.getCluster().setvBucketsNum(cluster.getvBuckets());
         response.getCluster().setRf(cluster.getRf());
+        response.getCluster().setZookeeperEndpoint(cluster.descriptor().getZookeeperEndpoint());
         response.getCluster().setUsedBytes(cluster.getUsedBytes());
         response.getCluster().setTotalBytes(cluster.getTotalBytes());
 

@@ -49,9 +49,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 
-public class ClusterManager {
+public class ClusterManagerDaemon {
 
-    private static final Logger logger = LoggerFactory.getLogger(ClusterManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClusterManagerDaemon.class);
 
     private static final String STEM_CONFIG_PROPERTY = "stem.cluster.config";
     private static final String DEFAULT_CONFIG = "cluster.yaml";
@@ -97,7 +97,7 @@ public class ClusterManager {
             url = file.toURI().toURL();
             url.openStream().close();
         } catch (Exception e) {
-            ClassLoader loader = ClusterManager.class.getClassLoader();
+            ClassLoader loader = ClusterManagerDaemon.class.getClassLoader();
             url = loader.getResource(configPath);
             if (null == url)
                 throw new RuntimeException("Cannot load " + configPath + ". Ensure \"" + STEM_CONFIG_PROPERTY + "\" system property is set correctly.");
@@ -109,8 +109,8 @@ public class ClusterManager {
     private HttpServer server;
 
     public static void main(String[] args) throws InterruptedException {
-        ClusterManager clusterManager = new ClusterManager();
-        clusterManager.start();
+        ClusterManagerDaemon daemon = new ClusterManagerDaemon();
+        daemon.start();
         Thread.currentThread().join();
     }
 
@@ -122,7 +122,7 @@ public class ClusterManager {
             configureWebServer();
             startWebServer();
         } catch (Exception e) {
-            throw new RuntimeException("Error while starting Cluster Manager", e);
+            throw new RuntimeException("Can not start cluster manager", e);
         }
     }
 

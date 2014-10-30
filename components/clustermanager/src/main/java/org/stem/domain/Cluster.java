@@ -23,10 +23,12 @@ import org.stem.utils.TopologyUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Cluster {
 
-    protected static Cluster instance = null;
+    //protected static Cluster instance = null; // TODO: Non-thread safe
+    protected static AtomicReference<Cluster> cluster = new AtomicReference<>();
 
     final Descriptor descriptor;
     Topology topology;
@@ -35,7 +37,7 @@ public class Cluster {
     public static Cluster getInstance() {
         if (!initialized())
             throw new StemException("Cluster has not been initialized yet.");
-        return instance;
+        return cluster.get();
     }
 
     public static Cluster load(String zookeeperEndpoint) {
@@ -43,11 +45,13 @@ public class Cluster {
             throw new StemException("Cluster is already initialized");
 
         try {
-            instance = new Cluster(zookeeperEndpoint);
+            Cluster newCluster = new Cluster(zookeeperEndpoint);
+            if (cluster.compareAndSet(null, newCluster))
+                return newCluster;
         } catch (Exception e) {
             throw new StemException("Error while loading Cluster configuration from Zookeeper", e);
         }
-        return instance; // TODO: load cluster topology from zookeeper
+        return cluster.get(); // TODO: load cluster topology from zookeeper
     }
 
     public static Cluster initialize(String name, int vBuckets, int rf, String zookeeperEndpoint) {
@@ -55,19 +59,24 @@ public class Cluster {
             throw new StemException("Cluster is already initialized");
 
         try {
-            instance = new Cluster(name, vBuckets, rf, zookeeperEndpoint);
+            Cluster newCluster = new Cluster(name, vBuckets, rf, zookeeperEndpoint);
+            if (cluster.compareAndSet(null, newCluster))
+                return newCluster;
         } catch (Exception e) {
             throw new StemException("Error while initializing cluster", e);
         }
 
-        return instance;
+        return cluster.get();
     }
 
 
     protected Cluster(String zookeeperEndpoint) throws Exception {
         tryStartZookeeperClient(zookeeperEndpoint);
         Descriptor descriptor = client.readZNodeData(ZooConstants.CLUSTER_DESCRIPTOR_PATH, Descriptor.class);
-        assert null != descriptor : "Cluster descriptor is null";
+        if (null == descriptor) {
+            return;
+            //throw new StemException("No Cluster descriptor found in " + ZooConstants.CLUSTER_DESCRIPTOR_PATH);
+        }
 
         validate(descriptor.name, descriptor.vBuckets, descriptor.rf, zookeeperEndpoint);
         this.descriptor = descriptor;
@@ -133,9 +142,9 @@ public class Cluster {
     }
 
     public void destroy() {
-        if (null != instance) {
+        if (null != cluster.get()) {
             client.close();
-            instance = null;
+            cluster.set(null);
         }
     }
 
@@ -146,7 +155,7 @@ public class Cluster {
     }
 
     public static boolean initialized() {
-        return null != instance;
+        return null != cluster.get();
     }
 
     public synchronized void addStorageIfNotExist(StorageNode storage)  // replace synchronized with Lock
@@ -222,15 +231,22 @@ public class Cluster {
         }
     }
 
+    public Descriptor descriptor() {
+        return descriptor;
+    }
+
     /**
      *
      */
     public static class Descriptor extends ZNodeAbstract {
 
-        final String name;
-        final int vBuckets;
-        final int rf;
-        final String zookeeperEndpoint;
+        String name;
+        int vBuckets;
+        int rf;
+        String zookeeperEndpoint;
+
+        public Descriptor() {
+        }
 
         public String getName() {
             return name;
@@ -242,6 +258,10 @@ public class Cluster {
 
         public int getRf() {
             return rf;
+        }
+
+        public String getZookeeperEndpoint() {
+            return zookeeperEndpoint;
         }
 
         public Descriptor(String name, int vBuckets, int rf, String zookeeperEndpoint) {

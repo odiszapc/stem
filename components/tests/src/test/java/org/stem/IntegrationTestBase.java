@@ -50,7 +50,7 @@ import java.util.UUID;
 
 public class IntegrationTestBase {
 
-    ClusterManager clusterManagerInstance;
+    ClusterManagerDaemon daemon;
     private TestingServer zookeeperInstance;
     protected ClusterManagerClient clusterManagerClient;
     protected Session cassandraTestSession;
@@ -213,8 +213,8 @@ public class IntegrationTestBase {
         Thread clusterManagerThread = new Thread() {
             @Override
             public void run() {
-                clusterManagerInstance = new ClusterManager();
-                clusterManagerInstance.start();
+                daemon = new ClusterManagerDaemon();
+                daemon.start();
             }
         };
         clusterManagerThread.start();
@@ -226,7 +226,7 @@ public class IntegrationTestBase {
     }
 
     protected void stopClusterManagerEmbedded() {
-        clusterManagerInstance.stop();
+        daemon.stop();
     }
 
     private void startCassandraEmbedded() {

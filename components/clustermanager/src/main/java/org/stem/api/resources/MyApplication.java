@@ -17,7 +17,7 @@
 package org.stem.api.resources;
 
 import org.glassfish.jersey.server.ResourceConfig;
-import org.stem.ClusterManager;
+import org.stem.ClusterManagerDaemon;
 
 public class MyApplication extends ResourceConfig {
 
@@ -26,7 +26,7 @@ public class MyApplication extends ResourceConfig {
         register(RootResource.class);
         register(TopologyResource.class);
         register(ClusterResource.class);
-        register(ClusterManager.getJsonProvider());
+        register(ClusterManagerDaemon.getJsonProvider());
 
     }
 }
