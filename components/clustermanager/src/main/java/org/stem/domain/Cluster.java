@@ -28,7 +28,7 @@ import java.util.List;
 public class Cluster {
 
     protected static Cluster instance = null;
-    private final ClusterDescriptor descriptor;
+    private final Descriptor descriptor;
     private static ZookeeperClient client;
 
     public static Cluster getInstance() {
@@ -40,7 +40,7 @@ public class Cluster {
     Topology topology;
 
     protected Cluster(String name, int vBuckets, int rf) {
-        this.descriptor = new ClusterDescriptor(name, vBuckets, rf);
+        this.descriptor = new Descriptor(name, vBuckets, rf);
         topology = new Topology(name, rf);
     }
 
@@ -60,7 +60,7 @@ public class Cluster {
     public static Cluster init() {
         try {
             zookeeperClientSafeStart();
-            ClusterDescriptor descriptor = client.readZNodeData(ZooConstants.CLUSTER_DESCRIPTOR_PATH, ClusterDescriptor.class);
+            Descriptor descriptor = client.readZNodeData(ZooConstants.CLUSTER_DESCRIPTOR_PATH, Descriptor.class);
             if (null != descriptor) {
                 init(descriptor.getName(), descriptor.getvBuckets(), descriptor.getRf());
             }
@@ -96,21 +96,7 @@ public class Cluster {
     }
 
     public static Cluster init(String name, int vBuckets, int rf) {
-        if (null == name) {
-            throw new StemException("Cluster name can not be null");
-        }
-
-        if (name.length() > 50) {
-            throw new StemException("Cluster name must be less than 50 symbols");
-        }
-
-        if (vBuckets <= 0) {
-            throw new StemException("Number of virtual buckets must be greater than zero");
-        }
-
-        if (rf <= 0) {
-            throw new StemException("Replication factor must be greater than zero");
-        }
+        validate(name, vBuckets, rf);
 
         if (initialized()) {
             throw new StemException("Cluster is already initialized");
@@ -125,6 +111,20 @@ public class Cluster {
         }
 
         return instance;
+    }
+
+    private static void validate(String name, int vBuckets, int rf) {
+        if (null == name)
+            throw new StemException("Cluster name can not be null");
+
+        if (name.length() > 100)
+            throw new StemException("Cluster name must be less than 100 symbols");
+
+        if (vBuckets <= 0)
+            throw new StemException("Number of virtual buckets must be greater than zero");
+
+        if (rf <= 0)
+            throw new StemException("Replication factor must be greater than zero");
     }
 
     public static void destroy() {
@@ -214,6 +214,39 @@ public class Cluster {
         if (topology.storageExists(stat.getEndpoint())) {
             StorageNode node = topology.getStorage(stat.getEndpoint());
             node.setDisks(stat.getDisks()); // TODO: Check disks existence
+        }
+    }
+
+    public static class Descriptor extends ZNodeAbstract {
+
+        String name;
+        int vBuckets;
+        int rf;
+
+        public String getName() {
+            return name;
+        }
+
+        public int getvBuckets() {
+            return vBuckets;
+        }
+
+        public int getRf() {
+            return rf;
+        }
+
+        public Descriptor() {
+        }
+
+        public Descriptor(String name, int vBuckets, int rf) {
+            this.name = name;
+            this.vBuckets = vBuckets;
+            this.rf = rf;
+        }
+
+        @Override
+        public String name() {
+            return ZooConstants.CLUSTER_DESCRIPTOR_NAME;
         }
     }
 }
