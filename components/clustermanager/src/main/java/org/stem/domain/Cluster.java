@@ -16,7 +16,6 @@
 
 package org.stem.domain;
 
-
 import org.stem.coordination.*;
 import org.stem.exceptions.StemException;
 import org.stem.streaming.StreamSession;
