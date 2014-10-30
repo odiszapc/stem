@@ -49,7 +49,7 @@ public class StorageStat extends ZNodeAbstract // TODO: rethink StorageNode and 
     }
 
     @Override
-    public String nodeName() {
+    public String name() {
         return endpoint;
     }
 }

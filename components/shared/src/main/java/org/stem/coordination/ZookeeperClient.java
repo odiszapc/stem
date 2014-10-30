@@ -176,19 +176,19 @@ public class ZookeeperClient {
     }
 
     public boolean nodeExists(String parent, ZNode znode) throws Exception {
-        String path = ZKPaths.makePath(parent, znode.nodeName());
+        String path = ZKPaths.makePath(parent, znode.name());
         return null != client.checkExists().forPath(path);
     }
 
     public void createNode(String parent, ZNode znode) throws Exception // TODO: if already exists?
     {
-        String path = ZKPaths.makePath(parent, znode.nodeName());
+        String path = ZKPaths.makePath(parent, znode.name());
         createNode(path, znode.encode());
     }
 
     public void updateNode(String parent, ZNode znode) throws Exception // TODO: automatically add/remove trailing slash
     {
-        String path = ZKPaths.makePath(parent, znode.nodeName());
+        String path = ZKPaths.makePath(parent, znode.name());
         updateNode(path, znode.encode());
     }
 

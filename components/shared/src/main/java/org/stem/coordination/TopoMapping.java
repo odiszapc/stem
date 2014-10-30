@@ -39,7 +39,7 @@ public class TopoMapping extends ZNodeAbstract {
     }
 
     @Override
-    public String nodeName() {
+    public String name() {
         return ZooConstants.TOPO_MAP;
     }
 

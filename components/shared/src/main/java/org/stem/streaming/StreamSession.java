@@ -33,7 +33,7 @@ public class StreamSession extends AbstractSession {
     }
 
     @Override
-    public String nodeName() {
+    public String name() {
         return endpoint;
     }
 

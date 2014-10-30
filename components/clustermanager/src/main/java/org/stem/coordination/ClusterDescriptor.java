@@ -45,7 +45,7 @@ public class ClusterDescriptor extends ZNodeAbstract {
     }
 
     @Override
-    public String nodeName() {
+    public String name() {
         return ZooConstants.CLUSTER_DESCRIPTOR_NAME;
     }
 }
