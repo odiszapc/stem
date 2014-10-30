@@ -64,7 +64,6 @@ public class Cluster {
             if (null != descriptor) {
                 init(descriptor.getName(), descriptor.getvBuckets(), descriptor.getRf());
             }
-            int a = 1;
         } catch (Exception e) {
             throw new StemException("Can't load cluster configuration", e);
         }
