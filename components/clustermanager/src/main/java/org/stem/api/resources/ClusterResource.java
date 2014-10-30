@@ -42,7 +42,7 @@ public class ClusterResource {
     @PUT
     @Path(RESTConstants.Api.Cluster.Init.BASE)
     public Response init(InitClusterRequest request) {
-        Cluster.init(request.getName(), request.getvBuckets(), request.getRf(), ClusterManager.zookeeperEndpoint());
+        Cluster.initialize(request.getName(), request.getvBuckets(), request.getRf(), ClusterManager.zookeeperEndpoint());
         Cluster.getInstance().save();
 
         return RestUtils.ok();

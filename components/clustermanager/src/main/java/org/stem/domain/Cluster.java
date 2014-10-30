@@ -50,7 +50,7 @@ public class Cluster {
         return instance; // TODO: load cluster topology from zookeeper
     }
 
-    public static Cluster init(String name, int vBuckets, int rf, String zookeeperEndpoint) {
+    public static Cluster initialize(String name, int vBuckets, int rf, String zookeeperEndpoint) {
         if (initialized())
             throw new StemException("Cluster is already initialized");
 
