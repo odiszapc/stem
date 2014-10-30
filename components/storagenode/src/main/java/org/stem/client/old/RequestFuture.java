@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.stem.client;
+package org.stem.client.old;
 
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;

@@ -29,7 +29,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.stem.api.ClusterManagerClient;
 import org.stem.api.response.StemResponse;
-import org.stem.client.StemClient;
+import org.stem.client.old.StemClient;
 import org.stem.coordination.ZookeeperClientFactory;
 import org.stem.db.Layout;
 import org.stem.db.MountPoint;

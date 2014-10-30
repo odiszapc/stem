@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.stem.client;
+package org.stem.client.old;
 
 import org.stem.coordination.TopoMapping;
 

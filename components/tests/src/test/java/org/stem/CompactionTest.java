@@ -20,7 +20,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.stem.client.StemClient;
+import org.stem.client.old.StemClient;
 import org.stem.db.*;
 import org.stem.db.compaction.CompactionManager;
 import org.stem.db.compaction.FFScanner;

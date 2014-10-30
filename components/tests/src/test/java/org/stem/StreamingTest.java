@@ -23,7 +23,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.stem.api.request.JoinRequest;
-import org.stem.client.StorageNodeClient;
+import org.stem.client.old.StorageNodeClient;
 import org.stem.db.DataTracker;
 import org.stem.db.Layout;
 import org.stem.db.MountPoint;

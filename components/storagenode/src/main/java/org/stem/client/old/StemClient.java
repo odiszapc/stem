@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package org.stem.client;
+package org.stem.client.old;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import org.stem.client.MetaStoreClient;
 import org.stem.coordination.*;
 import org.stem.domain.ArrayBalancer;
 import org.stem.domain.ExtendedBlobDescriptor;
