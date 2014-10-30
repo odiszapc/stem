@@ -65,6 +65,10 @@ public class ClusterManager {
         loadConfig();
     }
 
+    public static String zookeeperEndpoint() {
+        return config.zookeeper_endpoint;
+    }
+
     public static void loadConfig() {
         URL url = getConfigUrl();
         logger.info("Loading settings from " + url);
@@ -123,7 +127,7 @@ public class ClusterManager {
     }
 
     private void loadClusterConfiguration() {
-        Cluster.init();
+        Cluster.load(config.zookeeper_endpoint);
     }
 
     private void configureWebServer() throws URISyntaxException, IOException {
@@ -165,7 +169,7 @@ public class ClusterManager {
         if (null != server) // TODO: why this may happen
             server.shutdownNow();
 
-        Cluster.destroy();
+        Cluster.getInstance().destroy();
     }
 
     private void configureStaticResources(HttpServer server, ResourceConfig resourceCfg) {
