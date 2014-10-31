@@ -17,7 +17,7 @@
 package org.stem;
 
 
-import org.stem.service.StemDaemon;
+import org.stem.service.StorageNodeDaemon;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -63,6 +63,6 @@ public class NodeSupervisor extends Thread {
         NodeSupervisor supervisor = new NodeSupervisor();
         supervisor.setDaemon(true);
         supervisor.start();
-        StemDaemon.main(args);
+        StorageNodeDaemon.main(args);
     }
 }

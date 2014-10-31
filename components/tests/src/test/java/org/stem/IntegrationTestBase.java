@@ -35,7 +35,7 @@ import org.stem.db.Layout;
 import org.stem.db.MountPoint;
 import org.stem.db.StorageNodeDescriptor;
 import org.stem.db.StorageService;
-import org.stem.service.StemDaemon;
+import org.stem.service.StorageNodeDaemon;
 import org.stem.transport.ops.WriteBlobMessage;
 import org.stem.utils.TestUtil;
 import org.stem.utils.YamlConfigurator;
@@ -256,11 +256,11 @@ public class IntegrationTestBase {
 
     private void startStorageNodeEmbedded() {
         StorageNodeDescriptor.loadConfig(); // must be called explicitly
-        StemDaemon.instance.start();
+        StorageNodeDaemon.instance.start();
     }
 
     private void stopStorageNodeEmbedded() {
-        StemDaemon.instance.stop();
+        StorageNodeDaemon.instance.stop();
     }
 
     private String setupEnvironment() {
