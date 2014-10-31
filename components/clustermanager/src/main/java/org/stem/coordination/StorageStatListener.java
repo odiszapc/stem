@@ -27,12 +27,12 @@ public class StorageStatListener extends StemZooEventHandler<StorageStat> {
 
     @Override
     protected void onChildAdded(StorageStat stat) {
-        Cluster.getInstance().updateStat(stat);
+        Cluster.instance.updateStat(stat);
     }
 
     @Override
     protected void onChildUpdated(StorageStat stat) {
-        Cluster.getInstance().updateStat(stat);
+        Cluster.instance.updateStat(stat);
     }
 
     @Override

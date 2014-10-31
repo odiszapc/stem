@@ -198,7 +198,7 @@ public class ZookeeperClient {
             if (0 == data.length) {
                 return null;
             }
-            return JsonUtils.decode(data, clazz);
+            return JsonUtils.decode(data, clazz); // TODO: handle JSON decode error
         } catch (KeeperException.NoNodeException e) {
             return null;
         }

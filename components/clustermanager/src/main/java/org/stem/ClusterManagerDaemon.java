@@ -127,7 +127,7 @@ public class ClusterManagerDaemon {
     }
 
     private void loadClusterConfiguration() {
-        Cluster.load(config.zookeeper_endpoint);
+        Cluster.instance.load();
     }
 
     private void configureWebServer() throws URISyntaxException, IOException {
@@ -169,7 +169,7 @@ public class ClusterManagerDaemon {
         if (null != server) // TODO: why this may happen
             server.shutdownNow();
 
-        Cluster.getInstance().destroy();
+        Cluster.instance.destroy();
     }
 
     private void configureStaticResources(HttpServer server, ResourceConfig resourceCfg) {

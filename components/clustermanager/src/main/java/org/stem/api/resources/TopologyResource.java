@@ -42,7 +42,7 @@ public class TopologyResource {
     @POST
     @Path(RESTConstants.Api.Topology.Build.BASE)
     public Response build() {
-        Cluster.getInstance().computeMapping();
+        Cluster.instance.computeMapping();
         return RestUtils.ok();
     }
 }

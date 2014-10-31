@@ -42,9 +42,9 @@ public class RestUtils {
     public static ClusterResponse buildClusterResponse(Cluster cluster, boolean attachDiskStat) {
         ClusterResponse response = new ClusterResponse();
 
-        response.getCluster().setName(cluster.getName());
-        response.getCluster().setvBucketsNum(cluster.getvBuckets());
-        response.getCluster().setRf(cluster.getRf());
+        response.getCluster().setName(cluster.descriptor().getName());
+        response.getCluster().setvBucketsNum(cluster.descriptor().getvBuckets());
+        response.getCluster().setRf(cluster.descriptor().getRf());
         response.getCluster().setZookeeperEndpoint(cluster.descriptor().getZookeeperEndpoint());
         response.getCluster().setUsedBytes(cluster.getUsedBytes());
         response.getCluster().setTotalBytes(cluster.getTotalBytes());

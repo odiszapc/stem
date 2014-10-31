@@ -16,7 +16,6 @@
 
 package org.stem.api.resources;
 
-import org.stem.ClusterManagerDaemon;
 import org.stem.RestUtils;
 import org.stem.api.RESTConstants;
 import org.stem.api.request.InitClusterRequest;
@@ -42,8 +41,8 @@ public class ClusterResource {
     @PUT
     @Path(RESTConstants.Api.Cluster.Init.BASE)
     public Response init(InitClusterRequest request) {
-        Cluster.initialize(request.getName(), request.getvBuckets(), request.getRf(), ClusterManagerDaemon.zookeeperEndpoint());
-        Cluster.getInstance().save();
+        Cluster.instance.initialize(request.getName(), request.getvBuckets(), request.getRf());
+        Cluster.instance().save();
 
         return RestUtils.ok();
     }
@@ -56,7 +55,7 @@ public class ClusterResource {
     @GET
     @Path(RESTConstants.Api.Cluster.Get.BASE)
     public Response get() {
-        Cluster cluster = Cluster.getInstance();
+        Cluster cluster = Cluster.instance;
         ClusterResponse response = RestUtils.buildClusterResponse(cluster, true);
         return RestUtils.ok(response);
     }
@@ -71,7 +70,7 @@ public class ClusterResource {
     @Path(RESTConstants.Api.Cluster.Join.BASE)
     public Response join(JoinRequest request) {
         StorageNode storage = new StorageNode(request);
-        Cluster.getInstance().addStorageIfNotExist(storage);
+        Cluster.instance.addStorageIfNotExist(storage);
         return RestUtils.ok();
     }
 }

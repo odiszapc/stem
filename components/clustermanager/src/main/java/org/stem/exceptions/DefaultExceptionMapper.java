@@ -16,6 +16,8 @@
 
 package org.stem.exceptions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.stem.api.response.ErrorResponse;
 
 import javax.ws.rs.core.Response;
@@ -24,9 +26,12 @@ import javax.ws.rs.ext.Provider;
 
 @Provider
 public class DefaultExceptionMapper implements ExceptionMapper<Exception> {
+    private static final Logger logger = LoggerFactory.getLogger(DefaultExceptionMapper.class);
 
     @Override
-    public Response toResponse(Exception exception) {
+    public Response toResponse(Exception e) {
+        logger.error("Error while execution request", e);
+
         ErrorResponse resp = new ErrorResponse();
         resp.setError(String.format("Server internal error"));
         resp.setErrorCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());

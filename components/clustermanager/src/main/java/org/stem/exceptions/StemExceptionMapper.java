@@ -29,7 +29,7 @@ public class StemExceptionMapper implements ExceptionMapper<StemException> {
     @Override
     public Response toResponse(StemException e) {
         ErrorResponse resp = new ErrorResponse();
-        resp.setError(String.format("Application error: %s", e.getMessage()));
+        resp.setError(String.format("Application error: %s", e.getMessage())); // TODO: concatenate all StemException
         resp.setErrorCode(100);
         return Response.status(Response.Status.FORBIDDEN).
                 entity(resp).build();
