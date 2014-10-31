@@ -39,7 +39,7 @@ public class FatFileAllocator {
 
     public static FatFile create(String filePath, long sizeInMB) throws IOException {
         allocateFile(filePath, sizeInMB, true);
-        return FatFile.open(filePath, new DataTracker(StorageNodeDescriptor.getCluster().getvBucketsNum()));
+        return FatFile.open(filePath, new DataTracker(StorageNodeDescriptor.cluster().getvBucketsNum()));
     }
 
     public static void allocateFile(String filePath, long sizeInMB, boolean mark) throws IOException {

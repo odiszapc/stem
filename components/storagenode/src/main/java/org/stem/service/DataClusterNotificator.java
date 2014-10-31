@@ -31,7 +31,7 @@ public class DataClusterNotificator implements Runnable {
 
 
     public DataClusterNotificator() throws ZooException {
-        client = ZookeeperClientFactory.newClient();
+        client = ZookeeperClientFactory.newClient(StorageNodeDescriptor.cluster().getZookeeperEndpoint());
     }
 
     @Override

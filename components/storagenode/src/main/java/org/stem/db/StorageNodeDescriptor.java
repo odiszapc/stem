@@ -119,14 +119,14 @@ public class StorageNodeDescriptor {
 
     public static void loadLayout() throws IOException {
         String[] mountPoints = getBlobMountPoints();
-        int vBuckets = StorageNodeDescriptor.getCluster().getvBucketsNum(); // Hard binding: Layout -> getCluster()
+        int vBuckets = StorageNodeDescriptor.cluster().getvBucketsNum(); // Hard binding: Layout -> cluster()
         Layout.getInstance().load(mountPoints, vBuckets);
     }
 
     public static void describeCluster() {
         cluster = ClusterService.instance.describeCluster();
-        logger.info("Cluster description: {}", cluster);
-        metaStoreClient = new MetaStoreClient();
+        logger.info("Cluster loaded: {}", cluster);
+        metaStoreClient = new MetaStoreClient(); // TODO: Metastore client? Here? Why?
         metaStoreClient.start();
     }
 
@@ -138,7 +138,7 @@ public class StorageNodeDescriptor {
         Layout.getInstance().detach();
     }
 
-    public static ClusterResponse.Cluster getCluster() {
+    public static ClusterResponse.Cluster cluster() {
         return cluster;
     }
 

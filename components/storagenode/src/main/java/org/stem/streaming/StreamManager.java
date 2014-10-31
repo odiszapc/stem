@@ -31,6 +31,7 @@ import java.util.concurrent.Executors;
 public class StreamManager {
 
     private static final Logger logger = LoggerFactory.getLogger(StreamManager.class);
+
     public static final StreamManager instance = new StreamManager();
     private Executor pool = Executors.newFixedThreadPool(1);
 
@@ -38,8 +39,7 @@ public class StreamManager {
 
     public StreamManager() {
         try {
-            client = ZookeeperClientFactory.newClient();
-            client.start();
+            client = ZookeeperClientFactory.newClient(StorageNodeDescriptor.cluster().getZookeeperEndpoint());
         } catch (ZooException e) {
             throw new RuntimeException("Error occurred while initializing Stream Manager");
         }
