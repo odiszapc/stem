@@ -74,7 +74,7 @@ public class StreamManager {
         }
     }
 
-    private class NewSessionsListener extends StemZooEventHandler<StreamSession> {
+    private class NewSessionsListener extends ZookeeperEventListener<StreamSession> {
 
         @Override
         public Class<? extends StreamSession> getBaseClass() {

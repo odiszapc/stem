@@ -16,6 +16,18 @@
 
 package org.stem.coordination;
 
+/**
+ * ZNodes hierarchy:
+ *
+ * stem
+ *   clustermanager
+ *     cluster
+ *       descriptor - name, rf, buckets, zookeeper_endpoint
+ *     topology     - TopoMapping
+ *     streaming
+ *       out
+ *       in
+ */
 public class ZooConstants {
 
     // TODO: think about ZNodes paths

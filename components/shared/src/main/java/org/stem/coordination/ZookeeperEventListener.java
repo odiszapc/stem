@@ -21,21 +21,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.utils.JsonUtils;
 
-public abstract class StemZooEventHandler<T> {
+public abstract class ZookeeperEventListener<T> {
 
-    private static final Logger logger = LoggerFactory.getLogger(StemZooEventHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(ZookeeperEventListener.class);
     private ZNodeEventHandler handler;
 
     public ZNodeEventHandler getHandler() {
         return handler;
     }
 
-    protected StemZooEventHandler() {
+    protected ZookeeperEventListener() {
         handler = new ZNodeEventHandler() {
             @Override
             public void onChildAdded(String path, byte[] data, Stat stat) {
                 try {
-                    StemZooEventHandler.this.onChildAdded(decode(data));
+                    ZookeeperEventListener.this.onChildAdded(decode(data));
                 } catch (Exception e) {
                     onError(e);
                 }
@@ -44,7 +44,7 @@ public abstract class StemZooEventHandler<T> {
             @Override
             public void onChildUpdated(String path, byte[] data, Stat stat) {
                 try {
-                    StemZooEventHandler.this.onChildUpdated(decode(data));
+                    ZookeeperEventListener.this.onChildUpdated(decode(data));
                 } catch (Exception e) {
                     onError(e);
                 }
@@ -53,7 +53,7 @@ public abstract class StemZooEventHandler<T> {
             @Override
             public void onChildRemoved(String path, byte[] data, Stat stat) {
                 try {
-                    StemZooEventHandler.this.onChildRemoved(decode(data));
+                    ZookeeperEventListener.this.onChildRemoved(decode(data));
                 } catch (Exception e) {
                     onError(e);
                 }
@@ -62,13 +62,11 @@ public abstract class StemZooEventHandler<T> {
             @Override
             public void onNodeUpdated(String path, byte[] data, Stat stat) {
                 try {
-                    StemZooEventHandler.this.onNodeUpdated(decode(data));
+                    ZookeeperEventListener.this.onNodeUpdated(decode(data));
                 } catch (Exception e) {
                     onError(e);
                 }
             }
-
-
         };
     }
 

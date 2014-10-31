@@ -18,7 +18,7 @@ package org.stem.coordination;
 
 import org.stem.streaming.StreamSession;
 
-public class NewSessionsListener extends StemZooEventHandler<StreamSession> {
+public class NewSessionsListener extends ZookeeperEventListener<StreamSession> {
 
     @Override
     public Class<? extends StreamSession> getBaseClass() {

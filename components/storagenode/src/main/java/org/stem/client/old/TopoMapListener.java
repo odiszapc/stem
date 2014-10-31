@@ -16,13 +16,13 @@
 
 package org.stem.client.old;
 
-import org.stem.coordination.StemZooEventHandler;
+import org.stem.coordination.ZookeeperEventListener;
 import org.stem.coordination.TopoMapping;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TopoMapListener extends StemZooEventHandler<TopoMapping> {
+public class TopoMapListener extends ZookeeperEventListener<TopoMapping> {
 
     List<TopoMapSubscriber> subscribers = new ArrayList<TopoMapSubscriber>();
 

@@ -134,7 +134,7 @@ public class ZookeeperClient {
      * @param listener
      * @throws Exception
      */
-    public void listenForZNode(String path, StemZooEventHandler listener) throws Exception {
+    public void listenForZNode(String path, ZookeeperEventListener listener) throws Exception {
         NodeCache cache = new NodeCache(client, path);
         cache.start();
 
@@ -144,7 +144,7 @@ public class ZookeeperClient {
         cache.getListenable().addListener(cacheListener);
     }
 
-    public void listenForChildren(String path, StemZooEventHandler listener) throws Exception {
+    public void listenForChildren(String path, ZookeeperEventListener listener) throws Exception {
         PathChildrenCache cache = new PathChildrenCache(client, path, true);
         cache.start();
 

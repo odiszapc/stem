@@ -39,7 +39,7 @@ mark_on_allocate: false
 
 # How many space will be provided for allocation
 # Default: entire mount point
-max_space_allocation_in_mb:
+max_space_allocation_in_mb: 257
 
 # Percent of data on disk marked for deletion that must be exceeded
 # for compaction process to be started

@@ -74,7 +74,7 @@ public class StemClient implements TopoMapSubscriber {
     }
 
     private String getStorageNodeEntpoint(UUID diskId) {
-        return mapping.getStorageNodeEntpoint(diskId);
+        return mapping.getStorageNodeEndpoint(diskId);
     }
 
     @Override

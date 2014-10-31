@@ -55,7 +55,7 @@ public class TopoMapping extends ZNodeAbstract {
         return bucketMap.get(vBucket);
     }
 
-    public String getStorageNodeEntpoint(UUID diskId) {
+    public String getStorageNodeEndpoint(UUID diskId) {
         return diskMap.get(diskId);
     }
 
