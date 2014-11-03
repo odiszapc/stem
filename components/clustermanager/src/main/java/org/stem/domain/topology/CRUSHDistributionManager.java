@@ -16,9 +16,9 @@
 
 package org.stem.domain.topology;
 
-public class CRUSHDistributionManager extends DataDistributionManager{
+public class CrushDistributionManager extends DataDistributionManager{
 
     //private static MappingFunction<Long, >
-    public static AlgorithmAdapter adapter = new CRUSHAdapter();
+    public static AlgorithmAdapter adapter = new CrushAdapter();
 
 }

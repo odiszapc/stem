@@ -26,7 +26,7 @@ import java.util.Map;
 
 import static org.stem.utils.TopologyUtils.addChild;
 
-public class CRUSHAdapter implements AlgorithmAdapter<Long, Long, Topology.Node, Node, ReplicaSet, List<Node>, Topology, Node> {
+public class CrushAdapter implements AlgorithmAdapter<Long, Long, Topology.Node, Node, ReplicaSet, List<Node>, Topology, Node> {
 
     @Override
     public Node convertNode(Topology.Node src) {

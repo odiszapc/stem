@@ -21,5 +21,5 @@ import java.util.Map;
 
 public interface MappingFunction<K, V extends Topology.Disk> {
 
-    Map<K, ReplicaSet<V>> computeMapping(List<K> dataset, Topology topology);
+    Map<K, ReplicaSet> computeMapping(List<K> dataset, Topology topology);
 }

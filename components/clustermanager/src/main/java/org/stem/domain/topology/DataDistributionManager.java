@@ -22,7 +22,7 @@ import java.util.Map;
 public abstract class DataDistributionManager {
 
     public static enum Algorithm {
-        CRUSH("crush", CRUSHDistributionManager.adapter);
+        CRUSH("crush", CrushDistributionManager.adapter);
 
         private static Map<String, Algorithm> values = new HashMap<>();
 

@@ -16,6 +16,6 @@
 
 package org.stem.domain.topology;
 
-public class CRUSHMappingFunction {
+public class CrushMappingFunction {
 
 }
