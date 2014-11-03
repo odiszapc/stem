@@ -31,7 +31,7 @@ public interface AlgorithmAdapter<
         TOPOLOGY_IN, TOPOLOGY_OUT> {
 
     NODE_OUT convertNode(NODE_IN src);
-    NODE_OUT convertReplicaSet(NODE_IN src);
+    REPLICA_SET_OUT convertReplicaSet(REPLICA_SET_IN src);
     TOPOLOGY_OUT convertTopology(TOPOLOGY_IN src);
     MappingFunction mappingFunction();
 

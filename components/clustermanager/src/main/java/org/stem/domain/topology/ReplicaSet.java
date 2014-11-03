@@ -18,11 +18,11 @@ package org.stem.domain.topology;
 
 import java.util.List;
 
-public class ReplicaSet<V extends Topology.Disk> {
+public class ReplicaSet {
 
-    public final List<V> disks;
+    public final List<Topology.Disk> disks;
 
-    public ReplicaSet(List<V> disks) {
+    public ReplicaSet(List<Topology.Disk> disks) {
         this.disks = disks;
     }
 }

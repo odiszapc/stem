@@ -102,6 +102,12 @@ public class TopologyUtils {
         child.setParent(parent);
     }
 
+    public static Node addChild(Node child, Node parent) {
+        parent.getChildren().add(child);
+        child.setParent(parent);
+        return child;
+    }
+
     public static TopoMapping buildTopoMap(Topology topology) {
         Map<Long, List<Node>> crushMap = topology.getCRUSHMap();
         Map<UUID, String> diskMap = new HashMap<UUID, String>();
