@@ -16,13 +16,19 @@
 
 package org.stem.domain.topology;
 
-import java.util.List;
+import com.twitter.crunch.Node;
 
-public class ReplicaSet<V extends Topology.Disk> {
+public class CRUSHAdapter implements AlgorithmAdapter<Long, Long, Topology.Node, Node, Topology, Node> {
 
-    public final List<V> disks;
+    @Override
+    public Node convertTopology(Topology src) {
+        return null;
+    }
 
-    public ReplicaSet(List<V> disks) {
-        this.disks = disks;
+    @Override
+    public Node convertNode(Topology.Node src) {
+        Node node = new Node();
+        node.setName(src.id.toString());
+        return node;
     }
 }

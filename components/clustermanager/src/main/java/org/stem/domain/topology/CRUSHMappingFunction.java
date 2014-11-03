@@ -16,13 +16,6 @@
 
 package org.stem.domain.topology;
 
-import java.util.List;
+public class CRUSHMappingFunction {
 
-public class ReplicaSet<V extends Topology.Disk> {
-
-    public final List<V> disks;
-
-    public ReplicaSet(List<V> disks) {
-        this.disks = disks;
-    }
 }

@@ -17,12 +17,9 @@
 package org.stem.domain.topology;
 
 import java.util.List;
+import java.util.Map;
 
-public class ReplicaSet<V extends Topology.Disk> {
+public interface MappingFunction<K, V extends Topology.Disk> {
 
-    public final List<V> disks;
-
-    public ReplicaSet(List<V> disks) {
-        this.disks = disks;
-    }
+    Map<K, ReplicaSet<V>> computeMapping(List<K> dataset, Topology topology);
 }

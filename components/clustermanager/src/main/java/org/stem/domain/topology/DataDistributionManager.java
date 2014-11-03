@@ -16,13 +16,12 @@
 
 package org.stem.domain.topology;
 
-import java.util.List;
+public abstract class DataDistributionManager {
+    public static enum Kind {
+        CRUSH("crush", CRUSHDistributionManager.adapter);
 
-public class ReplicaSet<V extends Topology.Disk> {
+        Kind(String name, AlgorithmAdapter adapter) {
 
-    public final List<V> disks;
-
-    public ReplicaSet(List<V> disks) {
-        this.disks = disks;
+        }
     }
 }

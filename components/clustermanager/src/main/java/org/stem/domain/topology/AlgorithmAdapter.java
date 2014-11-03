@@ -16,9 +16,17 @@
 
 package org.stem.domain.topology;
 
-import java.util.Map;
+/**
+ * @param <BUCKET_IN>    Bucket type used by algorithm
+ * @param <BUCKET_OUT>   Bucket type used by application
+ * @param <NODE_IN>
+ * @param <NODE_OUT>
+ * @param <TOPOLOGY_IN>  Topology type used in application (Topology by default)
+ * @param <TOPOLOGY_OUT> Topology type used by Algorithm
+ */
+public interface AlgorithmAdapter<BUCKET_IN, BUCKET_OUT, NODE_IN, NODE_OUT, TOPOLOGY_IN, TOPOLOGY_OUT> {
 
-public interface DistributionMapper<K, V> {
+    TOPOLOGY_OUT convertTopology(TOPOLOGY_IN src);
+    NODE_OUT convertNode(NODE_IN src);
 
-    Map<K, ReplicaSet<V>> createMapping();
 }

@@ -16,13 +16,9 @@
 
 package org.stem.domain.topology;
 
-import java.util.List;
+public class CRUSHDistributionManager extends DataDistributionManager{
 
-public class ReplicaSet<V extends Topology.Disk> {
+    //private static MappingFunction<Long, >
+    public static AlgorithmAdapter adapter = new CRUSHAdapter();
 
-    public final List<V> disks;
-
-    public ReplicaSet(List<V> disks) {
-        this.disks = disks;
-    }
 }
