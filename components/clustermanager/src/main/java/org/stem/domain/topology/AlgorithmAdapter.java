@@ -16,9 +16,12 @@
 
 package org.stem.domain.topology;
 
+import java.util.List;
+import java.util.Map;
+
 /**
- * @param <BUCKET_IN>    Bucket type used by algorithm
- * @param <BUCKET_OUT>   Bucket type used by application
+ * @param <BUCKET_IN>    Bucket type used by application
+ * @param <BUCKET_OUT>   Bucket type used by algorithm
  * @param <NODE_IN>
  * @param <NODE_OUT>
  * @param <TOPOLOGY_IN>  Topology type used in application (Topology by default)
@@ -30,9 +33,10 @@ public interface AlgorithmAdapter<
         REPLICA_SET_IN, REPLICA_SET_OUT,
         TOPOLOGY_IN, TOPOLOGY_OUT> {
 
+    BUCKET_OUT convertBucket(BUCKET_IN src);
     NODE_OUT convertNode(NODE_IN src);
     REPLICA_SET_OUT convertReplicaSet(REPLICA_SET_IN src);
     TOPOLOGY_OUT convertTopology(TOPOLOGY_IN src);
-    MappingFunction mappingFunction();
+    Map<BUCKET_OUT, Topology.ReplicaSet> computeMapping(List<BUCKET_IN> dataset, int rf, TOPOLOGY_IN topology);
 
 }
