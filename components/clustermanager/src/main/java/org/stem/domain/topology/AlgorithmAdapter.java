@@ -24,9 +24,15 @@ package org.stem.domain.topology;
  * @param <TOPOLOGY_IN>  Topology type used in application (Topology by default)
  * @param <TOPOLOGY_OUT> Topology type used by Algorithm
  */
-public interface AlgorithmAdapter<BUCKET_IN, BUCKET_OUT, NODE_IN, NODE_OUT, TOPOLOGY_IN, TOPOLOGY_OUT> {
+public interface AlgorithmAdapter<
+        BUCKET_IN, BUCKET_OUT,
+        NODE_IN, NODE_OUT,
+        REPLICA_SET_IN, REPLICA_SET_OUT,
+        TOPOLOGY_IN, TOPOLOGY_OUT> {
 
-    TOPOLOGY_OUT convertTopology(TOPOLOGY_IN src);
     NODE_OUT convertNode(NODE_IN src);
+    NODE_OUT convertReplicaSet(NODE_IN src);
+    TOPOLOGY_OUT convertTopology(TOPOLOGY_IN src);
+    MappingFunction mappingFunction();
 
 }

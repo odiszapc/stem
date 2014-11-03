@@ -16,12 +16,35 @@
 
 package org.stem.domain.topology;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public abstract class DataDistributionManager {
-    public static enum Kind {
+
+    public static enum Algorithm {
         CRUSH("crush", CRUSHDistributionManager.adapter);
 
-        Kind(String name, AlgorithmAdapter adapter) {
+        private static Map<String, Algorithm> values = new HashMap<>();
 
+        static {
+            for (Algorithm val : Algorithm.values()) {
+                values.put(val.name, val);
+            }
+        }
+
+        public static Algorithm byName(String name) {
+            Algorithm algo = values.get(name);
+            if (null == algo)
+                throw new IllegalStateException(String.format("Unknown algorithm \"%s\"", name));
+            return algo;
+        }
+
+        final String name;
+        final AlgorithmAdapter adapter;
+
+        Algorithm(String name, AlgorithmAdapter adapter) {
+            this.name = name;
+            this.adapter = adapter;
         }
     }
 }

@@ -18,7 +18,24 @@ package org.stem.domain.topology;
 
 import com.twitter.crunch.Node;
 
-public class CRUSHAdapter implements AlgorithmAdapter<Long, Long, Topology.Node, Node, Topology, Node> {
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class CRUSHAdapter implements AlgorithmAdapter<Long, Long, Topology.Node, Node, ReplicaSet<Topology.Disk>, List<Node>, Topology, Node> {
+
+    @Override
+    public Node convertNode(Topology.Node src) {
+        Node node = new Node();
+        node.setName(src.id.toString());
+        node.setType(NodeType.fromClass(src.getClass()).code);
+        return node;
+    }
+
+    @Override
+    public Node convertReplicaSet(Topology.Node src) {
+        return null;
+    }
 
     @Override
     public Node convertTopology(Topology src) {
@@ -26,9 +43,38 @@ public class CRUSHAdapter implements AlgorithmAdapter<Long, Long, Topology.Node,
     }
 
     @Override
-    public Node convertNode(Topology.Node src) {
-        Node node = new Node();
-        node.setName(src.id.toString());
-        return node;
+    public MappingFunction mappingFunction() {
+        return null;
+    }
+
+    private static enum NodeType {
+        DC(Topology.Datacenter.class, 1),
+        RACK(Topology.Rack.class, 2),
+        STORAGE(Topology.StorageNode.class, 4),
+        DISK(Topology.Disk.class, 5);
+
+        private static Map<Class<? extends Topology.Node>, NodeType> values = new HashMap<>();
+
+        static {
+            for (NodeType val : NodeType.values()) {
+                values.put(val.clazz, val);
+            }
+        }
+
+        public static NodeType fromClass(Class<? extends Topology.Node> clazz) {
+            NodeType type = values.get(clazz);
+            if (null == type)
+                throw new IllegalStateException(String.format("Unknown node type for clazz \"%s\"", clazz.getCanonicalName()));
+            return type;
+        }
+
+        final Class<? extends Topology.Node> clazz;
+        final int code;
+
+        NodeType(Class<? extends Topology.Node> clazz, int code) {
+
+            this.clazz = clazz;
+            this.code = code;
+        }
     }
 }
