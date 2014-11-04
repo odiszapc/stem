@@ -21,6 +21,7 @@ public class InitClusterRequest extends ClusterManagerRequest {
     String name;
     int vBuckets;
     int rf;
+    String partitioner;
 
     public String getName() {
         return name;
@@ -34,12 +35,17 @@ public class InitClusterRequest extends ClusterManagerRequest {
         return rf;
     }
 
+    public String getPartitioner() {
+        return partitioner;
+    }
+
     public InitClusterRequest() {
     }
 
-    public InitClusterRequest(String name, int vBuckets, int rf) {
+    public InitClusterRequest(String name, int vBuckets, int rf, String partitioner) {
         this.name = name;
         this.vBuckets = vBuckets;
         this.rf = rf;
+        this.partitioner = partitioner;
     }
 }

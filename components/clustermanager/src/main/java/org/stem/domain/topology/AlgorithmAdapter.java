@@ -22,8 +22,8 @@ import java.util.Map;
 /**
  * @param <BUCKET_IN>    Bucket type used by application
  * @param <BUCKET_OUT>   Bucket type used by algorithm
- * @param <NODE_IN>
- * @param <NODE_OUT>
+ * @param <NODE_IN>      Node type used in application
+ * @param <NODE_OUT>     Internal node type of algorithm
  * @param <TOPOLOGY_IN>  Topology type used in application (Topology by default)
  * @param <TOPOLOGY_OUT> Topology type used by Algorithm
  */
@@ -38,5 +38,4 @@ public interface AlgorithmAdapter<
     REPLICA_SET_OUT convertReplicaSet(REPLICA_SET_IN src);
     TOPOLOGY_OUT convertTopology(TOPOLOGY_IN src);
     Map<BUCKET_OUT, Topology.ReplicaSet> computeMapping(List<BUCKET_IN> dataset, int rf, TOPOLOGY_IN topology);
-
 }

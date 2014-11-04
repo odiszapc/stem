@@ -35,13 +35,13 @@ public class ClusterResource {
     /**
      * Init cluster
      *
-     * @param request
+     * @param req
      * @return
      */
     @PUT
     @Path(RESTConstants.Api.Cluster.Init.BASE)
-    public Response init(InitClusterRequest request) {
-        Cluster.instance.initialize(request.getName(), request.getvBuckets(), request.getRf());
+    public Response init(InitClusterRequest req) {
+        Cluster.instance.initialize(req.getName(), req.getvBuckets(), req.getRf(), req.getPartitioner());
         Cluster.instance().save();
 
         return RestUtils.ok();

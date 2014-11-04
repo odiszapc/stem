@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.ClusterManagerDaemon;
 import org.stem.coordination.*;
+import org.stem.domain.topology.Partitioner;
 import org.stem.exceptions.StemException;
 import org.stem.streaming.StreamSession;
 import org.stem.utils.TopologyUtils;
@@ -32,11 +33,16 @@ public class Cluster {
 
     private static final Logger logger = LoggerFactory.getLogger(Cluster.class);
 
+    public static enum State {
+        UNINITIALIZED, INITIALIZING, INITIALIZED
+    }
+
     public static final Cluster instance = new Cluster();
 
     final Manager manager;
     Descriptor descriptor;
     Topology topology; // TODO: load topology from Zookeeper
+    Partitioner partitioner;
 
     public static Cluster instance() {
         return instance;
@@ -60,9 +66,9 @@ public class Cluster {
         return true;
     }
 
-    public void initialize(String name, int vBuckets, int rf) {
+    public void initialize(String name, int vBuckets, int rf, String partitoner) {
         try {
-            Descriptor desc = new Descriptor(name, vBuckets, rf, manager.endpoint);
+            Descriptor desc = new Descriptor(name, vBuckets, rf, manager.endpoint, Partitioner.Type.byName(partitoner));
             manager.newCluster(desc);
         } catch (Exception e) {
             throw new StemException(String.format("Error while initializing a new cluster: %s", e.getMessage()), e);
@@ -170,14 +176,6 @@ public class Cluster {
         }
     }
 
-
-    /**
-     *
-     */
-    public static enum State {
-        UNINITIALIZED, INITIALIZING, INITIALIZED
-    }
-
     /**
      *
      */
@@ -228,6 +226,7 @@ public class Cluster {
             validate(newDescriptor);
             descriptor = newDescriptor;
             topology = new Topology(descriptor.name, descriptor.rf);
+            partitioner = descriptor.partitioner.builder.build();
 
             initZookeeperPaths();
             state.set(State.INITIALIZED);
@@ -345,8 +344,9 @@ public class Cluster {
     public static class Descriptor extends ZNodeAbstract {
 
         String name;
-        int vBuckets;
+        int vBuckets; // TODO: rename to partitions
         int rf;
+        Partitioner.Type partitioner = Partitioner.Type.CRUSH;
         String zookeeperEndpoint;
 
         public Descriptor() {
@@ -364,15 +364,20 @@ public class Cluster {
             return rf;
         }
 
+        public Partitioner.Type getPartitioner() {
+            return partitioner;
+        }
+
         public String getZookeeperEndpoint() {
             return zookeeperEndpoint;
         }
 
-        public Descriptor(String name, int vBuckets, int rf, String zookeeperEndpoint) {
+        public Descriptor(String name, int vBuckets, int rf, String zookeeperEndpoint, Partitioner.Type partitioner) {
             this.name = name;
             this.vBuckets = vBuckets;
             this.rf = rf;
             this.zookeeperEndpoint = zookeeperEndpoint;
+            this.partitioner = partitioner;
         }
 
         @Override

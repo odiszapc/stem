@@ -33,6 +33,7 @@ public class ClusterResponse extends StemResponse {
         String name;
         int vBucketsNum;
         int rf;
+        String partitioner;
         String zookeeperEndpoint;
         long usedBytes;
         long totalBytes;
@@ -61,6 +62,14 @@ public class ClusterResponse extends StemResponse {
 
         public void setRf(int rf) {
             this.rf = rf;
+        }
+
+        public String getPartitioner() {
+            return partitioner;
+        }
+
+        public void setPartitioner(String partitioner) {
+            this.partitioner = partitioner;
         }
 
         public String getZookeeperEndpoint() {

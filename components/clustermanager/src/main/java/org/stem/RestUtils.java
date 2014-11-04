@@ -41,11 +41,12 @@ public class RestUtils {
 
     public static ClusterResponse buildClusterResponse(Cluster cluster, boolean attachDiskStat) {
         ClusterResponse response = new ClusterResponse();
-
-        response.getCluster().setName(cluster.descriptor().getName());
-        response.getCluster().setvBucketsNum(cluster.descriptor().getvBuckets());
-        response.getCluster().setRf(cluster.descriptor().getRf());
-        response.getCluster().setZookeeperEndpoint(cluster.descriptor().getZookeeperEndpoint());
+        Cluster.Descriptor descriptor = cluster.descriptor();
+        response.getCluster().setName(descriptor.getName());
+        response.getCluster().setvBucketsNum(descriptor.getvBuckets());
+        response.getCluster().setPartitioner(descriptor.getPartitioner().getName());
+        response.getCluster().setRf(descriptor.getRf());
+        response.getCluster().setZookeeperEndpoint(descriptor.getZookeeperEndpoint());
         response.getCluster().setUsedBytes(cluster.getUsedBytes());
         response.getCluster().setTotalBytes(cluster.getTotalBytes());
 

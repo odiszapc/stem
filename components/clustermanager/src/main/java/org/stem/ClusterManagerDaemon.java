@@ -122,7 +122,7 @@ public class ClusterManagerDaemon {
             configureWebServer();
             startWebServer();
         } catch (Exception e) {
-            throw new RuntimeException("Can not start cluster manager", e);
+            throw new RuntimeException("Failed to start cluster manager", e);
         }
     }
 

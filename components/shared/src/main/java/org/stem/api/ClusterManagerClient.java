@@ -63,11 +63,11 @@ public class ClusterManagerClient extends BaseHttpClient {
     }
 
 
-    public StemResponse initCluster(String clusterName, int vBuckets, int rf) {
+    public StemResponse initCluster(String clusterName, int vBuckets, int rf, String partitioner) {
         URI uri = getURI(RESTConstants.Api.Cluster.Init.URI);
         HttpPut request = new HttpPut(uri);
 
-        InitClusterRequest initRequest = new InitClusterRequest(clusterName, vBuckets, rf);
+        InitClusterRequest initRequest = new InitClusterRequest(clusterName, vBuckets, rf, partitioner);
 
         return send(request, initRequest, StemResponse.class);
     }
