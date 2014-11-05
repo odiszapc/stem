@@ -24,6 +24,7 @@ import org.stem.utils.JsonUtils;
 public abstract class ZookeeperEventListener<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperEventListener.class);
+
     private ZNodeEventHandler handler;
 
     public ZNodeEventHandler getHandler() {

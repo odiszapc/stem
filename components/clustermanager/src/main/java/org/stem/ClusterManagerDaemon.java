@@ -191,6 +191,7 @@ public class ClusterManagerDaemon {
         try {
             zookeeperClient.createIfNotExists(ZooConstants.CLUSTER);
             zookeeperClient.listenForChildren(ZooConstants.CLUSTER, new StorageStatListener());
+            zookeeperClient.createIfNotExists(ZooConstants.ASYNC_REQUESTS);
             //client.createIfNotExists(ZooConstants.CLUSTER_DESCRIPTOR_PATH);
         } catch (ZooException e) {
             throw new StemException("Failed connect to Zookeeper", e);
@@ -236,7 +237,6 @@ public class ClusterManagerDaemon {
         ThreadPoolConfig workerPoolConfig = ThreadPoolConfig.defaultConfig();
         workerPoolConfig.setCorePoolSize(corePoolSize);
         workerPoolConfig.setMaxPoolSize(maxPoolSize);
-
 
         workerPoolConfig.setPoolName("Worker");
         return workerPoolConfig;
