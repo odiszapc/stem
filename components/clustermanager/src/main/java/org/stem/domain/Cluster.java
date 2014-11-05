@@ -25,8 +25,7 @@ import org.stem.exceptions.StemException;
 import org.stem.streaming.StreamSession;
 import org.stem.utils.TopologyUtils;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Cluster {
@@ -43,6 +42,8 @@ public class Cluster {
     Descriptor descriptor;
     Topology topology; // TODO: load topology from Zookeeper
     Partitioner partitioner;
+
+    Map<UUID, org.stem.domain.topology.Topology.StorageNode> pendingNodes = new HashMap<>();
 
     public static Cluster instance() {
         return instance;
@@ -61,6 +62,7 @@ public class Cluster {
                 return false; // Already initialized
             }
         } catch (Exception e) {
+            state.set(State.UNINITIALIZED);
             throw new StemException("Error while loading cluster configuration", e);
         }
         return true;
@@ -71,6 +73,7 @@ public class Cluster {
             Descriptor desc = new Descriptor(name, vBuckets, rf, manager.endpoint, Partitioner.Type.byName(partitoner));
             manager.newCluster(desc);
         } catch (Exception e) {
+            state.set(State.UNINITIALIZED);
             throw new StemException(String.format("Error while initializing a new cluster: %s", e.getMessage()), e);
         }
     }
