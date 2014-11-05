@@ -32,7 +32,6 @@ public class Topology extends ZNodeAbstract {
     private final Map<UUID, Datacenter> dataCenters = new HashMap<>();
     private final Index cache = new Index();
 
-
     @Override
     public String name() {
         return "topology"; // TODO: extract to constant
@@ -116,6 +115,10 @@ public class Topology extends ZNodeAbstract {
         }
     }
 
+    private enum NodeState {
+        SUSPEND, RUNNING, UNAVAILABLE
+    }
+
     /**
      *
      */
@@ -123,6 +126,8 @@ public class Topology extends ZNodeAbstract {
 
         private Rack rack;
         public final InetSocketAddress address;
+        private NodeState state;
+
         private final Map<UUID, Disk> disks = new HashMap<>();
 
         public List<Disk> disks() {
@@ -295,9 +300,19 @@ public class Topology extends ZNodeAbstract {
         }
     }
 
+    public Datacenter findDatacenter(UUID id) {
+        return cache.findDatacenter(id);
+    }
+
+    public Rack findRack(UUID id) {
+        return cache.findRack(id);
+    }
+
+    public StorageNode findStorageNode(UUID id) {
+        return cache.findStorageNode(id);
+    }
+
     public Disk findDisk(UUID id) {
         return cache.findDisk(id);
     }
-
-
 }
