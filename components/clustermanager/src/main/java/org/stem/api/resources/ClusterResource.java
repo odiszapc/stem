@@ -21,13 +21,19 @@ import org.stem.api.RESTConstants;
 import org.stem.api.request.InitClusterRequest;
 import org.stem.api.request.JoinRequest;
 import org.stem.api.response.ClusterResponse;
+import org.stem.api.response.JoinResponse;
+import org.stem.coordination.EventManager;
+import org.stem.coordination.LongTimeRequest;
 import org.stem.domain.Cluster;
 import org.stem.domain.StorageNode;
+import org.stem.domain.topology.Topology;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
+import java.net.InetSocketAddress;
+import java.util.UUID;
 
 @Path(RESTConstants.Api.Cluster.URI)
 public class ClusterResource {
@@ -65,12 +71,30 @@ public class ClusterResource {
      *
      * @param request
      * @return
+     * @deprecated use #join2(request)
      */
+    @Deprecated
     @PUT
     @Path(RESTConstants.Api.Cluster.Join.BASE)
     public Response join(JoinRequest request) {
         StorageNode storage = new StorageNode(request);
         Cluster.instance.addStorageIfNotExist(storage);
         return RestUtils.ok();
+    }
+
+    @PUT
+    @Path(RESTConstants.Api.Cluster.Join2.BASE)
+    public Response join2(JoinRequest request) throws Exception {
+        InetSocketAddress address = new InetSocketAddress(request.getHost(), request.getPort());
+        Topology.StorageNode node = new Topology.StorageNode(address);
+
+//        StorageNode storage = new StorageNode(request);
+//        Cluster.instance.addStorageIfNotExist(storage);
+
+        // Cluster.instance.addPendingNode(node, trackId);
+        UUID trackId = EventManager.newRequestId();
+        EventManager.instance.newEvent(LongTimeRequest.Type.JOIN, trackId);
+
+        return RestUtils.ok(new JoinResponse(trackId));
     }
 }

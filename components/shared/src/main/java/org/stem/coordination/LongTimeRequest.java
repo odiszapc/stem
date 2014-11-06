@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public abstract class LongTimeRequest {
+public class LongTimeRequest extends ZNodeAbstract {
 
     public static enum Type {
         JOIN("join", JoinResponse.listener);
@@ -63,6 +63,35 @@ public abstract class LongTimeRequest {
             this.name = name;
             this.listener = listener;
         }
+    }
+
+    public static LongTimeRequest create(Type type) {
+        return new LongTimeRequest(UUID.randomUUID(), type);
+    }
+
+    public static LongTimeRequest create(Type type, UUID id) {
+        return new LongTimeRequest(id, type);
+    }
+
+    final UUID id;
+    final Type type;
+    StemResponse response;
+
+    protected LongTimeRequest(UUID id, Type type) {
+        this.id = id;
+        this.type = type;
+    }
+
+    @Override
+    public String name() {
+        return id.toString();
+    }
+
+    public static class JoinResponse extends StemResponse {
+
+        public static RequestNodeListener listener = new RequestNodeListener() {
+
+        };
     }
 
     /**
@@ -119,21 +148,5 @@ public abstract class LongTimeRequest {
 
             future.set(response);
         }
-    }
-
-    final UUID id;
-    final Type type;
-    StemResponse response;
-
-    protected LongTimeRequest(UUID id, Type type) {
-        this.id = id;
-        this.type = type;
-    }
-
-    public static class JoinResponse extends StemResponse {
-
-        public static RequestNodeListener listener = new RequestNodeListener() {
-
-        };
     }
 }

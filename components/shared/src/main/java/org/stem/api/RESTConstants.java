@@ -39,6 +39,12 @@ public class RESTConstants {
                 public static final String URI = Cluster.URI + BASE;
             }
 
+            public static class Join2 {
+
+                public static final String BASE = "/join2";
+                public static final String URI = Cluster.URI + BASE;
+            }
+
             public static class Get {
 
                 public static final String BASE = "/";

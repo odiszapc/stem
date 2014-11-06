@@ -29,8 +29,13 @@ import java.util.UUID;
 
 public class Topology extends ZNodeAbstract {
 
+    private enum NodeState {
+        SUSPEND, RUNNING, UNAVAILABLE
+    }
+
+    private static final Index cache = new Index();
     private final Map<UUID, Datacenter> dataCenters = new HashMap<>();
-    private final Index cache = new Index();
+
 
     @Override
     public String name() {
@@ -89,7 +94,7 @@ public class Topology extends ZNodeAbstract {
     /**
      *
      */
-    public class Rack extends Node {
+    public static class Rack extends Node {
 
         private Datacenter datacenter;
         public final String name;
@@ -115,14 +120,10 @@ public class Topology extends ZNodeAbstract {
         }
     }
 
-    private enum NodeState {
-        SUSPEND, RUNNING, UNAVAILABLE
-    }
-
     /**
      *
      */
-    public class StorageNode extends Node {
+    public static class StorageNode extends Node {
 
         private Rack rack;
         public final InetSocketAddress address;
@@ -158,7 +159,7 @@ public class Topology extends ZNodeAbstract {
     /**
      *
      */
-    public class Disk extends Node {
+    public static class Disk extends Node {
 
         private StorageNode storageNode;
 
@@ -191,7 +192,7 @@ public class Topology extends ZNodeAbstract {
     /**
      *
      */
-    private final class Index {
+    private static final class Index {
 
         final Map<UUID, Datacenter> dataCenters = new HashMap<>();
         final Map<UUID, Rack> racks = new HashMap<>();
