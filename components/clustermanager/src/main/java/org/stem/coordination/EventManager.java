@@ -39,19 +39,19 @@ public class EventManager {
         }
     }
 
-    public UUID newEvent(LongTimeRequest.Type type) throws Exception {
-        LongTimeRequest request = LongTimeRequest.create(type);
+    public UUID newEvent(Event.Type type) throws Exception {
+        Event request = Event.create(type);
         client.createNode(ZooConstants.ASYNC_REQUESTS, request);
         return request.id;
     }
 
-    public LongTimeRequest newEvent(LongTimeRequest.Type type, UUID id) throws Exception {
-        LongTimeRequest request = LongTimeRequest.create(type, id);
+    public Event newSubscription(Event.Type type, UUID id) throws Exception {
+        Event request = Event.create(type, id);
         client.createNode(ZooConstants.ASYNC_REQUESTS, request);
         return request;
     }
 
-    public UUID newEvent(LongTimeRequest request) throws Exception {
+    public UUID newEvent(Event request) throws Exception {
         client.createNode(ZooConstants.ASYNC_REQUESTS, request);
         return request.id;
     }

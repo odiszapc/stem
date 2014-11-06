@@ -25,8 +25,8 @@ import org.stem.api.request.JoinRequest;
 import org.stem.api.response.ClusterResponse;
 import org.stem.api.response.JoinResponse;
 import org.stem.api.response.StemResponse;
-import org.stem.coordination.LongTimeFuture;
-import org.stem.coordination.LongTimeRequest;
+import org.stem.coordination.Event;
+import org.stem.coordination.EventResultFuture;
 import org.stem.coordination.ZookeeperClient;
 
 import java.net.URI;
@@ -60,9 +60,9 @@ public class ClusterManagerClient extends BaseHttpClient {
 
             assert null != response.requestId;
 
-            LongTimeFuture future = new LongTimeFuture();
-            LongTimeRequest.Factory
-                    .newHandler(response.requestId, LongTimeRequest.Type.JOIN, future, client)
+            EventResultFuture future = new EventResultFuture();
+            Event.Factory
+                    .newHandler(response.requestId, Event.Type.JOIN, future, client)
                     .start();
             StemResponse delayedResponse = Uninterruptibles.getUninterruptibly(future);
 

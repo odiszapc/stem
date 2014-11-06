@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class LongTimeRequest extends ZNodeAbstract {
+public class Event extends ZNodeAbstract {
 
     public static enum Type {
         JOIN("join", JoinResponse.listener);
@@ -57,27 +57,27 @@ public class LongTimeRequest extends ZNodeAbstract {
         }
 
         final String name;
-        public final RequestNodeListener listener;
+        public final EventNodeListener listener;
 
-        Type(String name, RequestNodeListener listener) {
+        Type(String name, EventNodeListener listener) {
             this.name = name;
             this.listener = listener;
         }
     }
 
-    public static LongTimeRequest create(Type type) {
-        return new LongTimeRequest(UUID.randomUUID(), type);
+    public static Event create(Type type) {
+        return new Event(UUID.randomUUID(), type);
     }
 
-    public static LongTimeRequest create(Type type, UUID id) {
-        return new LongTimeRequest(id, type);
+    public static Event create(Type type, UUID id) {
+        return new Event(id, type);
     }
 
     final UUID id;
     final Type type;
     StemResponse response;
 
-    protected LongTimeRequest(UUID id, Type type) {
+    protected Event(UUID id, Type type) {
         this.id = id;
         this.type = type;
     }
@@ -89,7 +89,7 @@ public class LongTimeRequest extends ZNodeAbstract {
 
     public static class JoinResponse extends StemResponse {
 
-        public static RequestNodeListener listener = new RequestNodeListener() {
+        public static EventNodeListener listener = new EventNodeListener() {
 
         };
     }
@@ -99,7 +99,7 @@ public class LongTimeRequest extends ZNodeAbstract {
      */
     public static abstract class Factory {
 
-        public static Handler newHandler(UUID requestId, Type type, LongTimeFuture future, ZookeeperClient client) {
+        public static Handler newHandler(UUID requestId, Type type, EventResultFuture future, ZookeeperClient client) {
             return new Handler(requestId, future, type.listener, client);
         }
     }
@@ -110,11 +110,11 @@ public class LongTimeRequest extends ZNodeAbstract {
     public static class Handler {
 
         private final UUID requestId;
-        private final LongTimeFuture future;
-        private RequestNodeListener listener;
+        private final EventResultFuture future;
+        private EventNodeListener listener;
         private final ZookeeperClient client;
 
-        public Handler(UUID requestId, LongTimeFuture future, RequestNodeListener listener, ZookeeperClient client) {
+        public Handler(UUID requestId, EventResultFuture future, EventNodeListener listener, ZookeeperClient client) {
 
             this.requestId = requestId;
             this.future = future;
@@ -131,17 +131,17 @@ public class LongTimeRequest extends ZNodeAbstract {
     /**
      *
      */
-    private abstract static class RequestNodeListener extends ZookeeperEventListener<LongTimeRequest> {
+    private abstract static class EventNodeListener extends ZookeeperEventListener<Event> {
 
-        protected LongTimeFuture future;
+        protected EventResultFuture future;
 
         @Override
-        public Class<LongTimeRequest> getBaseClass() {
-            return LongTimeRequest.class;
+        public Class<Event> getBaseClass() {
+            return Event.class;
         }
 
         @Override
-        protected void onNodeUpdated(LongTimeRequest request) {
+        protected void onNodeUpdated(Event request) {
             StemResponse response = request.response;
             if (null == response)
                 return;

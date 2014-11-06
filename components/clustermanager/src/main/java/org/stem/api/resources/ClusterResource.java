@@ -22,8 +22,8 @@ import org.stem.api.request.InitClusterRequest;
 import org.stem.api.request.JoinRequest;
 import org.stem.api.response.ClusterResponse;
 import org.stem.api.response.JoinResponse;
+import org.stem.coordination.Event;
 import org.stem.coordination.EventManager;
-import org.stem.coordination.LongTimeRequest;
 import org.stem.domain.Cluster;
 import org.stem.domain.StorageNode;
 import org.stem.domain.topology.Topology;
@@ -93,7 +93,7 @@ public class ClusterResource {
 
         // Cluster.instance.addPendingNode(node, trackId);
         UUID trackId = EventManager.newRequestId();
-        EventManager.instance.newEvent(LongTimeRequest.Type.JOIN, trackId);
+        EventManager.instance.newSubscription(Event.Type.JOIN, trackId);
 
         return RestUtils.ok(new JoinResponse(trackId));
     }
