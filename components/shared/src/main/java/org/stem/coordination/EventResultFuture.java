@@ -19,9 +19,10 @@ package org.stem.coordination;
 import com.google.common.util.concurrent.AbstractFuture;
 import org.stem.api.response.StemResponse;
 
-public class EventResultFuture extends AbstractFuture<StemResponse> {
+public class EventResultFuture extends AbstractFuture<StemResponse> implements Event.Handler.Callback {
 
-    public boolean set(StemResponse response) {
-        return super.set(response);
+    @Override
+    public void onSet(StemResponse response, long latency) {
+        set(response);
     }
 }

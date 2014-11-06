@@ -16,6 +16,7 @@
 
 package org.stem.coordination;
 
+import org.stem.api.response.StemResponse;
 import org.stem.domain.Cluster;
 import org.stem.exceptions.StemException;
 
@@ -46,9 +47,9 @@ public class EventManager {
     }
 
     public Event createSubscription(Event.Type type, UUID id) throws Exception {
-        Event request = Event.create(type, id);
-        client.createNode(ZooConstants.ASYNC_REQUESTS, request);
-        return request;
+        Event event = Event.create(type, id);
+        client.createNode(ZooConstants.ASYNC_REQUESTS, event);
+        return event;
     }
 
     public UUID newEvent(Event request) throws Exception {
@@ -56,8 +57,12 @@ public class EventManager {
         return request.id;
     }
 
-    public static UUID newRequestId() {
+    public static UUID randomId() {
         return UUID.randomUUID();
+    }
+
+    public void fire(UUID eventId, StemResponse result) throws Exception {
+        client.readZNodeData(ZooConstants.ASYNC_REQUESTS, eventId.toString(), Event.class);
     }
 
 }

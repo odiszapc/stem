@@ -39,6 +39,7 @@ public class ClusterManagerClient extends BaseHttpClient {
         super(uri);
     }
 
+    @Deprecated
     public void join(JoinRequest msg) {
         try {
             URI uri = getURI(RESTConstants.Api.Cluster.Join.URI);
@@ -51,14 +52,14 @@ public class ClusterManagerClient extends BaseHttpClient {
         }
     }
 
-    public void join2(ZookeeperClient client, JoinRequest message) {
+    public void join2(JoinRequest message, ZookeeperClient client) {
         try {
             URI uri = getURI(RESTConstants.Api.Cluster.Join.URI);
             JoinResponse response = send(new HttpPut(uri), message, JoinResponse.class);
 
             assert null != response.requestId;
 
-            StemResponse delayedResponse = Event.Listener.waitFor(response.requestId, Event.Type.JOIN, client);
+            StemResponse result = Event.Listener.waitFor(response.requestId, Event.Type.JOIN, client);
 
         } catch (Exception e) {
             throw new RuntimeException("Can't join cluster, ClusterManager response: " + e.getMessage());

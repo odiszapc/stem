@@ -92,9 +92,9 @@ public class ClusterResource {
 //        Cluster.instance.addStorageIfNotExist(storage);
 
         // Cluster.instance.addPendingNode(node, trackId);
-        UUID trackId = EventManager.newRequestId();
+        UUID trackId = EventManager.randomId();
         EventManager.instance.createSubscription(Event.Type.JOIN, trackId);
-        // EventManager.instance.fire(trackId, StemResponseResponse)
+        //EventManager.instance.fire(trackId, StemResponse)
 
         return RestUtils.ok(new JoinResponse(trackId));
     }

@@ -143,7 +143,7 @@ public class StorageNodeDescriptor {
     }
 
     public static void joinCluster() throws Exception {
-        ClusterService.instance.join();
+        ClusterService.instance.join2();
         ClusterService.instance.startDataNotificator();
     }
 }

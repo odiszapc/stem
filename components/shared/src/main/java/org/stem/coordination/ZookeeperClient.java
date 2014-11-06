@@ -56,8 +56,8 @@ public class ZookeeperClient {
 
 
     /**
-     * @deprecated use ZookeeperClient(host, port)
      * @throws ZooException
+     * @deprecated use ZookeeperClient(host, port)
      */
     @Deprecated
     public ZookeeperClient() throws ZooException {
@@ -190,6 +190,10 @@ public class ZookeeperClient {
     {
         String path = ZKPaths.makePath(parent, znode.name());
         updateNode(path, znode.encode());
+    }
+
+    public <T extends ZNode> T readZNodeData(String parent, String nodeName, Class<T> clazz) throws Exception {
+        return readZNodeData(ZKPaths.makePath(parent, nodeName), clazz);
     }
 
     public <T extends ZNode> T readZNodeData(String path, Class<T> clazz) throws Exception {

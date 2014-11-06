@@ -20,6 +20,9 @@ package org.stem.service;
 import org.stem.api.ClusterManagerClient;
 import org.stem.api.request.JoinRequest;
 import org.stem.api.response.ClusterResponse;
+import org.stem.coordination.ZooException;
+import org.stem.coordination.ZookeeperClient;
+import org.stem.coordination.ZookeeperClientFactory;
 import org.stem.db.Layout;
 import org.stem.db.MountPoint;
 import org.stem.db.StorageNodeDescriptor;
@@ -37,8 +40,18 @@ public class ClusterService {
     public static final ClusterService instance = new ClusterService();
     private ClusterManagerClient client = ClusterManagerClient.create(StorageNodeDescriptor.getClusterManagerEndpoint());
     private Executor periodicTasksExecutor = Executors.newFixedThreadPool(5);
+    public final ZookeeperClient zookeeperClient;
 
+    public ClusterService() {
+        String endpoint = StorageNodeDescriptor.cluster().getZookeeperEndpoint();
+        try {
+            zookeeperClient = ZookeeperClientFactory.newClient(endpoint);
+        } catch (ZooException e) {
+            throw new RuntimeException("Fail to initialize cluster service", e);
+        }
+    }
 
+    @Deprecated
     public void join() {
         List<InetAddress> ipAddresses = Utils.getIpAddresses();
         Map<UUID, MountPoint> mountPoints = Layout.getInstance().getMountPoints();
@@ -60,6 +73,32 @@ public class ClusterService {
         }
 
         client.join(req);
+    }
+
+    public void join2() {
+        client.join2(prepareJoinRequest(), zookeeperClient);
+    }
+
+    private static JoinRequest prepareJoinRequest() {
+        List<InetAddress> ipAddresses = Utils.getIpAddresses();
+        Map<UUID, MountPoint> mountPoints = Layout.getInstance().getMountPoints();
+
+        JoinRequest request = new JoinRequest();
+        request.setHost(StorageNodeDescriptor.getNodeListen());
+        request.setPort(StorageNodeDescriptor.getNodePort());
+        for (InetAddress ipAddress : ipAddresses) {
+            request.getIpAddresses().add(ipAddress.toString());
+        }
+
+        for (MountPoint mp : mountPoints.values()) {
+            JoinRequest.Disk disk = new JoinRequest.Disk(
+                    mp.uuid.toString(),
+                    mp.getPath(),
+                    mp.getTotalSizeInBytes(),
+                    mp.getAllocatedSizeInBytes());
+            request.getDisks().add(disk);
+        }
+        return request;
     }
 
     public ClusterResponse.Cluster describeCluster() {

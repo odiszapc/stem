@@ -77,13 +77,14 @@ public class Event extends ZNodeAbstract {
     final UUID id;
     final Type type;
     StemResponse response;
-    // final long started;
+    long started;
     // long completed;
+    // boolean disposable // Should this event be discarded once it fired
 
     protected Event(UUID id, Type type) {
         this.id = id;
         this.type = type;
-        //this.started = System.nanoTime();
+        this.started = System.nanoTime();
     }
 
     @Override
@@ -123,6 +124,12 @@ public class Event extends ZNodeAbstract {
             // TODO: check already started ?
             client.listenForZNode(ZooConstants.ASYNC_REQUESTS + '/' + requestId.toString(), listener);
         }
+
+        public interface Callback {
+
+            public void onSet(StemResponse response, long latency);
+            //public void register(RequestHandler handler);
+        }
     }
 
     /**
@@ -133,7 +140,7 @@ public class Event extends ZNodeAbstract {
         public static StemResponse waitFor(UUID requestId, Type type, ZookeeperClient client) throws Exception {
             EventResultFuture future = new EventResultFuture();
             Event.Factory
-                    .newHandler(requestId, Event.Type.JOIN, future, client)
+                    .newHandler(requestId, type, future, client)
                     .start();
             StemResponse result = Uninterruptibles.getUninterruptibly(future);
 
@@ -155,10 +162,11 @@ public class Event extends ZNodeAbstract {
 
             process(response);
 
-            future.set(response);
+            future.onSet(response, System.nanoTime() - request.started);
         }
 
-        protected void process(StemResponse response) {}
+        protected void process(StemResponse response) {
+        }
     }
 
     // Events
