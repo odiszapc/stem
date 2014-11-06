@@ -18,6 +18,7 @@ package org.stem.coordination;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.commons.lang3.StringUtils;
 import org.stem.api.response.StemResponse;
 
@@ -28,7 +29,7 @@ import java.util.UUID;
 public class Event extends ZNodeAbstract {
 
     public static enum Type {
-        JOIN("join", JoinResponse.listener);
+        JOIN("join", Join.listener);
 
         private static Map<String, Type> values = new HashMap<>();
 
@@ -57,9 +58,9 @@ public class Event extends ZNodeAbstract {
         }
 
         final String name;
-        public final EventNodeListener listener;
+        public final Listener listener;
 
-        Type(String name, EventNodeListener listener) {
+        Type(String name, Listener listener) {
             this.name = name;
             this.listener = listener;
         }
@@ -76,22 +77,18 @@ public class Event extends ZNodeAbstract {
     final UUID id;
     final Type type;
     StemResponse response;
+    // final long started;
+    // long completed;
 
     protected Event(UUID id, Type type) {
         this.id = id;
         this.type = type;
+        //this.started = System.nanoTime();
     }
 
     @Override
     public String name() {
         return id.toString();
-    }
-
-    public static class JoinResponse extends StemResponse {
-
-        public static EventNodeListener listener = new EventNodeListener() {
-
-        };
     }
 
     /**
@@ -111,10 +108,10 @@ public class Event extends ZNodeAbstract {
 
         private final UUID requestId;
         private final EventResultFuture future;
-        private EventNodeListener listener;
+        private Listener listener;
         private final ZookeeperClient client;
 
-        public Handler(UUID requestId, EventResultFuture future, EventNodeListener listener, ZookeeperClient client) {
+        public Handler(UUID requestId, EventResultFuture future, Listener listener, ZookeeperClient client) {
 
             this.requestId = requestId;
             this.future = future;
@@ -131,7 +128,17 @@ public class Event extends ZNodeAbstract {
     /**
      *
      */
-    private abstract static class EventNodeListener extends ZookeeperEventListener<Event> {
+    public abstract static class Listener extends ZookeeperEventListener<Event> {
+
+        public static StemResponse waitFor(UUID requestId, Type type, ZookeeperClient client) throws Exception {
+            EventResultFuture future = new EventResultFuture();
+            Event.Factory
+                    .newHandler(requestId, Event.Type.JOIN, future, client)
+                    .start();
+            StemResponse result = Uninterruptibles.getUninterruptibly(future);
+
+            return result;
+        }
 
         protected EventResultFuture future;
 
@@ -146,7 +153,20 @@ public class Event extends ZNodeAbstract {
             if (null == response)
                 return;
 
+            process(response);
+
             future.set(response);
         }
+
+        protected void process(StemResponse response) {}
+    }
+
+    // Events
+
+    public static class Join extends StemResponse {
+
+        public static Listener listener = new Listener() {
+
+        };
     }
 }

@@ -45,7 +45,7 @@ public class EventManager {
         return request.id;
     }
 
-    public Event newSubscription(Event.Type type, UUID id) throws Exception {
+    public Event createSubscription(Event.Type type, UUID id) throws Exception {
         Event request = Event.create(type, id);
         client.createNode(ZooConstants.ASYNC_REQUESTS, request);
         return request;

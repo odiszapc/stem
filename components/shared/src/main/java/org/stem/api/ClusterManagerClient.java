@@ -16,7 +16,6 @@
 
 package org.stem.api;
 
-import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
@@ -26,7 +25,6 @@ import org.stem.api.response.ClusterResponse;
 import org.stem.api.response.JoinResponse;
 import org.stem.api.response.StemResponse;
 import org.stem.coordination.Event;
-import org.stem.coordination.EventResultFuture;
 import org.stem.coordination.ZookeeperClient;
 
 import java.net.URI;
@@ -60,11 +58,7 @@ public class ClusterManagerClient extends BaseHttpClient {
 
             assert null != response.requestId;
 
-            EventResultFuture future = new EventResultFuture();
-            Event.Factory
-                    .newHandler(response.requestId, Event.Type.JOIN, future, client)
-                    .start();
-            StemResponse delayedResponse = Uninterruptibles.getUninterruptibly(future);
+            StemResponse delayedResponse = Event.Listener.waitFor(response.requestId, Event.Type.JOIN, client);
 
         } catch (Exception e) {
             throw new RuntimeException("Can't join cluster, ClusterManager response: " + e.getMessage());

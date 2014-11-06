@@ -93,7 +93,8 @@ public class ClusterResource {
 
         // Cluster.instance.addPendingNode(node, trackId);
         UUID trackId = EventManager.newRequestId();
-        EventManager.instance.newSubscription(Event.Type.JOIN, trackId);
+        EventManager.instance.createSubscription(Event.Type.JOIN, trackId);
+        // EventManager.instance.fire(trackId, StemResponseResponse)
 
         return RestUtils.ok(new JoinResponse(trackId));
     }
