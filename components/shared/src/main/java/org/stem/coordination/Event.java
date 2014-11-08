@@ -76,10 +76,19 @@ public class Event extends ZNodeAbstract {
 
     final UUID id;
     final Type type;
-    StemResponse response;
-    long started;
+    private StemResponse response;
+    private long started;
     // long completed;
     // boolean disposable // Should this event be discarded once it fired
+
+
+    public void setResponse(StemResponse response) {
+        this.response = response;
+    }
+
+    public StemResponse getResponse() {
+        return response;
+    }
 
     protected Event(UUID id, Type type) {
         this.id = id;
