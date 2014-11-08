@@ -19,6 +19,7 @@ package org.stem.domain.topology;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Predicate;
+import org.stem.coordination.DiskStat;
 import org.stem.coordination.ZNodeAbstract;
 
 import java.net.InetSocketAddress;
@@ -30,6 +31,10 @@ import java.util.UUID;
 public class Topology extends ZNodeAbstract {
 
     private enum NodeState {
+        SUSPEND, RUNNING, UNAVAILABLE
+    }
+
+    private enum DiskState {
         SUSPEND, RUNNING, UNAVAILABLE
     }
 
@@ -127,6 +132,7 @@ public class Topology extends ZNodeAbstract {
 
         private Rack rack;
         public final InetSocketAddress address;
+
         private NodeState state;
 
         private final Map<UUID, Disk> disks = new HashMap<>();
@@ -162,6 +168,11 @@ public class Topology extends ZNodeAbstract {
     public static class Disk extends Node {
 
         private StorageNode storageNode;
+        String path;
+        long usedBytes = 0;
+        long totalBytes = 0;
+
+        private DiskState state;
 
         public Disk() {
             super();
