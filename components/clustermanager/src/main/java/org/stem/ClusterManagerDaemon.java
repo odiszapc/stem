@@ -126,7 +126,7 @@ public class ClusterManagerDaemon {
         }
     }
 
-    private void loadClusterConfiguration() {
+    private void loadClusterConfiguration() throws Exception {
         Cluster.instance.load();
     }
 
@@ -189,9 +189,8 @@ public class ClusterManagerDaemon {
 
     private void initZookeeperPaths() {
         try {
-            zookeeperClient.createIfNotExists(ZooConstants.CLUSTER);
-            zookeeperClient.listenForChildren(ZooConstants.CLUSTER, new StorageStatListener());
             zookeeperClient.createIfNotExists(ZooConstants.ASYNC_REQUESTS);
+            zookeeperClient.createIfNotExists(ZooConstants.CLUSTER);
             //client.createIfNotExists(ZooConstants.CLUSTER_DESCRIPTOR_PATH);
         } catch (ZooException e) {
             throw new StemException("Failed connect to Zookeeper", e);

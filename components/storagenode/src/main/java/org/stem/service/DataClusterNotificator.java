@@ -29,7 +29,6 @@ public class DataClusterNotificator implements Runnable {
 
     ZookeeperClient client; // TODO: the client instance must be a singleton ???
 
-
     public DataClusterNotificator() throws ZooException {
         client = ZookeeperClientFactory.newClient(StorageNodeDescriptor.cluster().getZookeeperEndpoint());
     }
@@ -70,8 +69,6 @@ public class DataClusterNotificator implements Runnable {
 
     private void sleep() {
         try {
-
-
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();

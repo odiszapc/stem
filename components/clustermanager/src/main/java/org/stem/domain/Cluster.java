@@ -213,6 +213,8 @@ public class Cluster {
 
             initZookeeperPaths();
             state.set(State.INITIALIZED);
+
+            startListenForStats();
             return true;
         }
 
@@ -233,6 +235,12 @@ public class Cluster {
 
             initZookeeperPaths();
             state.set(State.INITIALIZED);
+
+            startListenForStats();
+        }
+
+        private void startListenForStats() throws Exception {
+            client.listenForChildren(ZooConstants.CLUSTER, new StorageStatListener());
         }
 
 
