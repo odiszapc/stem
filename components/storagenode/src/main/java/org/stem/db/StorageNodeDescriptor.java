@@ -22,6 +22,7 @@ import org.stem.api.response.ClusterResponse;
 import org.stem.client.MetaStoreClient;
 import org.stem.config.Config;
 import org.stem.service.ClusterService;
+import org.stem.utils.Utils;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
@@ -29,17 +30,41 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.UUID;
 
 public class StorageNodeDescriptor {
 
     private static final Logger logger = LoggerFactory.getLogger(StorageNodeDescriptor.class);
+
     private static Config config;
     private static final String STEM_CONFIG_PROPERTY = "stem.config";
+    private static final String STEM_ID_PROPERTY = "stem.node.id";
     private static ClusterResponse.Cluster cluster;
     private static MetaStoreClient metaStoreClient;
+    public static UUID id;
 
     static {
         loadConfig();
+        loadOrCreateMeta();
+    }
+
+    public static void loadOrCreateMeta() {
+        try {
+            String path = loadSystemProperty(STEM_ID_PROPERTY);
+            File file = new File(path);
+            if (!file.exists()) {
+                Utils.writeUuid(UUID.randomUUID(), path);
+            }
+
+            UUID uuid = Utils.readUuid(path);
+            if (null == uuid)
+                throw new Exception("Node id is null");
+
+            id = uuid;
+            logger.info("Node id={}", id);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static void loadConfig() {
@@ -59,9 +84,7 @@ public class StorageNodeDescriptor {
     }
 
     static URL getConfigUrl() {
-        String configPath = System.getProperty(STEM_CONFIG_PROPERTY);
-        if (null == configPath)
-            throw new RuntimeException("System property \"" + STEM_CONFIG_PROPERTY + "\" not set");
+        String configPath = loadSystemProperty(STEM_CONFIG_PROPERTY);
 
         URL url;
 
@@ -73,6 +96,13 @@ public class StorageNodeDescriptor {
             throw new RuntimeException("Cannot load " + configPath);
         }
         return url;
+    }
+
+    private static String loadSystemProperty(final String property) {
+        String value = System.getProperty(property);
+        if (null == value)
+            throw new RuntimeException("System property \"" + property + "\" not set");
+        return value;
     }
 
     public static String getClusterManagerEndpoint() {

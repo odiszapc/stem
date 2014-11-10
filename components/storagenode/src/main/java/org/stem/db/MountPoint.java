@@ -24,6 +24,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.utils.BBUtils;
+import org.stem.utils.Utils;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -85,7 +86,7 @@ public class MountPoint {
         File dir = BBUtils.getDirectory(path);
         File[] allFiles = dir.listFiles();
         File[] fatFiles = listFatFiles();
-        uuid = readIdent();
+        uuid = Utils.readUuid(path + File.separator + ID_FILENAME);
 
         if (0 != fatFiles.length) {
             if (null == uuid)
@@ -95,9 +96,8 @@ public class MountPoint {
             if (0 != allFiles.length)
                 throw new IOException("Mount point " + path + " is not empty");
 
-            uuid = generateIdent();
-            writeIdent();
-
+            uuid = UUID.randomUUID();
+            Utils.writeUuid(this.uuid, path + File.separator + ID_FILENAME);
 
             long maxAllocation = 0 != StorageNodeDescriptor.getMaxAllocationInMb()
                     ? StorageNodeDescriptor.getMaxAllocationInMb() * 1024 * 1024
@@ -125,12 +125,6 @@ public class MountPoint {
         this.usedSpace = findBlankOrActive().size() * StorageNodeDescriptor.getFatFileSizeInMb();
     }
 
-    private void writeIdent() throws IOException {
-        assert null != uuid;
-        String idFilePath = path + File.separator + ID_FILENAME;
-        FileUtils.writeStringToFile(new File(idFilePath), uuid.toString());
-    }
-
     private UUID generateIdent() {
         return UUID.randomUUID();
     }
@@ -143,16 +137,6 @@ public class MountPoint {
                 return name.matches(FatFileAllocator.FAT_FILE_NAME_REGEX);
             }
         });
-    }
-
-    private UUID readIdent() throws IOException {
-        String idFilePath = path + File.separator + ID_FILENAME;
-        File file = new File(idFilePath);
-        if (!file.exists())
-            return null;
-
-        String uuidString = FileUtils.readFileToString(file);
-        return UUID.fromString(uuidString);
     }
 
     public void close() {

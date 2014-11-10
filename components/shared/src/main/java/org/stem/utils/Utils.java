@@ -16,11 +16,16 @@
 
 package org.stem.utils;
 
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.UUID;
 
 
 public class Utils {
@@ -53,5 +58,20 @@ public class Utils {
     public static String getHost(String endpoint) {
         int i = endpoint.indexOf(':');
         return endpoint.substring(0, i);
+    }
+
+    // TODO: use BBUtils ?
+    public static UUID readUuid(String path) throws IOException {
+        File file = new File(path);
+        if (!file.exists())
+            return null;
+
+        String uuidString = FileUtils.readFileToString(file);
+        return UUID.fromString(uuidString);
+    }
+
+    public static void writeUuid(UUID id, String path) throws IOException {
+        assert null != id;
+        FileUtils.writeStringToFile(new File(path), id.toString());
     }
 }
