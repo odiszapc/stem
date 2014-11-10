@@ -19,6 +19,8 @@ package org.stem.api;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.stem.api.request.InitClusterRequest;
 import org.stem.api.request.JoinRequest;
 import org.stem.api.response.ClusterResponse;
@@ -30,6 +32,8 @@ import org.stem.coordination.ZookeeperClient;
 import java.net.URI;
 
 public class ClusterManagerClient extends BaseHttpClient {
+
+    private static final Logger logger = LoggerFactory.getLogger(ClusterManagerClient.class);
 
     public static ClusterManagerClient create(String uri) {
         return new ClusterManagerClient(uri);
@@ -54,13 +58,13 @@ public class ClusterManagerClient extends BaseHttpClient {
 
     public void join2(JoinRequest message, ZookeeperClient client) {
         try {
-            URI uri = getURI(RESTConstants.Api.Cluster.Join.URI);
+            URI uri = getURI(RESTConstants.Api.Cluster.Join2.URI);
             JoinResponse response = send(new HttpPut(uri), message, JoinResponse.class);
 
             assert null != response.requestId;
-
+            logger.info("Waiting for join response from cluster manager");
             StemResponse result = Event.Listener.waitFor(response.requestId, Event.Type.JOIN, client);
-
+            int a = 1;
         } catch (Exception e) {
             throw new RuntimeException("Can't join cluster, ClusterManager response: " + e.getMessage());
         }

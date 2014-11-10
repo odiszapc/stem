@@ -23,6 +23,7 @@ import org.stem.api.request.JoinRequest;
 import org.stem.api.response.ClusterResponse;
 import org.stem.api.response.JoinResponse;
 import org.stem.coordination.Event;
+import org.stem.coordination.EventFuture;
 import org.stem.coordination.EventManager;
 import org.stem.domain.Cluster;
 import org.stem.domain.StorageNode;
@@ -46,7 +47,7 @@ public class ClusterResource {
      */
     @PUT
     @Path(RESTConstants.Api.Cluster.Init.BASE)
-    public Response init(InitClusterRequest req) {
+    public Response create(InitClusterRequest req) {
         Cluster.instance.initialize(req.getName(), req.getvBuckets(), req.getRf(), req.getPartitioner());
         Cluster.instance().save();
 
@@ -61,7 +62,9 @@ public class ClusterResource {
     @GET
     @Path(RESTConstants.Api.Cluster.Get.BASE)
     public Response get() {
-        Cluster cluster = Cluster.instance;
+        Cluster cluster = Cluster.instance();
+        cluster.ensureInitialized();
+
         ClusterResponse response = RestUtils.buildClusterResponse(cluster, true);
         return RestUtils.ok(response);
     }
@@ -92,10 +95,10 @@ public class ClusterResource {
 //        Cluster.instance.addStorageIfNotExist(storage);
 
         // Cluster.instance.addPendingNode(node, trackId);
-        UUID trackId = EventManager.randomId();
-        EventManager.instance.createSubscription(Event.Type.JOIN, trackId);
+        //UUID trackId = EventManager.randomId();
+        EventFuture future = EventManager.instance.createSubscription(Event.Type.JOIN);
         //EventManager.instance.fire(trackId, StemResponse)
 
-        return RestUtils.ok(new JoinResponse(trackId));
+        return RestUtils.ok(new JoinResponse(future.eventId()));
     }
 }

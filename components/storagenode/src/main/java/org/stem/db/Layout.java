@@ -59,7 +59,7 @@ public class Layout {
                 DataTracker dataTracker = new DataTracker(vBuckets);
                 MountPoint mp = MountPoint.open(path, dataTracker, true);
 
-                logger.info("Mount point {} opened, total blobs: {} ({} bytes), live blobs: {} ({} bytes)",
+                logger.info("Mount point {} loaded, total blobs: {} ({} bytes), live blobs: {} ({} bytes)",
                         path,
                         dataTracker.getTotalBlobs(),
                         dataTracker.getTotalSizeInBytes(),

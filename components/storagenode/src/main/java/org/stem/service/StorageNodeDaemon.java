@@ -56,6 +56,7 @@ public class StorageNodeDaemon {
                 logger.warn("Auto-allocation of fat files is turned on.");
             }
 
+            // TODO: Layout loading should be first
             StorageNodeDescriptor.describeCluster(); // Describe cluster
             StorageNodeDescriptor.loadLayout(); // init mount points with vBuckets parameter
             StorageNodeDescriptor.initStorageService(); // activate WriteControllers with mount points

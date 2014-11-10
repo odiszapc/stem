@@ -39,10 +39,8 @@ public class EventManager {
         }
     }
 
-    public UUID createSubscription(Event.Type type) throws Exception {
-        Event event = Event.create(type);
-        client.createNode(ZooConstants.ASYNC_REQUESTS, event);
-        return event.id;
+    public EventFuture createSubscription(Event.Type type) throws Exception {
+        return createSubscription(type, UUID.randomUUID());
     }
 
     public EventFuture createSubscription(Event.Type type, UUID id) throws Exception {

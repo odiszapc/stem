@@ -28,6 +28,7 @@ import org.stem.utils.TopologyUtils;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
+// TODO: Init zookeeper client when cluster has been started?
 public class Cluster {
 
     private static final Logger logger = LoggerFactory.getLogger(Cluster.class);
@@ -98,6 +99,10 @@ public class Cluster {
 
     public boolean initialized() {
         return state.get() == State.INITIALIZED;
+    }
+
+    public void ensureInitialized() {
+        manager.ensureInitialized();
     }
 
     public State state() {

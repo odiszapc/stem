@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+// TODO:  In case of JSON serialization investigate and start using Mix-in feature (http://wiki.fasterxml.com/JacksonMixInAnnotations)
 public class Event extends ZNodeAbstract {
 
     public static enum Type {
@@ -74,8 +75,8 @@ public class Event extends ZNodeAbstract {
         return new Event(id, type);
     }
 
-    final UUID id;
-    final Type type;
+    UUID id;
+    Type type;
     private StemResponse response;
     private long started;
     // long completed;
@@ -88,6 +89,9 @@ public class Event extends ZNodeAbstract {
 
     public StemResponse getResponse() {
         return response;
+    }
+
+    protected Event() {
     }
 
     protected Event(UUID id, Type type) {
@@ -176,6 +180,10 @@ public class Event extends ZNodeAbstract {
 
         protected void process(StemResponse response) {
         }
+    }
+
+    static abstract class AsyncResponseAbstract<T extends StemResponse> extends StemResponse {
+
     }
 
     // Events

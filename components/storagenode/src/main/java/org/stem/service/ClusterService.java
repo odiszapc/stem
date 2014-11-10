@@ -37,13 +37,27 @@ import java.util.concurrent.Executors;
 
 public class ClusterService {
 
-    public static final ClusterService instance = new ClusterService();
-    private ClusterManagerClient client = ClusterManagerClient.create(StorageNodeDescriptor.getClusterManagerEndpoint());
+    public static ClusterService instance; // TODO: make private
+
+//    static {
+//        instance = new ClusterService();
+//    }
+
+    private static ClusterManagerClient client = ClusterManagerClient.create(StorageNodeDescriptor.getClusterManagerEndpoint());
     private Executor periodicTasksExecutor = Executors.newFixedThreadPool(5);
     public final ZookeeperClient zookeeperClient;
 
     public ClusterService() {
         String endpoint = StorageNodeDescriptor.cluster().getZookeeperEndpoint();
+        try {
+            zookeeperClient = ZookeeperClientFactory.newClient(endpoint);
+        } catch (ZooException e) {
+            throw new RuntimeException("Fail to initialize cluster service", e);
+        }
+    }
+
+    public ClusterService(ClusterResponse.Cluster cluster) {
+        String endpoint = cluster.getZookeeperEndpoint();
         try {
             zookeeperClient = ZookeeperClientFactory.newClient(endpoint);
         } catch (ZooException e) {
@@ -83,11 +97,12 @@ public class ClusterService {
         List<InetAddress> ipAddresses = Utils.getIpAddresses();
         Map<UUID, MountPoint> mountPoints = Layout.getInstance().getMountPoints();
 
-        JoinRequest request = new JoinRequest();
-        request.setHost(StorageNodeDescriptor.getNodeListen());
-        request.setPort(StorageNodeDescriptor.getNodePort());
+        JoinRequest req = new JoinRequest();
+        req.setStorageNodeId(StorageNodeDescriptor.id);
+        req.setHost(StorageNodeDescriptor.getNodeListen());
+        req.setPort(StorageNodeDescriptor.getNodePort());
         for (InetAddress ipAddress : ipAddresses) {
-            request.getIpAddresses().add(ipAddress.toString());
+            req.getIpAddresses().add(ipAddress.toString());
         }
 
         for (MountPoint mp : mountPoints.values()) {
@@ -96,15 +111,21 @@ public class ClusterService {
                     mp.getPath(),
                     mp.getTotalSizeInBytes(),
                     mp.getAllocatedSizeInBytes());
-            request.getDisks().add(disk);
+            req.getDisks().add(disk);
         }
-        return request;
+        return req;
     }
 
-    public ClusterResponse.Cluster describeCluster() {
+    public static ClusterResponse.Cluster describeAndInit() {
         ClusterResponse resp = client.describeCluster();
+        instance = new ClusterService(resp.getCluster());
         return resp.getCluster();
     }
+
+//    public ClusterResponse.Cluster describeCluster() {
+//        ClusterResponse resp = client.describeCluster();
+//        return resp.getCluster();
+//    }
 
 
     public void startDataNotificator() throws Exception {

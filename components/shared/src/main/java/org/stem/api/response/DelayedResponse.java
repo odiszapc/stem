@@ -19,7 +19,7 @@ package org.stem.api.response;
 import java.util.UUID;
 
 public class DelayedResponse extends StemResponse {
-    public final UUID requestId;
+    public UUID requestId;
 
     public DelayedResponse(UUID requestId) {
         this.requestId = requestId;
@@ -28,5 +28,8 @@ public class DelayedResponse extends StemResponse {
     @Override
     public String toString() {
         return requestId.toString();
+    }
+
+    public DelayedResponse() {
     }
 }

@@ -23,4 +23,8 @@ public class JoinResponse extends DelayedResponse {
     public JoinResponse(UUID longTimeRequestId) {
         super(longTimeRequestId);
     }
+
+    public JoinResponse() {}
+
+
 }

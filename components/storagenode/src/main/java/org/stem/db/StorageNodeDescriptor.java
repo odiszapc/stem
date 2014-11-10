@@ -39,7 +39,7 @@ public class StorageNodeDescriptor {
     private static Config config;
     private static final String STEM_CONFIG_PROPERTY = "stem.config";
     private static final String STEM_ID_PROPERTY = "stem.node.id";
-    private static ClusterResponse.Cluster cluster;
+    private static ClusterResponse.Cluster cluster; // This should be some of Topology or Cluster globals class, not from Response*
     private static MetaStoreClient metaStoreClient;
     public static UUID id;
 
@@ -154,7 +154,7 @@ public class StorageNodeDescriptor {
     }
 
     public static void describeCluster() {
-        cluster = ClusterService.instance.describeCluster();
+        cluster = ClusterService.describeAndInit();
         logger.info("Cluster loaded: {}", cluster);
         metaStoreClient = new MetaStoreClient(); // TODO: Metastore client? Here? Why?
         metaStoreClient.start();

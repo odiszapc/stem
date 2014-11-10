@@ -19,13 +19,23 @@ package org.stem.api.request;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class JoinRequest extends ClusterManagerRequest {
 
+    private UUID storageNodeId;
     private int port;
     private List<String> ipAddresses = new ArrayList<String>();
     private String host;
     private List<Disk> disks = new ArrayList<Disk>();
+
+    public UUID getStorageNodeId() {
+        return storageNodeId;
+    }
+
+    public void setStorageNodeId(UUID storageNodeId) {
+        this.storageNodeId = storageNodeId;
+    }
 
     public List<String> getIpAddresses() {
         return ipAddresses;
@@ -52,13 +62,6 @@ public class JoinRequest extends ClusterManagerRequest {
     }
 
     public JoinRequest() {
-    }
-
-    public JoinRequest(String host, int port, List<String> ipAddresses, List<Disk> disks) {
-        this.host = host;
-        this.port = port;
-        this.ipAddresses = ipAddresses;
-        this.disks = disks;
     }
 
     public static class Disk {

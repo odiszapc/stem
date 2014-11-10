@@ -19,14 +19,21 @@ package org.stem.coordination;
 import com.google.common.util.concurrent.AbstractFuture;
 import org.stem.api.response.StemResponse;
 
+import java.util.UUID;
+
 public class EventFuture extends AbstractFuture<StemResponse> implements Event.Handler.Callback {
 
     private final Event event;
     private final ZookeeperClient client;
 
+
     public EventFuture(Event event, ZookeeperClient client) {
         this.event = event;
         this.client = client;
+    }
+
+    public UUID eventId() {
+        return event.id;
     }
 
     public void setResult(StemResponse response) {
