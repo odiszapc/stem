@@ -23,11 +23,9 @@ import org.stem.coordination.DiskStat;
 import org.stem.coordination.ZNodeAbstract;
 
 import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
+// TODO: add events when topology changes (node added, node failed, node remover, the same for disks, rack, datacenters, etc)
 public class Topology extends ZNodeAbstract {
 
     private enum NodeState {
@@ -41,6 +39,9 @@ public class Topology extends ZNodeAbstract {
     private static final Index cache = new Index();
     private final Map<UUID, Datacenter> dataCenters = new HashMap<>();
 
+    public Topology() {
+        addDatacenter(new Datacenter("default DC"));
+    }
 
     @Override
     public String name() {
@@ -64,8 +65,8 @@ public class Topology extends ZNodeAbstract {
      */
     public static abstract class Node {
 
-        public final UUID id = UUID.randomUUID();
-        public final String description = "";
+        public UUID id = UUID.randomUUID();
+        public String description = "";
     }
 
     /**
@@ -132,6 +133,8 @@ public class Topology extends ZNodeAbstract {
 
         private Rack rack;
         public final InetSocketAddress address;
+        String hostname;
+        long capacity;
 
         private NodeState state;
 
@@ -206,6 +209,7 @@ public class Topology extends ZNodeAbstract {
     private static final class Index {
 
         final Map<UUID, Datacenter> dataCenters = new HashMap<>();
+        final Map<String, Datacenter> dataCentersByName = new HashMap<>();
         final Map<UUID, Rack> racks = new HashMap<>();
         final Map<UUID, StorageNode> storageNodes = new HashMap<>();
         final Map<UUID, Disk> disks = new HashMap<>();
@@ -214,10 +218,12 @@ public class Topology extends ZNodeAbstract {
 
         void onDatacenterAdded(Datacenter dc) {
             dataCenters.put(dc.id, dc);
+            dataCentersByName.put(dc.name, dc);
         }
 
         void onDatacenterRemoved(Datacenter dc) {
-            dataCenters.remove(dc);
+            dataCenters.remove(dc.id);
+            dataCentersByName.remove(dc.name);
         }
 
         void onRackAdded(Rack rack) {
@@ -250,8 +256,34 @@ public class Topology extends ZNodeAbstract {
             return dataCenters.get(id);
         }
 
+        public Datacenter findDatacenter(String name) {
+            return dataCentersByName.get(name);
+        }
+
         public Rack findRack(UUID id) {
             return racks.get(id);
+        }
+
+        public Rack findRack(final Datacenter dc, final String name) {
+            Collection<Rack> result = CollectionUtils.select(findAllRacksInDatacenter(dc), new Predicate<Rack>() {
+                @Override
+                public boolean evaluate(Rack rack) {
+                    return name == rack.name;
+                }
+            });
+
+            return result.iterator().hasNext() ? result.iterator().next() : null;
+        }
+
+        public Rack findRack(final Datacenter dc, final UUID id) {
+            Collection<Rack> result = CollectionUtils.select(findAllRacksInDatacenter(dc), new Predicate<Rack>() {
+                @Override
+                public boolean evaluate(Rack rack) {
+                    return id == rack.id;
+                }
+            });
+
+            return result.iterator().hasNext() ? result.iterator().next() : null;
         }
 
         public StorageNode findStorageNode(UUID id) {
@@ -268,6 +300,15 @@ public class Topology extends ZNodeAbstract {
 
         public List<Rack> findAllRacks() {
             return Lists.newArrayList(racks.values());
+        }
+
+        public List<Rack> findAllRacksInDatacenter(final Datacenter dc) {
+            return Lists.newArrayList(CollectionUtils.select(findAllRacks(), new Predicate<Rack>() {
+                @Override
+                public boolean evaluate(Rack rack) {
+                    return dc == rack.datacenter;
+                }
+            }));
         }
 
         public List<StorageNode> findAllStorageNodes() {
@@ -310,14 +351,28 @@ public class Topology extends ZNodeAbstract {
                 }
             }));
         }
+
+
     }
 
     public Datacenter findDatacenter(UUID id) {
         return cache.findDatacenter(id);
     }
 
+    public Datacenter findDatacenter(String name) {
+        return cache.findDatacenter(name);
+    }
+
     public Rack findRack(UUID id) {
         return cache.findRack(id);
+    }
+
+    public Rack findRack(Datacenter datacenter, UUID id) {
+        return cache.findRack(datacenter, id);
+    }
+
+    public Rack findRack(Datacenter datacenter, String name) {
+        return cache.findRack(datacenter, name);
     }
 
     public StorageNode findStorageNode(UUID id) {

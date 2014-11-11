@@ -20,6 +20,7 @@ import org.stem.RestUtils;
 import org.stem.api.RESTConstants;
 import org.stem.api.request.InitClusterRequest;
 import org.stem.api.request.JoinRequest;
+import org.stem.api.request.ListUnauthorizedNodesRequest;
 import org.stem.api.response.ClusterResponse;
 import org.stem.api.response.JoinResponse;
 import org.stem.coordination.Event;
@@ -30,6 +31,7 @@ import org.stem.domain.StorageNode;
 import org.stem.domain.topology.Topology;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
@@ -45,7 +47,7 @@ public class ClusterResource {
      * @param req
      * @return
      */
-    @PUT
+    @POST
     @Path(RESTConstants.Api.Cluster.Init.BASE)
     public Response create(InitClusterRequest req) {
         Cluster.instance.initialize(req.getName(), req.getvBuckets(), req.getRf(), req.getPartitioner());
@@ -77,7 +79,7 @@ public class ClusterResource {
      * @deprecated use #join2(request)
      */
     @Deprecated
-    @PUT
+    @POST
     @Path(RESTConstants.Api.Cluster.Join.BASE)
     public Response join(JoinRequest request) {
         StorageNode storage = new StorageNode(request);
@@ -85,7 +87,7 @@ public class ClusterResource {
         return RestUtils.ok();
     }
 
-    @PUT
+    @POST
     @Path(RESTConstants.Api.Cluster.Join2.BASE)
     public Response join2(JoinRequest request) throws Exception {
         InetSocketAddress address = new InetSocketAddress(request.getHost(), request.getPort());
@@ -100,5 +102,13 @@ public class ClusterResource {
         //EventManager.instance.fire(trackId, StemResponse)
 
         return RestUtils.ok(new JoinResponse(future.eventId()));
+    }
+
+    @GET
+    @Path(RESTConstants.Api.Cluster.Join2.BASE)
+    public Response unauthorized(ListUnauthorizedNodesRequest request) throws Exception {
+        Cluster cluster = Cluster.instance().ensureInitialized();
+
+
     }
 }

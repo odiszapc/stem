@@ -16,7 +16,6 @@
 
 package org.stem.api.request;
 
-
-public class ClusterManagerRequest extends StemRequest {
+public class StemRequest {
 
 }

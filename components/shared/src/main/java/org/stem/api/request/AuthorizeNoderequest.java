@@ -16,7 +16,22 @@
 
 package org.stem.api.request;
 
+import java.util.UUID;
 
-public class ClusterManagerRequest extends StemRequest {
+public class AuthorizeNodeRequest extends ClusterManagerRequest {
+
+    UUID nodeId;
+
+    public UUID getNodeId() {
+        return nodeId;
+    }
+
+    public AuthorizeNodeRequest() {
+    }
+
+    public AuthorizeNodeRequest(UUID nodeId) {
+        this.nodeId = nodeId;
+    }
+
 
 }

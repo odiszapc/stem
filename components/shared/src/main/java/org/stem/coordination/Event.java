@@ -199,5 +199,65 @@ public class Event extends ZNodeAbstract {
         public static Listener listener = new Listener() {
 
         };
+
+        Result result;
+        String message;
+
+        public Result getResult() {
+            return result;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public boolean isSuccess() {
+            return Result.SUCCESS == result;
+        }
+
+        public Join() {
+        }
+
+        public Join(Result result, String message) {
+            this.result = result;
+            this.message = message;
+        }
+
+        public static enum Result {
+            SUCCESS("success"),
+            ERROR("error");
+
+            private static Map<String, Result> values = new HashMap<>();
+
+            static {
+                for (Result val : Result.values()) {
+                    values.put(val.name, val);
+                }
+            }
+
+            @JsonCreator
+            public static Result byName(String name) {
+                if (null == name)
+                    throw new IllegalStateException("value is empty");
+
+                Result result = values.get(name);
+                if (null == result)
+                    throw new IllegalStateException(String.format("Invalid value: %s. Available types: %s",
+                            name, StringUtils.join(values.keySet(), ", ")));
+
+                return result;
+            }
+
+            @JsonValue
+            public String getName() {
+                return name;
+            }
+
+            final String name;
+
+            Result(String name) {
+                this.name = name;
+            }
+        }
     }
 }

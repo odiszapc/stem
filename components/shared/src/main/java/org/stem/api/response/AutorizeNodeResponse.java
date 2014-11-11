@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package org.stem.api.request;
+package org.stem.api.response;
 
-
-public class ClusterManagerRequest extends StemRequest {
+public class AutorizeNodeResponse {
 
 }

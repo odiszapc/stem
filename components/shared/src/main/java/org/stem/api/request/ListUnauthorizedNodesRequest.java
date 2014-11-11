@@ -16,7 +16,10 @@
 
 package org.stem.api.request;
 
+public class ListUnauthorizedNodesRequest extends ClusterManagerRequest {
 
-public class ClusterManagerRequest extends StemRequest {
 
+
+    public ListUnauthorizedNodesRequest() {
+    }
 }

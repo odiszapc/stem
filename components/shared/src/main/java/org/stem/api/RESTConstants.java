@@ -16,6 +16,16 @@
 
 package org.stem.api;
 
+/**
+ * REST resources:
+ *
+ * POST /cluster/init
+ * GET  /cluster
+ * POST /cluster/join
+ * GET  /cluster/unauthorized
+ * POST /cluster/authorize
+ *
+ */
 public class RESTConstants {
 
     public static class Api {
@@ -48,6 +58,18 @@ public class RESTConstants {
             public static class Get {
 
                 public static final String BASE = "/";
+                public static final String URI = Cluster.URI + BASE;
+            }
+
+            public static class Unauthorized {
+
+                public static final String BASE = "/unauthorized";
+                public static final String URI = Cluster.URI + BASE;
+            }
+
+            public static class Authorize {
+
+                public static final String BASE = "/authorize";
                 public static final String URI = Cluster.URI + BASE;
             }
         }

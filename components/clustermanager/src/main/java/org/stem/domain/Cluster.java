@@ -16,6 +16,7 @@
 
 package org.stem.domain;
 
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.ClusterManagerDaemon;
@@ -41,10 +42,83 @@ public class Cluster {
 
     final Manager manager;
     Descriptor descriptor;
-    Topology topology; // TODO: load topology from Zookeeper
-    Partitioner partitioner;
 
-    Map<UUID, org.stem.domain.topology.Topology.StorageNode> pendingNodes = new HashMap<>();
+    @Deprecated
+    Topology topology; // TODO: load topology from Zookeeper
+
+    final org.stem.domain.topology.Topology topology2 = new org.stem.domain.topology.Topology();
+    Partitioner partitioner;
+    private Unauthorized freshNodes = new Unauthorized(this);
+
+    private class Unauthorized {
+
+        private final Cluster cluster;
+        final Map<UUID, org.stem.domain.topology.Topology.StorageNode> registry = new HashMap<>();
+
+        public Unauthorized(Cluster cluster) {
+            this.cluster = cluster;
+        }
+
+        public void add(org.stem.domain.topology.Topology.StorageNode node) {
+            // TODO: validation StorageNode object
+            synchronized (cluster) {
+                if (null != registry.get(node.id))
+                    throw new StemException(String.format("Node with id=%s is already in pending list", node.id));
+
+                org.stem.domain.topology.Topology.StorageNode existing = topology2.findStorageNode(node.id);
+                if (null != existing)
+                    throw new StemException(String.format("Node with id=%s already exist in cluster", node.id));
+
+                registry.put(node.id, node);
+            }
+        }
+
+        public List<org.stem.domain.topology.Topology.StorageNode> list() {
+
+            return Lists.newArrayList(registry.values());
+        }
+
+        public org.stem.domain.topology.Topology.StorageNode find(UUID id) {
+            org.stem.domain.topology.Topology.StorageNode node = registry.get(id);
+            if (null == node)
+                throw new StemException(String.format("Node with id=%s can not be found", id));
+            else
+                return node;
+        }
+
+        public void authorize(UUID id, String datacenter, String rack) {
+            synchronized (cluster) {
+                org.stem.domain.topology.Topology.StorageNode node = find(id);
+                cluster.addStorageNode(node, datacenter, rack);
+                registry.remove(id);
+            }
+        }
+    }
+
+    private void addStorageNode(org.stem.domain.topology.Topology.StorageNode node, String dcName, String rackName) {
+        if (null != topology2.findStorageNode(node.id))
+            throw new StemException(String.format("Node with id=%s already exist in cluster", node.id));
+
+        org.stem.domain.topology.Topology.Datacenter datacenter = topology2.findDatacenter(dcName);
+        if (null == datacenter) {
+            throw new StemException(String.format("Datacenter '%s' can not be found", dcName));
+        }
+        org.stem.domain.topology.Topology.Rack rack = topology2.findRack(datacenter, rackName);
+        if (null == rack) {
+            org.stem.domain.topology.Topology.Rack newRack = new org.stem.domain.topology.Topology.Rack(rackName);
+            datacenter.addRack(newRack);
+            rack = newRack;
+        }
+
+        rack.addStorageNode(node);
+        // TODO: I'm 100% sure there should be much more arbitrary checks and validations
+
+    }
+
+    public Unauthorized unauthorized() {
+        return freshNodes;
+    }
+
 
     public static Cluster instance() {
         return instance;
@@ -62,6 +136,7 @@ public class Cluster {
             if (!manager.loadCluster()) {
                 return false; // Already initialized
             }
+            // TODO: manager.loadUnauthorized();
         } catch (Exception e) {
             state.set(State.UNINITIALIZED);
             throw new StemException("Error while loading cluster configuration", e);
@@ -101,8 +176,9 @@ public class Cluster {
         return state.get() == State.INITIALIZED;
     }
 
-    public void ensureInitialized() {
+    public Cluster ensureInitialized() {
         manager.ensureInitialized();
+        return this;
     }
 
     public State state() {

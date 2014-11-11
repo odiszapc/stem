@@ -47,7 +47,7 @@ public class ClusterManagerClient extends BaseHttpClient {
     public void join(JoinRequest msg) {
         try {
             URI uri = getURI(RESTConstants.Api.Cluster.Join.URI);
-            HttpPut request = new HttpPut(uri);
+            HttpPost request = new HttpPost(uri);
 
             StemResponse send = send(request, msg, StemResponse.class);
 
@@ -59,7 +59,7 @@ public class ClusterManagerClient extends BaseHttpClient {
     public void join2(JoinRequest message, ZookeeperClient client) {
         try {
             URI uri = getURI(RESTConstants.Api.Cluster.Join2.URI);
-            JoinResponse response = send(new HttpPut(uri), message, JoinResponse.class);
+            JoinResponse response = send(new HttpPost(uri), message, JoinResponse.class);
 
             assert null != response.requestId;
             logger.info("Waiting for join response from cluster manager");
