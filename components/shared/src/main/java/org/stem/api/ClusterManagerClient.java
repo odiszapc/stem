@@ -64,7 +64,9 @@ public class ClusterManagerClient extends BaseHttpClient {
             assert null != response.requestId;
             logger.info("Waiting for join response from cluster manager");
             StemResponse result = Event.Listener.waitFor(response.requestId, Event.Type.JOIN, client);
-            int a = 1;
+            // TODO: What if node has to go down until user approve it?
+
+
         } catch (Exception e) {
             throw new RuntimeException("Can't join cluster, ClusterManager response: " + e.getMessage());
         }

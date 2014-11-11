@@ -14,34 +14,23 @@
  * limitations under the License.
  */
 
-package org.stem.api.response;
+package org.stem.exceptions;
 
-public class ErrorResponse extends StemResponse {
+public class EventException extends Exception {
 
-    int errorCode;
-    String error;
-
-    public ErrorResponse() {
+    public EventException() {
+        super();
     }
 
-    public int getErrorCode() {
-        return errorCode;
+    public EventException(String message) {
+        super(message);
     }
 
-    public void setErrorCode(int errorCode) {
-        this.errorCode = errorCode;
+    public EventException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public String getError() {
-        return error;
-    }
-
-    public void setError(String error) {
-        this.error = error;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("Error [%s] %s", errorCode, error);
+    public EventException(Throwable cause) {
+        super(cause);
     }
 }

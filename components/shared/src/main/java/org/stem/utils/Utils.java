@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -29,6 +30,8 @@ import java.util.UUID;
 
 
 public class Utils {
+
+    private static String machineHostname;
 
     public static List<InetAddress> getIpAddresses() {
         try {
@@ -73,5 +76,13 @@ public class Utils {
     public static void writeUuid(UUID id, String path) throws IOException {
         assert null != id;
         FileUtils.writeStringToFile(new File(path), id.toString());
+    }
+
+    public static String getMachineHostname() {
+        try {
+            return InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            return "unknown";
+        }
     }
 }

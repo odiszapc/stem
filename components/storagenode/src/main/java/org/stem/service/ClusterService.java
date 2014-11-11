@@ -99,6 +99,7 @@ public class ClusterService {
 
         JoinRequest req = new JoinRequest();
         req.setStorageNodeId(StorageNodeDescriptor.id);
+        req.setHostname(Utils.getMachineHostname());
         req.setHost(StorageNodeDescriptor.getNodeListen());
         req.setPort(StorageNodeDescriptor.getNodePort());
         for (InetAddress ipAddress : ipAddresses) {

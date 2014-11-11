@@ -24,6 +24,7 @@ import java.util.UUID;
 public class JoinRequest extends ClusterManagerRequest {
 
     private UUID storageNodeId;
+    private String hostname;
     private int port;
     private List<String> ipAddresses = new ArrayList<String>();
     private String host;
@@ -35,6 +36,14 @@ public class JoinRequest extends ClusterManagerRequest {
 
     public void setStorageNodeId(UUID storageNodeId) {
         this.storageNodeId = storageNodeId;
+    }
+
+    public String getHostname() {
+        return hostname;
+    }
+
+    public void setHostname(String hostname) {
+        this.hostname = hostname;
     }
 
     public List<String> getIpAddresses() {

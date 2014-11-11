@@ -17,6 +17,7 @@
 package org.stem.api;
 
 import org.apache.http.HttpHeaders;
+import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -113,7 +114,7 @@ public abstract class BaseHttpClient {
         }
     }
 
-    protected org.apache.http.client.ResponseHandler getResponseHandler(Class<? extends StemResponse> clazz) {
+    protected ResponseHandler getResponseHandler(Class<? extends StemResponse> clazz) {
         return new JsonResponseHandler(clazz);
     }
 }

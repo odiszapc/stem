@@ -20,7 +20,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.commons.lang3.StringUtils;
+import org.stem.api.response.ErrorResponse;
 import org.stem.api.response.StemResponse;
+import org.stem.exceptions.EventException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -156,6 +158,10 @@ public class Event extends ZNodeAbstract {
                     .newHandler(requestId, type, future, client)
                     .start();
             StemResponse result = Uninterruptibles.getUninterruptibly(future);
+            if (result instanceof ErrorResponse) {
+                ErrorResponse response = (ErrorResponse) result;
+                throw new EventException(response.toString());
+            }
 
             return result;
         }

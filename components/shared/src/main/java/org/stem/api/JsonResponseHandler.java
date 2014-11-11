@@ -39,26 +39,26 @@ public class JsonResponseHandler implements ResponseHandler<StemResponse> {
 
     @Override
     public StemResponse handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
-        StatusLine statusLine = response.getStatusLine();
+        StatusLine status = response.getStatusLine();
         HttpEntity entity = response.getEntity();
         InputStream content = entity.getContent();
 
-        if (statusLine.getStatusCode() >= 300) {
+        if (status.getStatusCode() >= 300) {
             try {
                 ErrorResponse errorResponse = JsonUtils.decode(content, ErrorResponse.class);
 
-                String message = String.format("%s [%s]: Code: %s, Message: %s", statusLine.getReasonPhrase(),
-                        statusLine.getStatusCode(),
+                String message = String.format("%s [%s]: Code: %s, Message: %s", status.getReasonPhrase(),
+                        status.getStatusCode(),
                         errorResponse.getErrorCode(),
                         errorResponse.getError());
 
                 throw new HttpResponseException(
-                        statusLine.getStatusCode(),
+                        status.getStatusCode(),
                         message);
             } catch (RuntimeException e) {
                 throw new HttpResponseException(
-                        statusLine.getStatusCode(),
-                        statusLine.getReasonPhrase());
+                        status.getStatusCode(),
+                        status.getReasonPhrase());
             }
         }
 
