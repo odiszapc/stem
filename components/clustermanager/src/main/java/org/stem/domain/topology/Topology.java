@@ -19,7 +19,6 @@ package org.stem.domain.topology;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Predicate;
-import org.stem.coordination.DiskStat;
 import org.stem.coordination.ZNodeAbstract;
 
 import java.net.InetSocketAddress;
@@ -28,11 +27,11 @@ import java.util.*;
 // TODO: add events when topology changes (node added, node failed, node remover, the same for disks, rack, datacenters, etc)
 public class Topology extends ZNodeAbstract {
 
-    private enum NodeState {
+    public static enum NodeState {
         SUSPEND, RUNNING, UNAVAILABLE
     }
 
-    private enum DiskState {
+    public static enum DiskState {
         SUSPEND, RUNNING, UNAVAILABLE
     }
 
@@ -67,6 +66,22 @@ public class Topology extends ZNodeAbstract {
 
         public UUID id = UUID.randomUUID();
         public String description = "";
+
+        public UUID getId() {
+            return id;
+        }
+
+        public void setId(UUID id) {
+            this.id = id;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
     }
 
     /**
@@ -176,6 +191,38 @@ public class Topology extends ZNodeAbstract {
         long totalBytes = 0;
 
         private DiskState state;
+
+        public String getPath() {
+            return path;
+        }
+
+        public void setPath(String path) {
+            this.path = path;
+        }
+
+        public long getUsedBytes() {
+            return usedBytes;
+        }
+
+        public void setUsedBytes(long usedBytes) {
+            this.usedBytes = usedBytes;
+        }
+
+        public long getTotalBytes() {
+            return totalBytes;
+        }
+
+        public void setTotalBytes(long totalBytes) {
+            this.totalBytes = totalBytes;
+        }
+
+        public DiskState getState() {
+            return state;
+        }
+
+        public void setState(DiskState state) {
+            this.state = state;
+        }
 
         public Disk() {
             super();

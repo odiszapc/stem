@@ -16,13 +16,21 @@
 
 package org.stem;
 
+import org.stem.api.DiskTransient;
+import org.stem.api.StorageNodeTransient;
 import org.stem.api.response.ClusterResponse;
+import org.stem.api.response.ListNodesResponse;
 import org.stem.api.response.StemResponse;
 import org.stem.domain.Cluster;
 import org.stem.domain.Disk;
 import org.stem.domain.StorageNode;
+import org.stem.domain.topology.Topology;
+import org.stem.utils.Utils;
 
 import javax.ws.rs.core.Response;
+import java.net.InetSocketAddress;
+import java.util.List;
+import java.util.UUID;
 
 public class RestUtils {
 
@@ -72,5 +80,33 @@ public class RestUtils {
             response.getCluster().getNodes().add(storageREST);
         }
         return response;
+    }
+
+    public static ListNodesResponse buildUnauthorizedListResponse(List<Topology.StorageNode> list) {
+        return null;
+    }
+
+    public static Topology.Disk extractDisk(DiskTransient diskTransient) {
+        Topology.Disk disk = new Topology.Disk();
+        disk.setId(UUID.fromString(diskTransient.getId()));
+        disk.setPath(diskTransient.getPath());
+        disk.setUsedBytes(diskTransient.getUsed());
+        disk.setTotalBytes(diskTransient.getTotal());
+        disk.setState(Topology.DiskState.SUSPEND);
+        return disk;
+    }
+
+    public static Topology.StorageNode extractNode(StorageNodeTransient nodeTransient) {
+        InetSocketAddress address = new InetSocketAddress(
+                Utils.getHost(nodeTransient.getListen()),
+                Utils.getPort(nodeTransient.getListen()));
+        Topology.StorageNode node = new Topology.StorageNode(address);
+        node.setId(nodeTransient.getId());
+        for (DiskTransient diskTransient : nodeTransient.getDisks()) {
+            Topology.Disk disk = extractDisk(diskTransient);
+            node.addDisk(disk);
+        }
+
+        return node;
     }
 }

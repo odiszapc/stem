@@ -22,8 +22,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.stem.api.request.JoinRequest;
+import org.stem.api.DiskTransient;
+import org.stem.api.StorageNodeTransient;
+import org.stem.api.request.JoinRequest2;
 import org.stem.client.old.StorageNodeClient;
+import org.stem.coordination.ZooException;
+import org.stem.coordination.ZookeeperClientFactory;
 import org.stem.db.DataTracker;
 import org.stem.db.Layout;
 import org.stem.db.MountPoint;
@@ -120,7 +124,7 @@ public class StreamingTest extends IntegrationTestBase {
         }
     }
 
-    private void joinPseudoNode() {
+    private void joinPseudoNode() throws ZooException {
         List<InetAddress> ipAddresses = Utils.getIpAddresses();
         Map<UUID, MountPoint> mountPoints = new HashMap<UUID, MountPoint>();
         UUID uuid = UUID.randomUUID();
@@ -130,23 +134,23 @@ public class StreamingTest extends IntegrationTestBase {
         );
 
 
-        JoinRequest req = new JoinRequest();
-        req.setHost(StorageNodeDescriptor.getNodeListen());
-        req.setPort(StorageNodeDescriptor.getNodePort() + portIndex++);
+        JoinRequest2 req = new JoinRequest2();
+        StorageNodeTransient node = req.getNode();
+        node.setListen(StorageNodeDescriptor.getNodeListen(), StorageNodeDescriptor.getNodePort() + portIndex++);
 
         for (InetAddress ipAddress : ipAddresses) {
-            req.getIpAddresses().add(ipAddress.toString());
+            node.getIpAddresses().add(ipAddress.toString());
         }
 
         for (MountPoint mp : mountPoints.values()) {
-            JoinRequest.Disk disk = new JoinRequest.Disk(
+            DiskTransient disk = new DiskTransient(
                     mp.uuid.toString(),
                     mp.getPath(),
                     mp.getTotalSizeInBytes(),
                     mp.getAllocatedSizeInBytes());
-            req.getDisks().add(disk);
+            node.getDisks().add(disk);
         }
 
-        clusterManagerClient.join(req);
+        clusterManagerClient.join2(req, ZookeeperClientFactory.newClient("localhost:2180"));
     }
 }

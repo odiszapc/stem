@@ -50,7 +50,7 @@ public class Cluster {
     Partitioner partitioner;
     private Unauthorized freshNodes = new Unauthorized(this);
 
-    private class Unauthorized {
+    public class Unauthorized {
 
         private final Cluster cluster;
         final Map<UUID, org.stem.domain.topology.Topology.StorageNode> registry = new HashMap<>();

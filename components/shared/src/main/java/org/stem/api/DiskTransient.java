@@ -14,18 +14,37 @@
  * limitations under the License.
  */
 
-package org.stem.utils;
+package org.stem.api;
 
+public class DiskTransient {
+    private String id; // TODO: use UUID type
+    private String path;
+    private long total;
+    private long used;
 
-public class Utils {
+    public String getId() {
+        return id;
+    }
 
-    public void startStorageNode() throws Exception {
-//        Executor exec = new DefaultExecutor();
-//        DefaultExecuteResultHandler execHandler = new DefaultExecuteResultHandler();
-//        exec.setProcessDestroyer(new ShutdownHookProcessDestroyer());
-//        exec.setStreamHandler(new PumpStreamHandler(System.out));
-//        exec.execute()
+    public String getPath() {
+        return path;
+    }
 
+    public long getTotal() {
+        return total;
+    }
 
+    public long getUsed() {
+        return used;
+    }
+
+    public DiskTransient() {
+    }
+
+    public DiskTransient(String id, String path, long used, long total) {
+        this.id = id;
+        this.path = path;
+        this.used = used;
+        this.total = total;
     }
 }

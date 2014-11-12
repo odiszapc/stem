@@ -34,3 +34,5 @@ components/storagenode/target/*
 components/tests/target/*
 components/shared/target/*
 target/*
+
+/conf/id

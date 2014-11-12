@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.api.request.InitClusterRequest;
 import org.stem.api.request.JoinRequest;
+import org.stem.api.request.JoinRequest2;
 import org.stem.api.response.ClusterResponse;
 import org.stem.api.response.JoinResponse;
 import org.stem.api.response.StemResponse;
@@ -56,7 +57,7 @@ public class ClusterManagerClient extends BaseHttpClient {
         }
     }
 
-    public void join2(JoinRequest message, ZookeeperClient client) {
+    public void join2(JoinRequest2 message, ZookeeperClient client) {
         try {
             URI uri = getURI(RESTConstants.Api.Cluster.Join2.URI);
             JoinResponse response = send(new HttpPost(uri), message, JoinResponse.class);

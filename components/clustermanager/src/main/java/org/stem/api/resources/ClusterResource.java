@@ -20,9 +20,11 @@ import org.stem.RestUtils;
 import org.stem.api.RESTConstants;
 import org.stem.api.request.InitClusterRequest;
 import org.stem.api.request.JoinRequest;
+import org.stem.api.request.JoinRequest2;
 import org.stem.api.request.ListUnauthorizedNodesRequest;
 import org.stem.api.response.ClusterResponse;
 import org.stem.api.response.JoinResponse;
+import org.stem.api.response.ListNodesResponse;
 import org.stem.coordination.Event;
 import org.stem.coordination.EventFuture;
 import org.stem.coordination.EventManager;
@@ -32,11 +34,9 @@ import org.stem.domain.topology.Topology;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
-import java.net.InetSocketAddress;
-import java.util.UUID;
+import java.util.List;
 
 @Path(RESTConstants.Api.Cluster.URI)
 public class ClusterResource {
@@ -89,16 +89,14 @@ public class ClusterResource {
 
     @POST
     @Path(RESTConstants.Api.Cluster.Join2.BASE)
-    public Response join2(JoinRequest request) throws Exception {
-        InetSocketAddress address = new InetSocketAddress(request.getHost(), request.getPort());
-        Topology.StorageNode node = new Topology.StorageNode(address);
+    public Response join2(JoinRequest2 request) throws Exception {
+        Topology.StorageNode node = RestUtils.extractNode(request.getNode());
 
-//        StorageNode storage = new StorageNode(request);
-//        Cluster.instance.addStorageIfNotExist(storage);
+        Cluster cluster = Cluster.instance().ensureInitialized();
+        cluster.unauthorized().add(node);
 
-        // Cluster.instance.addPendingNode(node, trackId);
-        //UUID trackId = EventManager.randomId();
         EventFuture future = EventManager.instance.createSubscription(Event.Type.JOIN);
+
         //EventManager.instance.fire(trackId, StemResponse)
 
         return RestUtils.ok(new JoinResponse(future.eventId()));
@@ -108,7 +106,11 @@ public class ClusterResource {
     @Path(RESTConstants.Api.Cluster.Join2.BASE)
     public Response unauthorized(ListUnauthorizedNodesRequest request) throws Exception {
         Cluster cluster = Cluster.instance().ensureInitialized();
+        List<Topology.StorageNode> list = cluster.unauthorized().list();
+        ListNodesResponse resp = RestUtils.buildUnauthorizedListResponse(list);
 
-
+        return RestUtils.ok(resp);
     }
+
+
 }

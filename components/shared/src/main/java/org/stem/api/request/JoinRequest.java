@@ -23,19 +23,19 @@ import java.util.UUID;
 
 public class JoinRequest extends ClusterManagerRequest {
 
-    private UUID storageNodeId;
+    private UUID id;
     private String hostname;
     private int port;
     private List<String> ipAddresses = new ArrayList<String>();
     private String host;
     private List<Disk> disks = new ArrayList<Disk>();
 
-    public UUID getStorageNodeId() {
-        return storageNodeId;
+    public UUID getId() {
+        return id;
     }
 
-    public void setStorageNodeId(UUID storageNodeId) {
-        this.storageNodeId = storageNodeId;
+    public void setId(UUID id) {
+        this.id = id;
     }
 
     public String getHostname() {

@@ -16,8 +16,8 @@
 
 package org.stem.client.old;
 
-import org.stem.coordination.ZookeeperEventListener;
 import org.stem.coordination.TopoMapping;
+import org.stem.coordination.ZookeeperEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
