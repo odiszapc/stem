@@ -35,10 +35,16 @@ public class Topology extends ZNodeAbstract {
         SUSPEND, RUNNING, UNAVAILABLE
     }
 
-    private static final Index cache = new Index();
+    private final Index cache;
+    private final EventSubscriber subscriber;
     private final Map<UUID, Datacenter> dataCenters = new HashMap<>();
 
+
     public Topology() {
+        cache = new Index();
+        subscriber = new EventSubscriber(this);
+        subscriber.addListener(cache);
+
         addDatacenter(new Datacenter("default DC"));
     }
 
@@ -53,16 +59,18 @@ public class Topology extends ZNodeAbstract {
 
     public void addDatacenter(Datacenter dc) {
         dataCenters.put(dc.id, dc);
+        subscriber.onDatacenterAdded(dc);
     }
 
     public void removeDatacenter(Datacenter dc) {
         dataCenters.remove(dc.id);
+        subscriber.onDatacenterRemoved(dc);
     }
 
     /**
      *
      */
-    public static abstract class Node {
+    public abstract class Node {
 
         public UUID id = UUID.randomUUID();
         public String description = "";
@@ -87,7 +95,7 @@ public class Topology extends ZNodeAbstract {
     /**
      *
      */
-    public static class Datacenter extends Node {
+    public class Datacenter extends Node {
 
         public final String name;
         private final Map<UUID, Rack> racks = new HashMap<>();
@@ -104,18 +112,20 @@ public class Topology extends ZNodeAbstract {
         public void addRack(Rack rack) {
             racks.put(rack.id, rack);
             rack.datacenter = this;
+            subscriber.onRackAdded(rack);
         }
 
         public void removeRack(Rack rack) {
             racks.remove(rack.id);
             rack.datacenter = null;
+            subscriber.onRackRemoved(rack);
         }
     }
 
     /**
      *
      */
-    public static class Rack extends Node {
+    public class Rack extends Node {
 
         private Datacenter datacenter;
         public final String name;
@@ -133,18 +143,20 @@ public class Topology extends ZNodeAbstract {
         public void addStorageNode(StorageNode node) {
             storageNodes.put(node.id, node);
             node.rack = this;
+            subscriber.onStorageNodeAdded(node);
         }
 
         public void removeStorageNode(StorageNode node) {
             storageNodes.remove(node.id);
             node.rack = null;
+            subscriber.onStorageNodeRemoved(node);
         }
     }
 
     /**
      *
      */
-    public static class StorageNode extends Node {
+    public class StorageNode extends Node {
 
         private Rack rack;
         public final InetSocketAddress address;
@@ -167,12 +179,13 @@ public class Topology extends ZNodeAbstract {
         public void addDisk(Disk disk) {
             disks.put(disk.id, disk);
             disk.storageNode = this;
+            subscriber.onDiskAdded(disk);
         }
 
         public void removeDisk(Disk disk) {
             disks.remove(disk.id);
             disk.storageNode = null;
-            cache.onDiskRemoved(disk);
+            subscriber.onDiskRemoved(disk);
         }
 
         public Datacenter datacenter() {
@@ -183,7 +196,7 @@ public class Topology extends ZNodeAbstract {
     /**
      *
      */
-    public static class Disk extends Node {
+    public class Disk extends Node {
 
         private StorageNode storageNode;
         String path;
@@ -253,7 +266,7 @@ public class Topology extends ZNodeAbstract {
     /**
      *
      */
-    private static final class Index {
+    private static final class Index implements TopologyEventListener {
 
         final Map<UUID, Datacenter> dataCenters = new HashMap<>();
         final Map<String, Datacenter> dataCentersByName = new HashMap<>();
@@ -263,37 +276,45 @@ public class Topology extends ZNodeAbstract {
 
         // Events
 
-        void onDatacenterAdded(Datacenter dc) {
+        @Override
+        public void onDatacenterAdded(Datacenter dc) {
             dataCenters.put(dc.id, dc);
             dataCentersByName.put(dc.name, dc);
         }
 
-        void onDatacenterRemoved(Datacenter dc) {
+        @Override
+        public void onDatacenterRemoved(Datacenter dc) {
             dataCenters.remove(dc.id);
             dataCentersByName.remove(dc.name);
         }
 
-        void onRackAdded(Rack rack) {
+        @Override
+        public void onRackAdded(Rack rack) {
             racks.put(rack.id, rack);
         }
 
-        void onRackRemoved(Rack rack) {
+        @Override
+        public void onRackRemoved(Rack rack) {
             racks.remove(rack.id);
         }
 
-        void onStorageNodeAdded(StorageNode node) {
+        @Override
+        public void onStorageNodeAdded(StorageNode node) {
             storageNodes.put(node.id, node);
         }
 
-        void onStorageNodeRemoved(StorageNode node) {
+        @Override
+        public void onStorageNodeRemoved(StorageNode node) {
             storageNodes.remove(node.id);
         }
 
-        void onDiskAdded(Disk disk) {
+        @Override
+        public void onDiskAdded(Disk disk) {
             disks.put(disk.id, disk);
         }
 
-        void onDiskRemoved(Disk disk) {
+        @Override
+        public void onDiskRemoved(Disk disk) {
             disks.remove(disk.id);
         }
 
