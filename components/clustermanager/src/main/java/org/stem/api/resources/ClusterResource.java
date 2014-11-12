@@ -93,8 +93,8 @@ public class ClusterResource {
         Topology.StorageNode node = RestUtils.extractNode(request.getNode());
 
         Cluster cluster = Cluster.instance().ensureInitialized();
-        cluster.unauthorized().add(node);
 
+        cluster.unauthorized().add(node);
         EventFuture future = EventManager.instance.createSubscription(Event.Type.JOIN);
 
         //EventManager.instance.fire(trackId, StemResponse)
