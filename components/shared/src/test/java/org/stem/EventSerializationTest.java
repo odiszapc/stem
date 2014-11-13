@@ -16,6 +16,7 @@
 
 package org.stem;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.stem.api.response.StemResponse;
 import org.stem.coordination.Event;
@@ -25,15 +26,29 @@ public class EventSerializationTest {
 
     @Test
     public void serialization() throws Exception {
-        Event event = Event.create(Event.Type.JOIN);
-        StubResponse resp = new StubResponse();
-        event.setResponse(resp);
+        Event original = Event.create(Event.Type.JOIN);
+        StemResponse resp = new Event.Join(Event.Join.Result.ERROR, "Node already exist in topology!");
+        original.setResponse(resp);
 
-        JsonUtils.encode(event);
+        String json = JsonUtils.encode(original);
+        Event decoded = JsonUtils.decode(json, Event.class);
+        Event.Join response = (Event.Join) decoded.getResponse();
+
+        Assert.assertEquals(decoded.getId(), original.getId());
+        Assert.assertEquals(decoded.getType(), original.getType());
+        Assert.assertEquals(response.getResult(), Event.Join.Result.ERROR);
+        Assert.assertEquals(response.getMessage(), "Node already exist in topology!");
+
+    }
+
+    @Test
+    public void testName() throws Exception {
+        //new Event.Join.Result()
 
     }
 
     static class StubResponse extends StemResponse {
+
         public static String a = "test";
 
         String name;

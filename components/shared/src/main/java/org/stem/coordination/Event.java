@@ -17,22 +17,40 @@
 package org.stem.coordination;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.core.TreeNode;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.commons.lang3.StringUtils;
 import org.stem.api.response.ErrorResponse;
 import org.stem.api.response.StemResponse;
 import org.stem.exceptions.EventException;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 // TODO:  In case of JSON serialization investigate and start using Mix-in feature (http://wiki.fasterxml.com/JacksonMixInAnnotations)
+
+@JsonDeserialize(using = Event.CustomDeserializer.class)
 public class Event extends ZNodeAbstract {
 
+    @JsonCreator
+    public static Object test(String name) {
+        return null;
+    }
+
     public static enum Type {
-        JOIN("join", Join.listener);
+        JOIN("join", Join.listener, Join.class);
 
         private static Map<String, Type> values = new HashMap<>();
 
@@ -62,10 +80,12 @@ public class Event extends ZNodeAbstract {
 
         final String name;
         public final Listener listener;
+        private Class<? extends StemResponse> clazz;
 
-        Type(String name, Listener listener) {
+        Type(String name, Listener listener, Class<? extends StemResponse> clazz) {
             this.name = name;
             this.listener = listener;
+            this.clazz = clazz;
         }
     }
 
@@ -79,11 +99,28 @@ public class Event extends ZNodeAbstract {
 
     UUID id;
     Type type;
+
     private StemResponse response;
     private long started;
     // long completed;
     // boolean disposable // Should this event be discarded once it fired
 
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
 
     public void setResponse(StemResponse response) {
         this.response = response;
@@ -211,6 +248,7 @@ public class Event extends ZNodeAbstract {
             return message;
         }
 
+        @JsonIgnore
         public boolean isSuccess() {
             return Result.SUCCESS == result;
         }
@@ -258,6 +296,29 @@ public class Event extends ZNodeAbstract {
             Result(String name) {
                 this.name = name;
             }
+        }
+    }
+
+    static class CustomDeserializer extends JsonDeserializer<Event> {
+
+        private static ObjectMapper mapper = new ObjectMapper();
+
+        @Override
+        public Event deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+            ObjectCodec codec = jp.getCodec();
+            TreeNode treeNode = codec.readTree(jp);
+
+
+            UUID id = UUID.fromString(((TextNode) treeNode.get("id")).asText());
+            String typeStr = ((TextNode) treeNode.get("type")).asText();
+            Type type = Type.byName(typeStr);
+
+            TreeNode responseNode = treeNode.get("response");
+            StemResponse result = mapper.treeToValue(responseNode, type.clazz);
+
+            Event event = Event.create(type, id);
+            event.setResponse(result);
+            return event;
         }
     }
 }
