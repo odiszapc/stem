@@ -101,6 +101,8 @@ public class ClusterResource {
         return RestUtils.ok(new JoinResponse(future.eventId()));
     }
 
+    // TODO: save/load unauthorized nodes
+    // TODO: save/load subscriptions
     @GET
     @Path(RESTConstants.Api.Cluster.Unauthorized.BASE)
     public Response unauthorized(ListUnauthorizedNodesRequest request) throws Exception {
