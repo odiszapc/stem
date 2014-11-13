@@ -17,6 +17,7 @@
 package org.stem.coordination;
 
 import com.google.common.util.concurrent.AbstractFuture;
+import com.google.common.util.concurrent.ListenableFuture;
 import org.stem.api.response.StemResponse;
 
 import java.util.UUID;

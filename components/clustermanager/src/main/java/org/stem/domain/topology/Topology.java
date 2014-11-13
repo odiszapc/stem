@@ -28,22 +28,36 @@ import java.util.*;
 public class Topology extends ZNodeAbstract {
 
     public static enum NodeState {
-        SUSPEND, RUNNING, UNAVAILABLE
+        UNAUTHORIZED, RUNNING, UNAVAILABLE
     }
 
     public static enum DiskState {
         SUSPEND, RUNNING, UNAVAILABLE
     }
 
+//    public final Factory factory;
+
     private final Index cache;
     private final EventSubscriber subscriber;
     private final Map<UUID, Datacenter> dataCenters = new HashMap<>();
 
 
+//    public class Factory {
+//
+//        public Rack newRack(String name) {
+//            return new Rack(name);
+//        }
+//
+//        public Disk newDisk() {
+//            return new Disk();
+//        }
+//    }
+
     public Topology() {
         cache = new Index();
         subscriber = new EventSubscriber(this);
         subscriber.addListener(cache);
+        //      this.factory = new Factory();
 
         addDatacenter(new Datacenter("default DC"));
     }
@@ -58,6 +72,7 @@ public class Topology extends ZNodeAbstract {
     }
 
     public void addDatacenter(Datacenter dc) {
+        dc.attachSubscriber(this.subscriber);
         dataCenters.put(dc.id, dc);
         subscriber.onDatacenterAdded(dc);
     }
@@ -68,12 +83,14 @@ public class Topology extends ZNodeAbstract {
     }
 
     /**
-     *
+     * Base class for all objects in topology: Datacenter, Rack, StorageNode or Disk
      */
-    public abstract class Node {
+    public static abstract class Node {
 
         public UUID id = UUID.randomUUID();
         public String description = "";
+
+        protected EventSubscriber subscriber = new EventSubscriber();
 
         public UUID getId() {
             return id;
@@ -90,12 +107,18 @@ public class Topology extends ZNodeAbstract {
         public void setDescription(String description) {
             this.description = description;
         }
+
+        protected void attachSubscriber(EventSubscriber subscriber) {
+            this.subscriber = subscriber;
+        }
+
+        // TODO: make sure we adding just single node, not tree or sub-tree
     }
 
     /**
      *
      */
-    public class Datacenter extends Node {
+    public static class Datacenter extends Node {
 
         public final String name;
         private final Map<UUID, Rack> racks = new HashMap<>();
@@ -110,6 +133,7 @@ public class Topology extends ZNodeAbstract {
         }
 
         public void addRack(Rack rack) {
+            rack.attachSubscriber(this.subscriber);
             racks.put(rack.id, rack);
             rack.datacenter = this;
             subscriber.onRackAdded(rack);
@@ -125,7 +149,7 @@ public class Topology extends ZNodeAbstract {
     /**
      *
      */
-    public class Rack extends Node {
+    public static class Rack extends Node {
 
         private Datacenter datacenter;
         public final String name;
@@ -141,6 +165,7 @@ public class Topology extends ZNodeAbstract {
         }
 
         public void addStorageNode(StorageNode node) {
+            node.attachSubscriber(this.subscriber);
             storageNodes.put(node.id, node);
             node.rack = this;
             subscriber.onStorageNodeAdded(node);
@@ -156,14 +181,14 @@ public class Topology extends ZNodeAbstract {
     /**
      *
      */
-    public class StorageNode extends Node {
+    public static class StorageNode extends Node {
 
         private Rack rack;
         public final InetSocketAddress address;
         String hostname;
         long capacity;
 
-        private NodeState state;
+        private NodeState state = NodeState.UNAUTHORIZED;
 
         private final Map<UUID, Disk> disks = new HashMap<>();
 
@@ -171,12 +196,27 @@ public class Topology extends ZNodeAbstract {
             return Lists.newArrayList(disks.values());
         }
 
+        public String getHostname() {
+            return hostname;
+        }
+
+        public void setHostname(String hostname) {
+            this.hostname = hostname;
+        }
+
+        public InetSocketAddress getAddress() {
+            return address;
+        }
+
+
+
         public StorageNode(InetSocketAddress address) {
             super();
             this.address = address;
         }
 
         public void addDisk(Disk disk) {
+            disk.attachSubscriber(this.subscriber);
             disks.put(disk.id, disk);
             disk.storageNode = this;
             subscriber.onDiskAdded(disk);
@@ -191,12 +231,20 @@ public class Topology extends ZNodeAbstract {
         public Datacenter datacenter() {
             return rack.datacenter;
         }
+
+        @Override
+        protected void attachSubscriber(EventSubscriber subscriber) {
+            super.attachSubscriber(subscriber);
+            for (Disk disk : disks.values()) {
+                disk.attachSubscriber(subscriber);
+            }
+        }
     }
 
     /**
      *
      */
-    public class Disk extends Node {
+    public static class Disk extends Node {
 
         private StorageNode storageNode;
         String path;
@@ -419,8 +467,6 @@ public class Topology extends ZNodeAbstract {
                 }
             }));
         }
-
-
     }
 
     public Datacenter findDatacenter(UUID id) {

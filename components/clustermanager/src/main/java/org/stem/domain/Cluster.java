@@ -477,4 +477,9 @@ public class Cluster {
             return ZooConstants.CLUSTER_DESCRIPTOR_NAME;
         }
     }
+
+    @Override
+    public String toString() {
+        return "Cluster \"" + descriptor.name + "\"";
+    }
 }

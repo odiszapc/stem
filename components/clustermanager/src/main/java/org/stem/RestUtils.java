@@ -82,8 +82,26 @@ public class RestUtils {
         return response;
     }
 
-    public static ListNodesResponse buildUnauthorizedListResponse(List<Topology.StorageNode> list) {
-        return null;
+    public static ListNodesResponse buildUnauthorizedListResponse(List<Topology.StorageNode> nodes) {
+        ListNodesResponse result = new ListNodesResponse();
+        for (Topology.StorageNode node : nodes) {
+            result.getNodes().add(packNode(node));
+        }
+
+        return result;
+    }
+
+    public static StorageNodeTransient packNode(Topology.StorageNode node) {
+        StorageNodeTransient result = new StorageNodeTransient(node.getId(), node.getHostname(), node.getAddress().toString(), 0l);
+
+        long total = 0;
+        for (Topology.Disk disk : node.disks()) {
+            total += disk.getTotalBytes();
+            DiskTransient diskTransient = new DiskTransient(disk.getId().toString(), disk.getPath(), disk.getUsedBytes(), disk.getTotalBytes());
+            result.getDisks().add(diskTransient);
+        }
+        result.setCapacity(total);
+        return result;
     }
 
     public static Topology.Disk extractDisk(DiskTransient diskTransient) {
@@ -102,6 +120,7 @@ public class RestUtils {
                 Utils.getPort(nodeTransient.getListen()));
         Topology.StorageNode node = new Topology.StorageNode(address);
         node.setId(nodeTransient.getId());
+        node.setHostname(nodeTransient.getHostname());
         for (DiskTransient diskTransient : nodeTransient.getDisks()) {
             Topology.Disk disk = extractDisk(diskTransient);
             node.addDisk(disk);

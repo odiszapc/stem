@@ -88,22 +88,21 @@ public class ClusterResource {
     }
 
     @POST
-    @Path(RESTConstants.Api.Cluster.Join2.BASE)
+    @Path(RESTConstants.Api.Cluster.Join2.BASE) // TODO: when node restarts between join and accept events
     public Response join2(JoinRequest2 request) throws Exception {
         Topology.StorageNode node = RestUtils.extractNode(request.getNode());
 
         Cluster cluster = Cluster.instance().ensureInitialized();
-
+        //cluster.addNewUnauthorizedNode(node);
         cluster.unauthorized().add(node);
         EventFuture future = EventManager.instance.createSubscription(Event.Type.JOIN);
-
         //EventManager.instance.fire(trackId, StemResponse)
 
         return RestUtils.ok(new JoinResponse(future.eventId()));
     }
 
     @GET
-    @Path(RESTConstants.Api.Cluster.Join2.BASE)
+    @Path(RESTConstants.Api.Cluster.Unauthorized.BASE)
     public Response unauthorized(ListUnauthorizedNodesRequest request) throws Exception {
         Cluster cluster = Cluster.instance().ensureInitialized();
         List<Topology.StorageNode> list = cluster.unauthorized().list();

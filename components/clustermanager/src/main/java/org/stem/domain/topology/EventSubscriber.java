@@ -21,11 +21,12 @@ import java.util.List;
 
 public class EventSubscriber implements TopologyEventListener {
 
-    private final Topology topology;
     private List<TopologyEventListener> listeners = new ArrayList<>();
 
     public EventSubscriber(Topology topology) {
-        this.topology = topology;
+    }
+
+    public EventSubscriber() {
     }
 
     public void addListener(TopologyEventListener listener) {
