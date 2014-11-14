@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.utils.JsonUtils;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -135,6 +136,9 @@ public class ZookeeperClient {
      * @throws Exception
      */
     public void listenForZNode(String path, ZookeeperEventListener listener) throws Exception {
+        // TODO: simplify code of this method to:
+        // ZNodeListener nodeListener = new ZNodeListener(path, listener, client);
+
         NodeCache cache = new NodeCache(client, path);
         cache.start();
 
@@ -143,6 +147,21 @@ public class ZookeeperClient {
 
         cache.getListenable().addListener(cacheListener);
     }
+
+    public void registerListener(ZNodeListener listener) {
+        listener.getNodeCache().getListenable().addListener(listener);
+    }
+
+    public void unregisterListener(ZNodeListener listener) throws IOException {
+        listener.close();
+    }
+
+    /* public void unregisterListener(ZookeeperEventListener listener) {
+         listener.getZNodeListener().close();
+       }
+
+
+     */
 
     public void listenForChildren(String path, ZookeeperEventListener listener) throws Exception {
         PathChildrenCache cache = new PathChildrenCache(client, path, true);

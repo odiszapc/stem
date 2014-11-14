@@ -20,10 +20,20 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.*;
 import org.apache.curator.utils.ZKPaths;
 
+import java.io.IOException;
+
 public class ZNodeListener implements PathChildrenCacheListener, NodeCacheListener {
 
     private ZNodeEventHandler handler;
     private NodeCache nodeCache;
+
+    public ZNodeEventHandler getHandler() {
+        return handler;
+    }
+
+    public NodeCache getNodeCache() {
+        return nodeCache;
+    }
 
     public ZNodeListener(ZNodeEventHandler handler) {
         this.handler = handler;
@@ -32,6 +42,26 @@ public class ZNodeListener implements PathChildrenCacheListener, NodeCacheListen
     public ZNodeListener(ZNodeEventHandler handler, NodeCache nodeCache) {
         this.handler = handler;
         this.nodeCache = nodeCache;
+    }
+
+    public ZNodeListener(ZookeeperEventListener listener, NodeCache nodeCache) {
+        this.handler = listener.getHandler();
+        this.nodeCache = nodeCache;
+    }
+
+    public ZNodeListener(String path, ZookeeperEventListener listener, CuratorFramework client) throws Exception {
+        nodeCache = new NodeCache(client, path);
+        nodeCache.start();
+
+        NodeCacheListener cacheListener = new ZNodeListener(
+                listener.getHandler(), nodeCache);
+
+        nodeCache.getListenable().addListener(cacheListener);
+    }
+
+    public void close() throws IOException {
+        nodeCache.getListenable().clear();
+        nodeCache.close();
     }
 
     @Override

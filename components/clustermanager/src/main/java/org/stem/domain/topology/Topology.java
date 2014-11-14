@@ -35,29 +35,14 @@ public class Topology extends ZNodeAbstract {
         SUSPEND, RUNNING, UNAVAILABLE
     }
 
-//    public final Factory factory;
-
     private final Index cache;
     private final EventSubscriber subscriber;
     private final Map<UUID, Datacenter> dataCenters = new HashMap<>();
-
-
-//    public class Factory {
-//
-//        public Rack newRack(String name) {
-//            return new Rack(name);
-//        }
-//
-//        public Disk newDisk() {
-//            return new Disk();
-//        }
-//    }
 
     public Topology() {
         cache = new Index();
         subscriber = new EventSubscriber(this);
         subscriber.addListener(cache);
-        //      this.factory = new Factory();
 
         addDatacenter(new Datacenter("default DC"));
     }

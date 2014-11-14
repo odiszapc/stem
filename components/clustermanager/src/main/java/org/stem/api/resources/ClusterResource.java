@@ -18,10 +18,7 @@ package org.stem.api.resources;
 
 import org.stem.RestUtils;
 import org.stem.api.RESTConstants;
-import org.stem.api.request.InitClusterRequest;
-import org.stem.api.request.JoinRequest;
-import org.stem.api.request.JoinRequest2;
-import org.stem.api.request.ListUnauthorizedNodesRequest;
+import org.stem.api.request.*;
 import org.stem.api.response.ClusterResponse;
 import org.stem.api.response.JoinResponse;
 import org.stem.api.response.ListNodesResponse;
@@ -93,10 +90,8 @@ public class ClusterResource {
         Topology.StorageNode node = RestUtils.extractNode(request.getNode());
 
         Cluster cluster = Cluster.instance().ensureInitialized();
-        //cluster.addNewUnauthorizedNode(node);
-        cluster.unauthorized().add(node);
         EventFuture future = EventManager.instance.createSubscription(Event.Type.JOIN);
-        //EventManager.instance.fire(trackId, StemResponse)
+        cluster.unauthorized().add(node, future);
 
         return RestUtils.ok(new JoinResponse(future.eventId()));
     }
@@ -113,5 +108,23 @@ public class ClusterResource {
         return RestUtils.ok(resp);
     }
 
+    @POST
+    @Path(RESTConstants.Api.Cluster.Authorize.BASE)
+    public Response authorize(AuthorizeNodeRequest req) throws Exception {
+        Cluster cluster = Cluster.instance().ensureInitialized();
 
+        String datacenter = req.getDatacenter();
+        String rack = req.getRack();
+
+        Event.Join response = cluster.unauthorized().approve(req.getNodeId(), datacenter, rack);
+        return RestUtils.ok(response); // TODO: return an empty result on success as we usual do?
+    }
+
+    @POST
+    @Path(RESTConstants.Api.Cluster.Refuse.BASE)
+    public Response deny(AuthorizeNodeRequest req) throws Exception {
+        Cluster cluster = Cluster.instance().ensureInitialized();
+        Event.Join response = cluster.unauthorized().deny(req.getNodeId());
+        return RestUtils.ok(response); // TODO: return an empty result on success as we usual do?
+    }
 }

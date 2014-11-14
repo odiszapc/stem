@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
-package org.stem.domain.topology;
+package org.stem.exceptions;
 
-public class TopologyException extends RuntimeException {
-
-    public TopologyException() {
-    }
+public class TopologyException extends StemException {
 
     public TopologyException(String message) {
         super(message);
     }
 
-    public TopologyException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
     public TopologyException(Throwable cause) {
         super(cause);
+    }
+
+    public TopologyException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

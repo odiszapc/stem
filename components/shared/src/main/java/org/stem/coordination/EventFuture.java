@@ -17,7 +17,6 @@
 package org.stem.coordination;
 
 import com.google.common.util.concurrent.AbstractFuture;
-import com.google.common.util.concurrent.ListenableFuture;
 import org.stem.api.response.StemResponse;
 
 import java.util.UUID;
@@ -26,7 +25,6 @@ public class EventFuture extends AbstractFuture<StemResponse> implements Event.H
 
     private final Event event;
     private final ZookeeperClient client;
-
 
     public EventFuture(Event event, ZookeeperClient client) {
         this.event = event;

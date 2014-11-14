@@ -16,17 +16,18 @@
 
 package org.stem.domain;
 
-import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.ClusterManagerDaemon;
 import org.stem.coordination.*;
 import org.stem.domain.topology.Partitioner;
 import org.stem.exceptions.StemException;
+import org.stem.exceptions.TopologyException;
 import org.stem.streaming.StreamSession;
 import org.stem.utils.TopologyUtils;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 // TODO: Init zookeeper client when cluster has been started?
@@ -44,64 +45,19 @@ public class Cluster {
     Descriptor descriptor;
 
     @Deprecated
-    Topology topology; // TODO: load topology from Zookeeper
+    Topology topology; // TODO: get rid of entirely
 
-    final org.stem.domain.topology.Topology topology2 = new org.stem.domain.topology.Topology();
+    final org.stem.domain.topology.Topology topology2 = new org.stem.domain.topology.Topology();    // TODO: load topology from Zookeeper
     Partitioner partitioner;
     private Unauthorized freshNodes = new Unauthorized(this);
 
-    public class Unauthorized {
-
-        private final Cluster cluster;
-        final Map<UUID, org.stem.domain.topology.Topology.StorageNode> registry = new HashMap<>();
-
-        public Unauthorized(Cluster cluster) {
-            this.cluster = cluster;
-        }
-
-        public void add(org.stem.domain.topology.Topology.StorageNode node) {
-            // TODO: validation StorageNode object
-            synchronized (cluster) {
-                if (null != registry.get(node.id))
-                    throw new StemException(String.format("Node with id=%s is already in pending list", node.id));
-
-                org.stem.domain.topology.Topology.StorageNode existing = topology2.findStorageNode(node.id);
-                if (null != existing)
-                    throw new StemException(String.format("Node with id=%s already exist in cluster", node.id));
-
-                registry.put(node.id, node);
-            }
-        }
-
-        public List<org.stem.domain.topology.Topology.StorageNode> list() {
-
-            return Lists.newArrayList(registry.values());
-        }
-
-        public org.stem.domain.topology.Topology.StorageNode find(UUID id) {
-            org.stem.domain.topology.Topology.StorageNode node = registry.get(id);
-            if (null == node)
-                throw new StemException(String.format("Node with id=%s can not be found", id));
-            else
-                return node;
-        }
-
-        public void authorize(UUID id, String datacenter, String rack) {
-            synchronized (cluster) {
-                org.stem.domain.topology.Topology.StorageNode node = find(id);
-                cluster.addStorageNode(node, datacenter, rack);
-                registry.remove(id);
-            }
-        }
-    }
-
-    private void addStorageNode(org.stem.domain.topology.Topology.StorageNode node, String dcName, String rackName) {
+    void addStorageNode(org.stem.domain.topology.Topology.StorageNode node, String dcName, String rackName) {
         if (null != topology2.findStorageNode(node.id))
-            throw new StemException(String.format("Node with id=%s already exist in cluster", node.id));
+            throw new TopologyException(String.format("Node with id=%s already exist in cluster", node.id));
 
         org.stem.domain.topology.Topology.Datacenter datacenter = topology2.findDatacenter(dcName);
         if (null == datacenter) {
-            throw new StemException(String.format("Datacenter '%s' can not be found", dcName));
+            throw new TopologyException(String.format("Datacenter '%s' can not be found", dcName));
         }
         org.stem.domain.topology.Topology.Rack rack = topology2.findRack(datacenter, rackName);
         if (null == rack) {
@@ -427,6 +383,10 @@ public class Cluster {
 
             if (null == zookeeperEndpoint || zookeeperEndpoint.isEmpty())
                 throw new StemException("Replication factor must be greater than zero");
+        }
+
+        public ZookeeperClient getZookeeperClient() {
+            return client;
         }
     }
 

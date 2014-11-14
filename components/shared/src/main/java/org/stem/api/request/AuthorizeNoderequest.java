@@ -21,9 +21,31 @@ import java.util.UUID;
 public class AuthorizeNodeRequest extends ClusterManagerRequest {
 
     UUID nodeId;
+    String datacenter;
+    String rack;
 
     public UUID getNodeId() {
         return nodeId;
+    }
+
+    public void setNodeId(UUID nodeId) {
+        this.nodeId = nodeId;
+    }
+
+    public String getDatacenter() {
+        return datacenter;
+    }
+
+    public void setDatacenter(String datacenter) {
+        this.datacenter = datacenter;
+    }
+
+    public String getRack() {
+        return rack;
+    }
+
+    public void setRack(String rack) {
+        this.rack = rack;
     }
 
     public AuthorizeNodeRequest() {
@@ -32,6 +54,4 @@ public class AuthorizeNodeRequest extends ClusterManagerRequest {
     public AuthorizeNodeRequest(UUID nodeId) {
         this.nodeId = nodeId;
     }
-
-
 }

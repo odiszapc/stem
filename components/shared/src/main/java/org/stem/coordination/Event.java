@@ -174,6 +174,7 @@ public class Event extends ZNodeAbstract {
 
         public void start() throws Exception {
             // TODO: check already started ?
+            listener.register(future);
             client.listenForZNode(ZooConstants.ASYNC_REQUESTS + '/' + requestId.toString(), listener);
         }
 
@@ -187,13 +188,14 @@ public class Event extends ZNodeAbstract {
     /**
      *
      */
-    public abstract static class Listener extends ZookeeperEventListener<Event> {
+    public static class Listener extends ZookeeperEventListener<Event> {
 
         public static StemResponse waitFor(UUID requestId, Type type, ZookeeperClient client) throws Exception {
             EventResultFuture future = new EventResultFuture();
             Event.Factory
                     .newHandler(requestId, type, future, client)
                     .start();
+
             StemResponse result = Uninterruptibles.getUninterruptibly(future);
             if (result instanceof ErrorResponse) {
                 ErrorResponse response = (ErrorResponse) result;
@@ -204,6 +206,10 @@ public class Event extends ZNodeAbstract {
         }
 
         protected EventResultFuture future;
+
+        public void register(EventResultFuture future) {
+            this.future = future;
+        }
 
         @Override
         public Class<Event> getBaseClass() {
@@ -259,6 +265,11 @@ public class Event extends ZNodeAbstract {
         public Join(Result result, String message) {
             this.result = result;
             this.message = message;
+        }
+
+        public Join(Exception e) {
+            this.result = Result.ERROR;
+            this.message = e.getMessage();
         }
 
         public static enum Result {

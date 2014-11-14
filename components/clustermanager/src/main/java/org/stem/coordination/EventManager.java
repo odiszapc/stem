@@ -57,4 +57,13 @@ public class EventManager {
     public static UUID randomId() {
         return UUID.randomUUID();
     }
+
+    public EventFuture readSubscription(UUID id) throws Exception {
+        Event event = client.readZNodeData(getEventPath(id), Event.class);
+        return new EventFuture(event, this.client);
+    }
+
+    private static String getEventPath(UUID id) {
+        return ZooConstants.ASYNC_REQUESTS + '/' + id;
+    }
 }

@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.utils.JsonUtils;
 
+// This is a Handler, not listener
 public abstract class ZookeeperEventListener<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperEventListener.class);

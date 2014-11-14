@@ -17,6 +17,7 @@
 package org.stem.domain.topology;
 
 import com.twitter.crunch.*;
+import org.stem.exceptions.TopologyException;
 import org.stem.utils.TopologyUtils;
 
 import java.util.*;
