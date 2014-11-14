@@ -16,94 +16,16 @@
 
 package org.stem.api.request;
 
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import org.stem.api.StorageNodeTransient;
 
 public class JoinRequest extends ClusterManagerRequest {
 
-    private UUID id;
-    private String hostname;
-    private int port;
-    private List<String> ipAddresses = new ArrayList<String>();
-    private String host;
-    private List<Disk> disks = new ArrayList<Disk>();
+    StorageNodeTransient node = new StorageNodeTransient();
 
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getHostname() {
-        return hostname;
-    }
-
-    public void setHostname(String hostname) {
-        this.hostname = hostname;
-    }
-
-    public List<String> getIpAddresses() {
-        return ipAddresses;
-    }
-
-    public List<Disk> getDisks() {
-        return disks;
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
+    public StorageNodeTransient getNode() {
+        return node;
     }
 
     public JoinRequest() {
-    }
-
-    public static class Disk {
-
-        private String id;
-        private String path;
-        private long totalSizeInBytes;
-        private long usedSizeInBytes;
-
-        public String getId() {
-            return id;
-        }
-
-        public String getPath() {
-            return path;
-        }
-
-        public long getTotalSizeInBytes() {
-            return totalSizeInBytes;
-        }
-
-        public long getUsedSizeInBytes() {
-            return usedSizeInBytes;
-        }
-
-        public Disk() {
-        }
-
-        public Disk(String id, String path, long usedSizeInBytes, long totalSizeInBytes) {
-            this.id = id;
-            this.path = path;
-            this.usedSizeInBytes = usedSizeInBytes;
-            this.totalSizeInBytes = totalSizeInBytes;
-        }
     }
 }

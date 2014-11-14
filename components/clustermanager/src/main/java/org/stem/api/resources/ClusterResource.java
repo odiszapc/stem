@@ -18,7 +18,10 @@ package org.stem.api.resources;
 
 import org.stem.RestUtils;
 import org.stem.api.RESTConstants;
-import org.stem.api.request.*;
+import org.stem.api.request.AuthorizeNodeRequest;
+import org.stem.api.request.InitClusterRequest;
+import org.stem.api.request.JoinRequest;
+import org.stem.api.request.ListUnauthorizedNodesRequest;
 import org.stem.api.response.ClusterResponse;
 import org.stem.api.response.JoinResponse;
 import org.stem.api.response.ListNodesResponse;
@@ -26,7 +29,6 @@ import org.stem.coordination.Event;
 import org.stem.coordination.EventFuture;
 import org.stem.coordination.EventManager;
 import org.stem.domain.Cluster;
-import org.stem.domain.StorageNode;
 import org.stem.domain.topology.Topology;
 
 import javax.ws.rs.GET;
@@ -54,7 +56,7 @@ public class ClusterResource {
     }
 
     /**
-     * Describe cluster topology
+     * Show common information about cluster
      *
      * @return
      */
@@ -69,24 +71,15 @@ public class ClusterResource {
     }
 
     /**
-     * Join cluster
+     * Node wants join the cluster. STEP 1
      *
      * @param request
      * @return
-     * @deprecated use #join2(request)
+     * @throws Exception
      */
-    @Deprecated
     @POST
-    @Path(RESTConstants.Api.Cluster.Join.BASE)
-    public Response join(JoinRequest request) {
-        StorageNode storage = new StorageNode(request);
-        Cluster.instance.addStorageIfNotExist(storage);
-        return RestUtils.ok();
-    }
-
-    @POST
-    @Path(RESTConstants.Api.Cluster.Join2.BASE) // TODO: when node restarts between join and accept events
-    public Response join2(JoinRequest2 request) throws Exception {
+    @Path(RESTConstants.Api.Cluster.Join.BASE) // TODO: when node restarts between join and accept events
+    public Response join2(JoinRequest request) throws Exception {
         Topology.StorageNode node = RestUtils.extractNode(request.getNode());
 
         Cluster cluster = Cluster.instance().ensureInitialized();

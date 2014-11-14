@@ -21,7 +21,6 @@ import org.stem.api.ClusterManagerClient;
 import org.stem.api.DiskTransient;
 import org.stem.api.StorageNodeTransient;
 import org.stem.api.request.JoinRequest;
-import org.stem.api.request.JoinRequest2;
 import org.stem.api.response.ClusterResponse;
 import org.stem.coordination.ZooException;
 import org.stem.coordination.ZookeeperClient;
@@ -68,39 +67,15 @@ public class ClusterService {
         }
     }
 
-    @Deprecated
     public void join() {
+        client.join(prepareJoinRequest(), zookeeperClient);
+    }
+
+    private static JoinRequest prepareJoinRequest() {
         List<InetAddress> ipAddresses = Utils.getIpAddresses();
         Map<UUID, MountPoint> mountPoints = Layout.getInstance().getMountPoints();
 
         JoinRequest req = new JoinRequest();
-        req.setHost(StorageNodeDescriptor.getNodeListen());
-        req.setPort(StorageNodeDescriptor.getNodePort());
-        for (InetAddress ipAddress : ipAddresses) {
-            req.getIpAddresses().add(ipAddress.toString());
-        }
-
-        for (MountPoint mp : mountPoints.values()) {
-            JoinRequest.Disk disk = new JoinRequest.Disk(
-                    mp.uuid.toString(),
-                    mp.getPath(),
-                    mp.getTotalSizeInBytes(),
-                    mp.getAllocatedSizeInBytes());
-            req.getDisks().add(disk);
-        }
-
-        client.join(req);
-    }
-
-    public void join2() {
-        client.join2(prepareJoinRequest(), zookeeperClient);
-    }
-
-    private static JoinRequest2 prepareJoinRequest() {
-        List<InetAddress> ipAddresses = Utils.getIpAddresses();
-        Map<UUID, MountPoint> mountPoints = Layout.getInstance().getMountPoints();
-
-        JoinRequest2 req = new JoinRequest2();
         StorageNodeTransient node = req.getNode();
         node.setId(StorageNodeDescriptor.id);
         node.setHostname(Utils.getMachineHostname());

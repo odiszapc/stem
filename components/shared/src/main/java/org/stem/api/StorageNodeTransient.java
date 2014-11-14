@@ -16,11 +16,14 @@
 
 package org.stem.api;
 
+import org.stem.utils.Utils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 public class StorageNodeTransient {
+
     UUID id;
     String hostname;
     String listen;
@@ -50,6 +53,14 @@ public class StorageNodeTransient {
 
     public List<String> getIpAddresses() {
         return ipAddresses;
+    }
+
+    public String getListenHost() {
+        return Utils.getHost(listen);
+    }
+
+    public int getListenPort() {
+        return Utils.getPort(listen);
     }
 
     public void setId(UUID id) {

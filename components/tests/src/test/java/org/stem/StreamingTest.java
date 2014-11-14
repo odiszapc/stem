@@ -24,7 +24,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.stem.api.DiskTransient;
 import org.stem.api.StorageNodeTransient;
-import org.stem.api.request.JoinRequest2;
+import org.stem.api.request.JoinRequest;
 import org.stem.client.old.StorageNodeClient;
 import org.stem.coordination.ZooException;
 import org.stem.coordination.ZookeeperClientFactory;
@@ -134,7 +134,7 @@ public class StreamingTest extends IntegrationTestBase {
         );
 
 
-        JoinRequest2 req = new JoinRequest2();
+        JoinRequest req = new JoinRequest();
         StorageNodeTransient node = req.getNode();
         node.setListen(StorageNodeDescriptor.getNodeListen(), StorageNodeDescriptor.getNodePort() + portIndex++);
 
@@ -151,6 +151,6 @@ public class StreamingTest extends IntegrationTestBase {
             node.getDisks().add(disk);
         }
 
-        clusterManagerClient.join2(req, ZookeeperClientFactory.newClient("localhost:2180"));
+        clusterManagerClient.join(req, ZookeeperClientFactory.newClient("localhost:2180"));
     }
 }

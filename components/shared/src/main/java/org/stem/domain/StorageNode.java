@@ -16,6 +16,7 @@
 
 package org.stem.domain;
 
+import org.stem.api.DiskTransient;
 import org.stem.api.request.JoinRequest;
 import org.stem.coordination.DiskStat;
 
@@ -65,22 +66,22 @@ public class StorageNode {
         return ipAddress + ":" + port;
     }
 
-    public StorageNode(String ipAddress, int port, List<JoinRequest.Disk> disksFromRequest) {
+    public StorageNode(String ipAddress, int port, List<DiskTransient> disksFromRequest) {
         this.ipAddress = ipAddress;
         this.port = port;
         this.disks = new ArrayList<Disk>();
-        for (JoinRequest.Disk diskREST : disksFromRequest) {
+        for (DiskTransient diskREST : disksFromRequest) {
             Disk disk = new Disk(diskREST.getId());
             disk.setPath(diskREST.getPath());
-            disk.setUsedBytes(diskREST.getUsedSizeInBytes());
-            disk.setTotalBytes(diskREST.getTotalSizeInBytes());
+            disk.setUsedBytes(diskREST.getUsed());
+            disk.setTotalBytes(diskREST.getTotal());
 
             disks.add(disk);
         }
     }
 
     public StorageNode(JoinRequest req) {
-        this(req.getHost(), req.getPort(), req.getDisks());
+        this(req.getNode().getListenHost(), req.getNode().getListenPort(), req.getNode().getDisks());
     }
 
     public List<String> getDiskIds() {
