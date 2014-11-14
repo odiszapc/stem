@@ -34,7 +34,7 @@ public class TopologyResource {
 
     @GET
     @Path(RESTConstants.Api.Topology.BASE)
-    public Response root(ClusterManagerRequest request)
+    public Response get(ClusterManagerRequest request)
     {
         return RestUtils.ok();
     }

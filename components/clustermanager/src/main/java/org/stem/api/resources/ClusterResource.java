@@ -39,7 +39,7 @@ import java.util.List;
 public class ClusterResource {
 
     /**
-     * Init cluster
+     * Initialize cluster
      *
      * @param req
      * @return
