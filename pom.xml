@@ -101,6 +101,12 @@
         <artifactId>guava</artifactId>
         <version>${guava.version}</version>
       </dependency>
+
+      <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <version>${lombok.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -216,5 +222,6 @@
     <cassandra.version>2.0.7</cassandra.version>
     <grizzly.version>2.3.11</grizzly.version>
     <jersey.version>2.7</jersey.version>
+    <lombok.version>1.14.8</lombok.version>
   </properties>
 </project>

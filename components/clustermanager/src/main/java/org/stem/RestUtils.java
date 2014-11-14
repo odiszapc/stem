@@ -16,14 +16,12 @@
 
 package org.stem;
 
-import org.stem.api.DiskTransient;
-import org.stem.api.StorageNodeTransient;
+import org.stem.api.REST;
 import org.stem.api.response.ClusterResponse;
 import org.stem.api.response.ListNodesResponse;
 import org.stem.api.response.StemResponse;
 import org.stem.domain.Cluster;
 import org.stem.domain.Disk;
-import org.stem.domain.StorageNode;
 import org.stem.domain.topology.Topology;
 import org.stem.utils.Utils;
 
@@ -58,7 +56,7 @@ public class RestUtils {
         response.getCluster().setUsedBytes(cluster.getUsedBytes());
         response.getCluster().setTotalBytes(cluster.getTotalBytes());
 
-        for (StorageNode node : cluster.getStorageNodes()) {
+        for (org.stem.domain.StorageNode node : cluster.getStorageNodes()) {
             ClusterResponse.Storage storageREST = new ClusterResponse.Storage(
                     node.getIpAddress(),
                     node.getPort(),
@@ -91,20 +89,20 @@ public class RestUtils {
         return result;
     }
 
-    public static StorageNodeTransient packNode(Topology.StorageNode node) {
-        StorageNodeTransient result = new StorageNodeTransient(node.getId(), node.getHostname(), node.getAddress().toString(), 0l);
+    public static REST.StorageNode packNode(Topology.StorageNode node) {
+        REST.StorageNode result = new REST.StorageNode(node.getId(), node.getHostname(), node.getAddress().toString(), 0l);
 
         long total = 0;
         for (Topology.Disk disk : node.disks()) {
             total += disk.getTotalBytes();
-            DiskTransient diskTransient = new DiskTransient(disk.getId().toString(), disk.getPath(), disk.getUsedBytes(), disk.getTotalBytes());
+            REST.DiskTransient diskTransient = new REST.DiskTransient(disk.getId().toString(), disk.getPath(), disk.getUsedBytes(), disk.getTotalBytes());
             result.getDisks().add(diskTransient);
         }
         result.setCapacity(total);
         return result;
     }
 
-    public static Topology.Disk extractDisk(DiskTransient diskTransient) {
+    public static Topology.Disk extractDisk(REST.DiskTransient diskTransient) {
         Topology.Disk disk = new Topology.Disk();
         disk.setId(UUID.fromString(diskTransient.getId()));
         disk.setPath(diskTransient.getPath());
@@ -114,14 +112,14 @@ public class RestUtils {
         return disk;
     }
 
-    public static Topology.StorageNode extractNode(StorageNodeTransient nodeTransient) {
+    public static Topology.StorageNode extractNode(REST.StorageNode nodeTransient) {
         InetSocketAddress address = new InetSocketAddress(
                 Utils.getHost(nodeTransient.getListen()),
                 Utils.getPort(nodeTransient.getListen()));
         Topology.StorageNode node = new Topology.StorageNode(address);
         node.setId(nodeTransient.getId());
         node.setHostname(nodeTransient.getHostname());
-        for (DiskTransient diskTransient : nodeTransient.getDisks()) {
+        for (REST.DiskTransient diskTransient : nodeTransient.getDisks()) {
             Topology.Disk disk = extractDisk(diskTransient);
             node.addDisk(disk);
         }

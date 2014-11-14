@@ -22,8 +22,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.stem.api.DiskTransient;
-import org.stem.api.StorageNodeTransient;
+import org.stem.api.REST;
 import org.stem.api.request.JoinRequest;
 import org.stem.client.old.StorageNodeClient;
 import org.stem.coordination.ZooException;
@@ -135,7 +134,7 @@ public class StreamingTest extends IntegrationTestBase {
 
 
         JoinRequest req = new JoinRequest();
-        StorageNodeTransient node = req.getNode();
+        REST.StorageNode node = req.getNode();
         node.setListen(StorageNodeDescriptor.getNodeListen(), StorageNodeDescriptor.getNodePort() + portIndex++);
 
         for (InetAddress ipAddress : ipAddresses) {
@@ -143,7 +142,7 @@ public class StreamingTest extends IntegrationTestBase {
         }
 
         for (MountPoint mp : mountPoints.values()) {
-            DiskTransient disk = new DiskTransient(
+            REST.DiskTransient disk = new REST.DiskTransient(
                     mp.uuid.toString(),
                     mp.getPath(),
                     mp.getTotalSizeInBytes(),

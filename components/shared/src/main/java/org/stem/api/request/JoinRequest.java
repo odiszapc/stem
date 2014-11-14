@@ -16,13 +16,13 @@
 
 package org.stem.api.request;
 
-import org.stem.api.StorageNodeTransient;
+import org.stem.api.REST;
 
-public class JoinRequest extends ClusterManagerRequest {
+public class JoinRequest extends ClusterManagerRequest { // TODO: apply @lombok magic
 
-    StorageNodeTransient node = new StorageNodeTransient();
+    REST.StorageNode node = new REST.StorageNode();
 
-    public StorageNodeTransient getNode() {
+    public REST.StorageNode getNode() {
         return node;
     }
 

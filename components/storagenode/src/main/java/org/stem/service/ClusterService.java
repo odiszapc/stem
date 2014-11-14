@@ -18,8 +18,7 @@ package org.stem.service;
 
 
 import org.stem.api.ClusterManagerClient;
-import org.stem.api.DiskTransient;
-import org.stem.api.StorageNodeTransient;
+import org.stem.api.REST;
 import org.stem.api.request.JoinRequest;
 import org.stem.api.response.ClusterResponse;
 import org.stem.coordination.ZooException;
@@ -76,7 +75,7 @@ public class ClusterService {
         Map<UUID, MountPoint> mountPoints = Layout.getInstance().getMountPoints();
 
         JoinRequest req = new JoinRequest();
-        StorageNodeTransient node = req.getNode();
+        REST.StorageNode node = req.getNode();
         node.setId(StorageNodeDescriptor.id);
         node.setHostname(Utils.getMachineHostname());
         node.setListen(StorageNodeDescriptor.getNodeListen() + ':' + StorageNodeDescriptor.getNodePort());
@@ -86,7 +85,7 @@ public class ClusterService {
         }
 
         for (MountPoint mp : mountPoints.values()) {
-            DiskTransient disk = new DiskTransient(
+            REST.DiskTransient disk = new REST.DiskTransient(
                     mp.uuid.toString(),
                     mp.getPath(),
                     mp.getTotalSizeInBytes(),

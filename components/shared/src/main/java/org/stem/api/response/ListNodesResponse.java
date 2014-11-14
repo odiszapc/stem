@@ -16,16 +16,16 @@
 
 package org.stem.api.response;
 
-import org.stem.api.StorageNodeTransient;
+import org.stem.api.REST;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ListNodesResponse extends StemResponse {
 
-    List<StorageNodeTransient> nodes = new ArrayList<>();
+    List<REST.StorageNode> nodes = new ArrayList<>();
 
-    public List<StorageNodeTransient> getNodes() {
+    public List<REST.StorageNode> getNodes() {
         return nodes;
     }
 

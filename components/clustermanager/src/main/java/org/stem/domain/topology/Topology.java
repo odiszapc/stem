@@ -44,7 +44,7 @@ public class Topology extends ZNodeAbstract {
         subscriber = new EventSubscriber(this);
         subscriber.addListener(cache);
 
-        addDatacenter(new Datacenter("default DC"));
+        addDatacenter(new Datacenter("DC1"));
     }
 
     @Override
