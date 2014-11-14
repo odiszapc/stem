@@ -79,7 +79,7 @@ public class ClusterResource {
      */
     @POST
     @Path(RESTConstants.Api.Cluster.Join.BASE) // TODO: when node restarts between join and accept events
-    public Response join2(JoinRequest request) throws Exception {
+    public Response join(JoinRequest request) throws Exception {
         Topology.StorageNode node = RestUtils.extractNode(request.getNode());
 
         Cluster cluster = Cluster.instance().ensureInitialized();
