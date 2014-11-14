@@ -175,7 +175,7 @@ public class Event extends ZNodeAbstract {
         public void start() throws Exception {
             // TODO: check already started ?
             listener.register(future);
-            client.listenForZNode(ZooConstants.ASYNC_REQUESTS + '/' + requestId.toString(), listener);
+            client.listenForZNode(ZookeeperPaths.ASYNC_REQUESTS + '/' + requestId.toString(), listener);
         }
 
         public interface Callback {

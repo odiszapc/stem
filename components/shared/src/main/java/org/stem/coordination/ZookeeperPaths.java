@@ -29,7 +29,7 @@ package org.stem.coordination;
  *       in
  *     async_requests
  */
-public class ZooConstants {
+public class ZookeeperPaths {
 
     // TODO: think about ZNodes paths
     private static final String STEM_ROOT = "/stem";

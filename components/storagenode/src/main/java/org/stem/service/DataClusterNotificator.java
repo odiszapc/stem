@@ -64,7 +64,7 @@ public class DataClusterNotificator implements Runnable {
 //        stat.getDisks().get(0).setUsedBytes(Math.round(stat.getDisks().get(0).getUsedBytes() * ratio/100));
         // Stub
 
-        client.updateNode(ZooConstants.CLUSTER, stat);
+        client.updateNode(ZookeeperPaths.CLUSTER, stat);
     }
 
     private void sleep() {

@@ -44,7 +44,7 @@ public class EventFuture extends AbstractFuture<StemResponse> implements Event.H
         try {
             //EventManager.this.updateEvent(event.id, result);
             event.setResponse(result);
-            client.updateNode(ZooConstants.ASYNC_REQUESTS, event);
+            client.updateNode(ZookeeperPaths.ASYNC_REQUESTS, event);
         } catch (Exception e) {
             setException(e);
             return;

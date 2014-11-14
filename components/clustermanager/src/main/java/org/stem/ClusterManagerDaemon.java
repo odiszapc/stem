@@ -32,7 +32,7 @@ import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stem.coordination.ZooConstants;
+import org.stem.coordination.ZookeeperPaths;
 import org.stem.coordination.ZooException;
 import org.stem.coordination.ZookeeperClient;
 import org.stem.coordination.ZookeeperClientFactory;
@@ -192,8 +192,8 @@ public class ClusterManagerDaemon {
 
     private void initZookeeperPaths() {
         try {
-            zookeeperClient.createIfNotExists(ZooConstants.ASYNC_REQUESTS);
-            zookeeperClient.createIfNotExists(ZooConstants.CLUSTER);
+            zookeeperClient.createIfNotExists(ZookeeperPaths.ASYNC_REQUESTS);
+            zookeeperClient.createIfNotExists(ZookeeperPaths.CLUSTER);
             //client.createIfNotExists(ZooConstants.CLUSTER_DESCRIPTOR_PATH);
         } catch (ZooException e) {
             throw new StemException("Failed connect to Zookeeper", e);

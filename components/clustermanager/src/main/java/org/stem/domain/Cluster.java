@@ -277,14 +277,14 @@ public class Cluster {
         }
 
         private void startListenForStats() throws Exception {
-            client.listenForChildren(ZooConstants.CLUSTER, new StorageStatListener());
+            client.listenForChildren(ZookeeperPaths.CLUSTER, new StorageStatListener());
         }
 
 
         synchronized public void save() throws Exception {
             ensureInitialized();
             tryStartZookeeperClient();
-            client.createNode(ZooConstants.CLUSTER, descriptor);
+            client.createNode(ZookeeperPaths.CLUSTER, descriptor);
         }
 
         private void addStorageIfNotExist(StorageNode storage) throws Exception {
@@ -304,7 +304,7 @@ public class Cluster {
                     nodeStat.getDisks().add(diskStat);
                 }
 
-                client.createNodeIfNotExists(ZooConstants.CLUSTER, nodeStat);
+                client.createNodeIfNotExists(ZookeeperPaths.CLUSTER, nodeStat);
             }
             // TODO: 1. Handle the situation when storage already exists but new disk were added
             // TODO: 2. Handle the situation when storage is new but its disks are already attached to another storage
@@ -316,13 +316,13 @@ public class Cluster {
 
             topology.computeMappings(descriptor.vBuckets);
             TopoMapping topoMap = TopologyUtils.buildTopoMap(topology);
-            client.updateNode(ZooConstants.TOPOLOGY, topoMap);
+            client.updateNode(ZookeeperPaths.TOPOLOGY, topoMap);
 
             List<StreamSession> sessions = topology.computeStreamingSessions();
 
             // TODO: Anything below is not a part og this method, it should be passed to somewhere like SessionManager
             for (StreamSession s : sessions) {
-                client.createNodeIfNotExists(ZooConstants.OUT_SESSIONS, s);
+                client.createNodeIfNotExists(ZookeeperPaths.OUT_SESSIONS, s);
             }
         }
 
@@ -343,7 +343,7 @@ public class Cluster {
         }
 
         private Descriptor readDescriptor() throws Exception {
-            Descriptor descriptor = client.readZNodeData(ZooConstants.CLUSTER_DESCRIPTOR_PATH, Descriptor.class);
+            Descriptor descriptor = client.readZNodeData(ZookeeperPaths.CLUSTER_DESCRIPTOR_PATH, Descriptor.class);
             return descriptor;
         }
 
@@ -360,8 +360,8 @@ public class Cluster {
 
         private void initZookeeperPaths() throws Exception {
             //client.createIfNotExists(ZooConstants.TOPOLOGY + "/" + ZooConstants.TOPO_MAP);
-            client.createNodeIfNotExists(ZooConstants.TOPOLOGY, new TopoMapping());
-            client.createIfNotExists(ZooConstants.OUT_SESSIONS);
+            client.createNodeIfNotExists(ZookeeperPaths.TOPOLOGY, new TopoMapping());
+            client.createIfNotExists(ZookeeperPaths.OUT_SESSIONS);
         }
 
         private void validate(Descriptor desc) {
@@ -434,7 +434,7 @@ public class Cluster {
 
         @Override
         public String name() {
-            return ZooConstants.CLUSTER_DESCRIPTOR_NAME;
+            return ZookeeperPaths.CLUSTER_DESCRIPTOR_NAME;
         }
     }
 

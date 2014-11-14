@@ -45,12 +45,12 @@ public class EventManager {
 
     public EventFuture createSubscription(Event.Type type, UUID id) throws Exception {
         Event event = Event.create(type, id);
-        client.createNode(ZooConstants.ASYNC_REQUESTS, event);
+        client.createNode(ZookeeperPaths.ASYNC_REQUESTS, event);
         return new EventFuture(event, this.client);
     }
 
     public UUID createSubscription(Event request) throws Exception {
-        client.createNode(ZooConstants.ASYNC_REQUESTS, request);
+        client.createNode(ZookeeperPaths.ASYNC_REQUESTS, request);
         return request.id;
     }
 
@@ -64,6 +64,6 @@ public class EventManager {
     }
 
     private static String getEventPath(UUID id) {
-        return ZooConstants.ASYNC_REQUESTS + '/' + id;
+        return ZookeeperPaths.ASYNC_REQUESTS + '/' + id;
     }
 }
