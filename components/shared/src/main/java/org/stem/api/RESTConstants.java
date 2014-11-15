@@ -78,6 +78,12 @@ public class RESTConstants {
             public static final String BASE = "/topology";
             public static final String URI = Api.BASE + BASE;
 
+            public static class Get {
+
+                public static final String BASE = "/";
+                public static final String URI = Topology.URI + BASE;
+            }
+
             public static class Build {
 
                 public static final String BASE = "/build";

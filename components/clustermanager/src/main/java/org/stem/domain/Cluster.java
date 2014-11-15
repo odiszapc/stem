@@ -146,8 +146,8 @@ public class Cluster {
         return descriptor;
     }
 
-    public Topology topology() {
-        return topology;
+    public org.stem.domain.topology.Topology topology() {
+        return topology2;
     }
 
     private static StemException produceInitError(State state) {

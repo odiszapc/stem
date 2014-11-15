@@ -20,6 +20,7 @@ import org.stem.api.REST;
 import org.stem.api.response.ClusterResponse;
 import org.stem.api.response.ListNodesResponse;
 import org.stem.api.response.StemResponse;
+import org.stem.api.response.TopologyResponse;
 import org.stem.domain.Cluster;
 import org.stem.domain.topology.Topology;
 import org.stem.utils.Utils;
@@ -151,5 +152,9 @@ public class RestUtils {
         }
 
         return node;
+    }
+
+    public static TopologyResponse buildTopologyResponse(org.stem.domain.topology.Topology topology) {
+        return new TopologyResponse(packTopology(topology));
     }
 }

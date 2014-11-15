@@ -19,6 +19,7 @@ package org.stem.api.resources;
 import org.stem.RestUtils;
 import org.stem.api.RESTConstants;
 import org.stem.api.request.ClusterManagerRequest;
+import org.stem.api.response.TopologyResponse;
 import org.stem.domain.Cluster;
 
 import javax.ws.rs.GET;
@@ -33,10 +34,14 @@ import javax.ws.rs.core.Response;
 public class TopologyResource {
 
     @GET
-    @Path(RESTConstants.Api.Topology.BASE)
+    @Path(RESTConstants.Api.Topology.Get.BASE)
     public Response get(ClusterManagerRequest request)
     {
-        return RestUtils.ok();
+        Cluster cluster = Cluster.instance().ensureInitialized();
+        cluster.topology();
+
+        TopologyResponse response = RestUtils.buildTopologyResponse(cluster.topology());
+        return RestUtils.ok(response);
     }
 
     @POST
