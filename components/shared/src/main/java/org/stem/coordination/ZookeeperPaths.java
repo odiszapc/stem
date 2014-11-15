@@ -20,15 +20,15 @@ package org.stem.coordination;
  * ZNodes hierarchy:
  *
  * stem
- *   clustermanager
- *     cluster
- *       descriptor  (name, rf, buckets, zookeeper_endpoint)
- *       topology
- *     topology      (data mappings)
- *     streaming
- *       out
- *       in
- *     async_requests
+ * ..clustermanager
+ * ....cluster
+ * ......descriptor  (name, rf, buckets, zookeeper_endpoint)
+ * ......topology    (cluster topology tree: DC -> RACK -> NODE -> DISK)
+ * ....mappings      (data mappings)
+ * ....streaming
+ * ......out
+ * ......in
+ * ....async_requests
  */
 public class ZookeeperPaths {
 
@@ -38,7 +38,8 @@ public class ZookeeperPaths {
     public static final String CLUSTER = CLUSTER_MANAGER + "/cluster";
     public static final String CLUSTER_DESCRIPTOR_NAME = "descriptor";
     public static final String CLUSTER_DESCRIPTOR_PATH = CLUSTER + "/" + CLUSTER_DESCRIPTOR_NAME;
-    public static final String CLUSTER_TOPOLOGY = CLUSTER + "/topology";
+    public static final String CLUSTER_TOPOLOGY = "topology";
+    public static final String CLUSTER_TOPOLOGY_PATH = CLUSTER +'/'+ CLUSTER_TOPOLOGY;
     public static final String TOPOLOGY = CLUSTER_MANAGER + "/topology"; // TODO: rename to '/mappings/
     public static final String OUT_SESSIONS = CLUSTER_MANAGER + "/streaming/out";
     public static final String IN_SESSIONS = CLUSTER_MANAGER + "/streaming/in"; // TODO: do we really need this? It's pseudo session

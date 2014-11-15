@@ -16,10 +16,10 @@
 
 package org.stem.api;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
+import org.stem.coordination.ZNodeAbstract;
+import org.stem.coordination.ZookeeperPaths;
 import org.stem.utils.Utils;
 
 import java.util.ArrayList;
@@ -28,11 +28,18 @@ import java.util.UUID;
 
 public abstract class REST {
 
+    @EqualsAndHashCode(callSuper = false)
     @Data
     @RequiredArgsConstructor
-    public static class Topology {
+    public static class Topology extends ZNodeAbstract {
 
         final List<Datacenter> dataCenters = new ArrayList<>();
+
+        @JsonIgnore
+        @Override
+        public String name() {
+            return ZookeeperPaths.CLUSTER_TOPOLOGY;
+        }
     }
 
     @Data
@@ -68,10 +75,12 @@ public abstract class REST {
         final List<Disk> disks = new ArrayList<>();
         final List<String> ipAddresses = new ArrayList<String>();
 
+        @JsonIgnore
         public String getListenHost() {
             return Utils.getHost(listen);
         }
 
+        @JsonIgnore
         public int getListenPort() {
             return Utils.getPort(listen);
         }
@@ -88,7 +97,7 @@ public abstract class REST {
 
         @NonNull String id; // TODO: use UUID type
         @NonNull String path;
-        @NonNull long total;
         @NonNull long used;
+        @NonNull long total;
     }
 }

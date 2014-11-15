@@ -84,6 +84,7 @@ public class ClusterService {
             node.getIpAddresses().add(ipAddress.toString());
         }
 
+        long capacity = 0;
         for (MountPoint mp : mountPoints.values()) {
             REST.Disk disk = new REST.Disk(
                     mp.uuid.toString(),
@@ -91,7 +92,9 @@ public class ClusterService {
                     mp.getTotalSizeInBytes(),
                     mp.getAllocatedSizeInBytes());
             node.getDisks().add(disk);
+            capacity += disk.getTotal();
         }
+        node.setCapacity(capacity);
         return req;
     }
 

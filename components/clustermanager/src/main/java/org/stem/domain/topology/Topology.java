@@ -20,12 +20,15 @@ import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Predicate;
 import org.stem.coordination.ZNodeAbstract;
+import org.stem.domain.Cluster;
 
 import java.net.InetSocketAddress;
 import java.util.*;
 
 // TODO: add events when topology changes (node added, node failed, node remover, the same for disks, rack, datacenters, etc)
 public class Topology extends ZNodeAbstract {
+
+    private Cluster cluster;
 
     public static enum NodeState {
         UNAUTHORIZED, RUNNING, UNAVAILABLE
@@ -39,12 +42,19 @@ public class Topology extends ZNodeAbstract {
     private final EventSubscriber subscriber;
     private final Map<UUID, Datacenter> dataCenters = new HashMap<>();
 
-    public Topology() {
+    public Topology(Cluster cluster) {
+        this.cluster = cluster;
         cache = new Index();
         subscriber = new EventSubscriber(this);
         subscriber.addListener(cache);
+        subscriber.addListener(cluster.topologyListener());
 
         addDatacenter(new Datacenter("DC1"));
+
+    }
+
+    public void attachCluster(Cluster cluster) {
+        this.cluster = cluster;
     }
 
     @Override
@@ -200,7 +210,6 @@ public class Topology extends ZNodeAbstract {
         public InetSocketAddress getAddress() {
             return address;
         }
-
 
 
         public StorageNode(InetSocketAddress address) {

@@ -19,8 +19,11 @@ package org.stem.domain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.ClusterManagerDaemon;
+import org.stem.RestUtils;
 import org.stem.coordination.*;
 import org.stem.domain.topology.Partitioner;
+import org.stem.domain.topology.TopologyChangesListener;
+import org.stem.domain.topology.TopologyEventListener;
 import org.stem.exceptions.StemException;
 import org.stem.exceptions.TopologyException;
 import org.stem.streaming.StreamSession;
@@ -47,7 +50,7 @@ public class Cluster {
     @Deprecated
     Topology topology; // TODO: get rid of entirely
 
-    final org.stem.domain.topology.Topology topology2 = new org.stem.domain.topology.Topology();    // TODO: load topology from Zookeeper
+    final org.stem.domain.topology.Topology topology2;    // TODO: load topology from Zookeeper
     Partitioner partitioner;
     private Unauthorized freshNodes = new Unauthorized(this);
 
@@ -100,12 +103,13 @@ public class Cluster {
         return true;
     }
 
-    public void initialize(String name, int vBuckets, int rf, String partitoner) {
+    public void initialize(String name, int vBuckets, int rf, String partitioner) {
         try {
-            Descriptor desc = new Descriptor(name, vBuckets, rf, manager.endpoint, Partitioner.Type.byName(partitoner));
+            manager.ensureUninitialized();
+            Descriptor desc = new Descriptor(name, vBuckets, rf, manager.endpoint, Partitioner.Type.byName(partitioner));
             manager.newCluster(desc);
         } catch (Exception e) {
-            state.set(State.UNINITIALIZED);
+            state.compareAndSet(State.INITIALIZING, State.UNINITIALIZED);
             throw new StemException(String.format("Error while initializing a new cluster: %s", e.getMessage()), e);
         }
     }
@@ -165,6 +169,7 @@ public class Cluster {
         try {
             String zookeeperEndpoint = ClusterManagerDaemon.zookeeperEndpoint();
             this.manager = new Manager(zookeeperEndpoint);
+            this.topology2 = new org.stem.domain.topology.Topology(this);
         } catch (ZooException e) {
             throw new StemException("Can't initialize Cluster.Manager instance", e);
         }
@@ -216,6 +221,10 @@ public class Cluster {
         }
     }
 
+    public TopologyEventListener topologyListener() {
+        return manager.topologyListener;
+    }
+
     /**
      *
      */
@@ -224,9 +233,27 @@ public class Cluster {
         final String endpoint;
         private ZookeeperClient client;
 
+        final TopologyEventListener topologyListener;
+
         public Manager(String endpoint) throws ZooException {
             this.endpoint = endpoint;
             client = ZookeeperClientFactory.newClient(endpoint);
+
+            topologyListener = new TopologyChangesListener() {
+                @Override
+                public void onTopologyUpdated(org.stem.domain.topology.Topology.Node node) {
+                    try {
+                        saveTopology();
+                    } catch (Exception e) {
+                        logger.error("Failed to save topology to Zookeeper");
+                    }
+                }
+            };
+        }
+
+        private void saveTopology() throws Exception {
+            client.updateNode(ZookeeperPaths.CLUSTER, RestUtils.packTopology(topology2));
+
         }
 
         synchronized boolean loadCluster() throws Exception {

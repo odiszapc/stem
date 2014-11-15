@@ -63,8 +63,7 @@ public class ClusterResource {
     @GET
     @Path(RESTConstants.Api.Cluster.Get.BASE)
     public Response get() {
-        Cluster cluster = Cluster.instance();
-        cluster.ensureInitialized();
+        Cluster cluster = Cluster.instance().ensureInitialized();
 
         ClusterResponse response = RestUtils.buildClusterResponse(cluster, true);
         return RestUtils.ok(response);
