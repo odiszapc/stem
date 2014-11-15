@@ -113,6 +113,10 @@ public class Topology extends ZNodeAbstract {
             this.name = name;
         }
 
+        public String getName() {
+            return name;
+        }
+
         public List<Rack> racks() {
             return Lists.newArrayList(racks.values());
         }
@@ -139,6 +143,10 @@ public class Topology extends ZNodeAbstract {
         private Datacenter datacenter;
         public final String name;
         private final Map<UUID, StorageNode> storageNodes = new HashMap<>();
+
+        public String getName() {
+            return name;
+        }
 
         public Rack(String name) {
             super();

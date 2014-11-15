@@ -66,11 +66,11 @@ public class StorageNode {
         return ipAddress + ":" + port;
     }
 
-    public StorageNode(String ipAddress, int port, List<REST.DiskTransient> disksFromRequest) {
+    public StorageNode(String ipAddress, int port, List<REST.Disk> disksFromRequest) {
         this.ipAddress = ipAddress;
         this.port = port;
         this.disks = new ArrayList<Disk>();
-        for (REST.DiskTransient diskREST : disksFromRequest) {
+        for (REST.Disk diskREST : disksFromRequest) {
             Disk disk = new Disk(diskREST.getId());
             disk.setPath(diskREST.getPath());
             disk.setUsedBytes(diskREST.getUsed());

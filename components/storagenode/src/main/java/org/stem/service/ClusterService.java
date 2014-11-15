@@ -85,7 +85,7 @@ public class ClusterService {
         }
 
         for (MountPoint mp : mountPoints.values()) {
-            REST.DiskTransient disk = new REST.DiskTransient(
+            REST.Disk disk = new REST.Disk(
                     mp.uuid.toString(),
                     mp.getPath(),
                     mp.getTotalSizeInBytes(),

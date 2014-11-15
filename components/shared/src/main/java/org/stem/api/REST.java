@@ -30,12 +30,9 @@ public abstract class REST {
 
     @Data
     @RequiredArgsConstructor
-    @NoArgsConstructor
     public static class Topology {
 
-        @NonNull UUID id;
-        @NonNull String name;
-        final List<Datacenter> nodes = new ArrayList<>();
+        final List<Datacenter> dataCenters = new ArrayList<>();
     }
 
     @Data
@@ -45,7 +42,7 @@ public abstract class REST {
 
         @NonNull UUID id;
         @NonNull String name;
-        final List<Rack> nodes = new ArrayList<>();
+        final List<Rack> racks = new ArrayList<>();
     }
 
     @Data
@@ -68,7 +65,7 @@ public abstract class REST {
         @NonNull String listen;
         @NonNull Long capacity;
 
-        final List<DiskTransient> disks = new ArrayList<>();
+        final List<Disk> disks = new ArrayList<>();
         final List<String> ipAddresses = new ArrayList<String>();
 
         public String getListenHost() {
@@ -88,7 +85,7 @@ public abstract class REST {
     @Data
     @RequiredArgsConstructor
     @NoArgsConstructor
-    public static class DiskTransient {
+    public static class Disk {
 
         @NonNull String id; // TODO: use UUID type
         @NonNull String path;

@@ -21,7 +21,6 @@ import org.stem.api.response.ClusterResponse;
 import org.stem.api.response.ListNodesResponse;
 import org.stem.api.response.StemResponse;
 import org.stem.domain.Cluster;
-import org.stem.domain.Disk;
 import org.stem.domain.topology.Topology;
 import org.stem.utils.Utils;
 
@@ -65,7 +64,7 @@ public class RestUtils {
             );
 
             if (attachDiskStat) {
-                for (Disk disk : node.getDisks()) {
+                for (org.stem.domain.Disk disk : node.getDisks()) {
                     ClusterResponse.Disk diskREST = new ClusterResponse.Disk();
                     diskREST.setId(disk.getId());
                     diskREST.setPath(disk.getPath());
@@ -89,20 +88,47 @@ public class RestUtils {
         return result;
     }
 
+    public static REST.Topology packTopology(Topology topology) {
+        REST.Topology rest = new REST.Topology();
+        for (Topology.Datacenter datacenter : topology.dataCenters()) {
+            rest.getDataCenters().add(packDatacenter(datacenter));
+        }
+        return rest;
+    }
+
+    public static REST.Datacenter packDatacenter(Topology.Datacenter datacenter) {
+        REST.Datacenter dcRest = new REST.Datacenter(datacenter.getId(), datacenter.getName());
+        for (Topology.Rack rack : datacenter.racks()) {
+            dcRest.getRacks().add(packRack(rack));
+        }
+        return dcRest;
+    }
+
+    public static REST.Rack packRack(Topology.Rack rack) {
+        REST.Rack rackRest = new REST.Rack(rack.getId(), rack.getName());
+        for (Topology.StorageNode node : rack.storageNodes()) {
+            rackRest.getNodes().add(packNode(node));
+        }
+        return rackRest;
+    }
+
     public static REST.StorageNode packNode(Topology.StorageNode node) {
         REST.StorageNode result = new REST.StorageNode(node.getId(), node.getHostname(), node.getAddress().toString(), 0l);
 
         long total = 0;
         for (Topology.Disk disk : node.disks()) {
             total += disk.getTotalBytes();
-            REST.DiskTransient diskTransient = new REST.DiskTransient(disk.getId().toString(), disk.getPath(), disk.getUsedBytes(), disk.getTotalBytes());
-            result.getDisks().add(diskTransient);
+            result.getDisks().add(packDisk(disk));
         }
         result.setCapacity(total);
         return result;
     }
 
-    public static Topology.Disk extractDisk(REST.DiskTransient diskTransient) {
+    public static REST.Disk packDisk(Topology.Disk disk) {
+        return new REST.Disk(disk.getId().toString(), disk.getPath(), disk.getUsedBytes(), disk.getTotalBytes());
+    }
+
+    public static Topology.Disk extractDisk(REST.Disk diskTransient) {
         Topology.Disk disk = new Topology.Disk();
         disk.setId(UUID.fromString(diskTransient.getId()));
         disk.setPath(diskTransient.getPath());
@@ -119,7 +145,7 @@ public class RestUtils {
         Topology.StorageNode node = new Topology.StorageNode(address);
         node.setId(nodeTransient.getId());
         node.setHostname(nodeTransient.getHostname());
-        for (REST.DiskTransient diskTransient : nodeTransient.getDisks()) {
+        for (REST.Disk diskTransient : nodeTransient.getDisks()) {
             Topology.Disk disk = extractDisk(diskTransient);
             node.addDisk(disk);
         }
