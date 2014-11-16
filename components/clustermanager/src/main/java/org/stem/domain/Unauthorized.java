@@ -16,6 +16,7 @@
 
 package org.stem.domain;
 
+import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.coordination.Event;
@@ -103,6 +104,20 @@ public class Unauthorized {
         }
     }
 
+    public Event.Join approveExistingNode(Topology.StorageNode node, UUID uuid) {
+        try {
+            synchronized (cluster) {
+                EventFuture future = EventManager.instance.readSubscription(uuid);
+                Event.Join result = success("Existing node has successfully joined back the cluster");
+                future.setResult(result);
+                return result;
+            }
+        } catch (Exception e) {
+            return failed("Node can not be added to cluster: Unexpected error");
+            // TODO
+        }
+    }
+
     public Event.Join deny(UUID id) {
         synchronized (cluster) {
             NodeInsertMeta meta = getMeta(id);
@@ -123,7 +138,6 @@ public class Unauthorized {
     private static Event.Join failed(String message) {
         return new Event.Join(Event.Join.Result.ERROR, message);
     }
-
 
     /**
      *

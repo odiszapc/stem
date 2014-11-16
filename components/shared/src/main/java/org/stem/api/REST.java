@@ -72,8 +72,8 @@ public abstract class REST {
         @NonNull String listen;
         @NonNull Long capacity;
 
-        final List<Disk> disks = new ArrayList<>();
         final List<String> ipAddresses = new ArrayList<String>();
+        final List<Disk> disks = new ArrayList<>();
 
         @JsonIgnore
         public String getListenHost() {

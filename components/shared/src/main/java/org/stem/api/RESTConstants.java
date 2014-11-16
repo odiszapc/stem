@@ -60,7 +60,7 @@ public class RESTConstants {
                 public static final String URI = Cluster.URI + BASE;
             }
 
-            public static class Authorize {
+            public static class Approve {
 
                 public static final String BASE = "/authorize";
                 public static final String URI = Cluster.URI + BASE;

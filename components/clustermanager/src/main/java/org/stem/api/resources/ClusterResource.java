@@ -78,12 +78,19 @@ public class ClusterResource {
      */
     @POST
     @Path(RESTConstants.Api.Cluster.Join.BASE) // TODO: when node restarts between join and accept events
-    public Response join(JoinRequest request) throws Exception {
+    public synchronized Response join(JoinRequest request) throws Exception {
         Topology.StorageNode node = RestUtils.extractNode(request.getNode());
-
+        // TODO: delete unused async requests
         Cluster cluster = Cluster.instance().ensureInitialized();
         EventFuture future = EventManager.instance.createSubscription(Event.Type.JOIN);
-        cluster.unauthorized().add(node, future);
+
+        Topology.StorageNode existing = cluster.topology().findStorageNode(node.getId());
+        if (null == existing) {
+            cluster.unauthorized().add(node, future);
+        } else {
+            // TODO: check node status
+            cluster.unauthorized().approveExistingNode(node, future.eventId());
+        }
 
         return RestUtils.ok(new JoinResponse(future.eventId()));
     }
@@ -101,8 +108,8 @@ public class ClusterResource {
     }
 
     @POST
-    @Path(RESTConstants.Api.Cluster.Authorize.BASE)
-    public Response authorize(AuthorizeNodeRequest req) throws Exception {
+    @Path(RESTConstants.Api.Cluster.Approve.BASE)
+    public Response approve(AuthorizeNodeRequest req) throws Exception {
         Cluster cluster = Cluster.instance().ensureInitialized();
 
         String datacenter = req.getDatacenter();

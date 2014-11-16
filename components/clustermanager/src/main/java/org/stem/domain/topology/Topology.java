@@ -168,10 +168,12 @@ public class Topology extends ZNodeAbstract {
         }
 
         public void addStorageNode(StorageNode node) {
-            node.attachSubscriber(this.subscriber);
-            storageNodes.put(node.id, node);
-            node.rack = this;
-            subscriber.onStorageNodeAdded(node);
+            if (null == storageNodes.get(node.getId())) {   // TODO: What if node exists but with new disks?
+                node.attachSubscriber(this.subscriber);
+                storageNodes.put(node.id, node);
+                node.rack = this;
+                subscriber.onStorageNodeAdded(node);
+            }
         }
 
         public void removeStorageNode(StorageNode node) {
@@ -232,6 +234,10 @@ public class Topology extends ZNodeAbstract {
 
         public Datacenter datacenter() {
             return rack.datacenter;
+        }
+
+        public Rack rack() {
+            return rack;
         }
 
         @Override
