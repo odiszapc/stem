@@ -28,7 +28,9 @@ import java.util.*;
 // TODO: add events when topology changes (node added, node failed, node remover, the same for disks, rack, datacenters, etc)
 public class Topology extends ZNodeAbstract {
 
+    //public static final  Factory factory = new Factory();
     private Cluster cluster;
+
 
     public static enum NodeState {
         UNAUTHORIZED, RUNNING, UNAVAILABLE
@@ -42,15 +44,48 @@ public class Topology extends ZNodeAbstract {
     private final EventSubscriber subscriber;
     private final Map<UUID, Datacenter> dataCenters = new HashMap<>();
 
-    public Topology(Cluster cluster) {
-        this.cluster = cluster;
+    public static class Factory {
+
+        public static Topology create(Cluster cluster) {
+            return new Topology(cluster);
+        }
+
+        public static Topology create() {
+            return new Topology();
+        }
+    }
+
+    private Topology(Cluster owner) {
         cache = new Index();
+
         subscriber = new EventSubscriber(this);
-        subscriber.addListener(cache);
-        subscriber.addListener(cluster.topologyListener());
+        subscriber.addListener(getCacheUpdater());
 
-        addDatacenter(new Datacenter("DC1"));
+        setOwner(owner);
+    }
 
+    public void setOwner(Cluster owner) {
+        this.cluster = owner;
+        subscriber.addListener(this.cluster.topologyAutoSaver()); // Add listener after datacenter has been added
+    }
+
+    private Topology() {
+        cache = new Index();
+
+        subscriber = new EventSubscriber(this);
+        subscriber.addListener(getCacheUpdater());
+    }
+
+    private TopologyEventListener getCacheUpdater() {
+        return cache;
+    }
+
+    public void addListener(TopologyEventListener listener) {
+        subscriber.addListener(listener);
+    }
+
+    public void removeListener(TopologyEventListener listener) {
+        subscriber.addListener(listener);
     }
 
     public void attachCluster(Cluster cluster) {
@@ -67,8 +102,8 @@ public class Topology extends ZNodeAbstract {
     }
 
     public void addDatacenter(Datacenter dc) {
-        dc.attachSubscriber(this.subscriber);
         dataCenters.put(dc.id, dc);
+        dc.attachSubscriber(this.subscriber);
         subscriber.onDatacenterAdded(dc);
     }
 
@@ -143,6 +178,14 @@ public class Topology extends ZNodeAbstract {
             rack.datacenter = null;
             subscriber.onRackRemoved(rack);
         }
+
+        @Override
+        protected void attachSubscriber(EventSubscriber subscriber) {
+            super.attachSubscriber(subscriber);
+            for (Rack rack : racks.values()) {
+                rack.attachSubscriber(subscriber);
+            }
+        }
     }
 
     /**
@@ -181,6 +224,14 @@ public class Topology extends ZNodeAbstract {
             node.rack = null;
             subscriber.onStorageNodeRemoved(node);
         }
+
+        @Override
+        protected void attachSubscriber(EventSubscriber subscriber) {
+            super.attachSubscriber(subscriber);
+            for (StorageNode node : storageNodes.values()) {
+                node.attachSubscriber(subscriber);
+            }
+        }
     }
 
     /**
@@ -193,7 +244,7 @@ public class Topology extends ZNodeAbstract {
         String hostname;
         long capacity;
 
-        private NodeState state = NodeState.UNAUTHORIZED;
+        private NodeState state = NodeState.UNAUTHORIZED;  // TODO: persist in Zookeeper
 
         private final Map<UUID, Disk> disks = new HashMap<>();
 
@@ -259,7 +310,7 @@ public class Topology extends ZNodeAbstract {
         long usedBytes = 0;
         long totalBytes = 0;
 
-        private DiskState state;
+        private DiskState state;  // TODO: persist in Zookeeper
 
         public String getPath() {
             return path;

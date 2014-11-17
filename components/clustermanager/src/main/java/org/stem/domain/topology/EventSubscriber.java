@@ -34,9 +34,8 @@ public class EventSubscriber implements TopologyEventListener {
     }
 
     public void removeListener(TopologyEventListener listener) {
-        listeners.add(listener);
+        listeners.remove(listener);
     }
-
 
     @Override
     public void onDatacenterAdded(Topology.Datacenter dc) {

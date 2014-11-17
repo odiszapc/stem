@@ -26,6 +26,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Type that mirroring existing ones in Cluster or Topology core
+ * and used to transfer themselves through network - through REST or Zookeeper
+ */
 public abstract class REST {
 
     @EqualsAndHashCode(callSuper = false)

@@ -27,6 +27,7 @@ import org.stem.utils.Utils;
 
 import javax.ws.rs.core.Response;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -129,14 +130,31 @@ public class RestUtils {
         return new REST.Disk(disk.getId().toString(), disk.getPath(), disk.getUsedBytes(), disk.getTotalBytes());
     }
 
-    public static Topology.Disk extractDisk(REST.Disk diskTransient) {
-        Topology.Disk disk = new Topology.Disk();
-        disk.setId(UUID.fromString(diskTransient.getId()));
-        disk.setPath(diskTransient.getPath());
-        disk.setUsedBytes(diskTransient.getUsed());
-        disk.setTotalBytes(diskTransient.getTotal());
-        disk.setState(Topology.DiskState.SUSPEND);
-        return disk;
+    public static List<Topology.Datacenter> extractDataCenters(REST.Topology topologyTransient) {
+        List<Topology.Datacenter> result = new ArrayList<>();
+        for (REST.Datacenter dcTransient : topologyTransient.getDataCenters()) {
+            result.add(extractDatacenter(dcTransient));
+        }
+        return result;
+    }
+
+    public static Topology.Datacenter extractDatacenter(REST.Datacenter dcTransient) {
+        Topology.Datacenter datacenter = new Topology.Datacenter(dcTransient.getName());
+
+        for (REST.Rack rackTransient : dcTransient.getRacks()) {
+            datacenter.addRack(extractRack(rackTransient));
+        }
+        return datacenter;
+    }
+
+    public static Topology.Rack extractRack(REST.Rack rackTransient) {
+        Topology.Rack rack = new Topology.Rack(rackTransient.getName());
+        rack.setId(rackTransient.getId());
+
+        for (REST.StorageNode nodeTransient : rackTransient.getNodes()) {
+            rack.addStorageNode(extractNode(nodeTransient));
+        }
+        return rack;
     }
 
     public static Topology.StorageNode extractNode(REST.StorageNode nodeTransient) {
@@ -152,6 +170,16 @@ public class RestUtils {
         }
 
         return node;
+    }
+
+    public static Topology.Disk extractDisk(REST.Disk diskTransient) {
+        Topology.Disk disk = new Topology.Disk();
+        disk.setId(UUID.fromString(diskTransient.getId()));
+        disk.setPath(diskTransient.getPath());
+        disk.setUsedBytes(diskTransient.getUsed());
+        disk.setTotalBytes(diskTransient.getTotal());
+        disk.setState(Topology.DiskState.SUSPEND);
+        return disk;
     }
 
     public static TopologyResponse buildTopologyResponse(org.stem.domain.topology.Topology topology) {

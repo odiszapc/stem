@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.ClusterManagerDaemon;
 import org.stem.RestUtils;
+import org.stem.api.REST;
 import org.stem.coordination.*;
 import org.stem.domain.topology.Partitioner;
 import org.stem.domain.topology.TopologyChangesListener;
@@ -50,9 +51,19 @@ public class Cluster {
     @Deprecated
     Topology topology; // TODO: get rid of entirely
 
-    final org.stem.domain.topology.Topology topology2;    // TODO: load topology from Zookeeper
+    org.stem.domain.topology.Topology topology2;    // TODO: load topology from Zookeeper
     Partitioner partitioner;
     private Unauthorized freshNodes = new Unauthorized(this);
+
+    private Cluster() {
+        try {
+            String zookeeperEndpoint = ClusterManagerDaemon.zookeeperEndpoint();
+            this.manager = new Manager(zookeeperEndpoint);
+            this.topology2 = org.stem.domain.topology.Topology.Factory.create(this);
+        } catch (ZooException e) {
+            throw new StemException("Can't initialize Cluster.Manager instance", e);
+        }
+    }
 
     void addStorageNode(org.stem.domain.topology.Topology.StorageNode node, String dcName, String rackName) {
         if (null != topology2.findStorageNode(node.id))
@@ -60,8 +71,13 @@ public class Cluster {
 
         org.stem.domain.topology.Topology.Datacenter datacenter = topology2.findDatacenter(dcName);
         if (null == datacenter) {
-            throw new TopologyException(String.format("Datacenter '%s' can not be found", dcName));
+            if (topology2.dataCenters().isEmpty()) {
+                datacenter = new org.stem.domain.topology.Topology.Datacenter(dcName);
+                topology2.addDatacenter(datacenter);
+            } else
+                throw new TopologyException(String.format("Datacenter '%s' can not be found", dcName));
         }
+
         org.stem.domain.topology.Topology.Rack rack = topology2.findRack(datacenter, rackName);
         if (null == rack) {
             org.stem.domain.topology.Topology.Rack newRack = new org.stem.domain.topology.Topology.Rack(rackName);
@@ -77,7 +93,6 @@ public class Cluster {
     public Unauthorized unauthorized() {
         return freshNodes;
     }
-
 
     public static Cluster instance() {
         return instance;
@@ -165,17 +180,6 @@ public class Cluster {
         }
     }
 
-    private Cluster() {
-        try {
-            String zookeeperEndpoint = ClusterManagerDaemon.zookeeperEndpoint();
-            this.manager = new Manager(zookeeperEndpoint);
-            this.topology2 = new org.stem.domain.topology.Topology(this);
-        } catch (ZooException e) {
-            throw new StemException("Can't initialize Cluster.Manager instance", e);
-        }
-    }
-
-
     public synchronized void addStorageIfNotExist(StorageNode storage)  // replace synchronized with Lock
     {
         try {
@@ -221,8 +225,8 @@ public class Cluster {
         }
     }
 
-    public TopologyEventListener topologyListener() {
-        return manager.topologyListener;
+    public TopologyEventListener topologyAutoSaver() {
+        return manager.topologyPersistingListener;
     }
 
     /**
@@ -233,13 +237,13 @@ public class Cluster {
         final String endpoint;
         private ZookeeperClient client;
 
-        final TopologyEventListener topologyListener;
+        final TopologyEventListener topologyPersistingListener;
 
         public Manager(String endpoint) throws ZooException {
             this.endpoint = endpoint;
             client = ZookeeperClientFactory.newClient(endpoint);
 
-            topologyListener = new TopologyChangesListener() {
+            topologyPersistingListener = new TopologyChangesListener() {
                 @Override
                 public void onTopologyUpdated(org.stem.domain.topology.Topology.Node node) {
                     try {
@@ -274,12 +278,37 @@ public class Cluster {
             validate(persisted);
             descriptor = persisted;
             topology = new Topology(descriptor.name, descriptor.rf);  // TODO: Load topology from zookeeper !!!!!!
+            org.stem.domain.topology.Topology persistedTopo = readTopology();
+            if (null != persistedTopo) {
+                register(persistedTopo);
+            }
 
             initZookeeperPaths();
             state.set(State.INITIALIZED);
 
             startListenForStats();
             return true;
+        }
+
+        private void register(org.stem.domain.topology.Topology persistedTopo) {
+            topology2 = persistedTopo;
+            topology2.setOwner(Cluster.this);
+        }
+
+        // TODO: persist and restore nodes and disks states (Topology.NodeState, Topology.DiskState enums)
+        // TODO: turn off listeners until we load topology ???
+        private org.stem.domain.topology.Topology readTopology() throws Exception {
+
+            REST.Topology topologyTransient = client.readZNodeData(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, REST.Topology.class);
+            if (null == topologyTransient)
+                return null;
+
+            org.stem.domain.topology.Topology result = org.stem.domain.topology.Topology.Factory.create();
+            for (org.stem.domain.topology.Topology.Datacenter datacenter : RestUtils.extractDataCenters(topologyTransient)) {
+                result.addDatacenter(datacenter);
+            }
+
+            return result; // return standalone topology, need to register it on cluster
         }
 
         synchronized void newCluster(Descriptor newDescriptor) throws Exception {

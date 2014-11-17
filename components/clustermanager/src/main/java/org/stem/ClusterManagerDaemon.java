@@ -194,6 +194,7 @@ public class ClusterManagerDaemon {
         try {
             zookeeperClient.createIfNotExists(ZookeeperPaths.ASYNC_REQUESTS);
             zookeeperClient.createIfNotExists(ZookeeperPaths.CLUSTER);
+            zookeeperClient.createIfNotExists(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH);
             //client.createIfNotExists(ZooConstants.CLUSTER_DESCRIPTOR_PATH);
         } catch (ZooException e) {
             throw new StemException("Failed connect to Zookeeper", e);
