@@ -109,7 +109,7 @@ public class ClusterResource {
 
     @POST
     @Path(RESTConstants.Api.Cluster.Approve.BASE)
-    public Response approve(AuthorizeNodeRequest req) throws Exception {
+    public Response approveUnauthorized(AuthorizeNodeRequest req) throws Exception {
         Cluster cluster = Cluster.instance().ensureInitialized();
 
         String datacenter = req.getDatacenter();
