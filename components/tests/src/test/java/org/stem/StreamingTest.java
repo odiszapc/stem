@@ -135,7 +135,7 @@ public class StreamingTest extends IntegrationTestBase {
 
         JoinRequest req = new JoinRequest();
         REST.StorageNode node = req.getNode();
-        node.setListen(StorageNodeDescriptor.getNodeListen(), StorageNodeDescriptor.getNodePort() + portIndex++);
+        node.setListen(StorageNodeDescriptor.getNodeListenAddress(), StorageNodeDescriptor.getNodeListenPort() + portIndex++);
 
         for (InetAddress ipAddress : ipAddresses) {
             node.getIpAddresses().add(ipAddress.toString());

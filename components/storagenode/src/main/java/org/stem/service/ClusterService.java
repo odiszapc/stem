@@ -78,7 +78,7 @@ public class ClusterService {
         REST.StorageNode node = req.getNode();
         node.setId(StorageNodeDescriptor.id);
         node.setHostname(Utils.getMachineHostname());
-        node.setListen(StorageNodeDescriptor.getNodeListen() + ':' + StorageNodeDescriptor.getNodePort());
+        node.setListen(StorageNodeDescriptor.getNodeListenAddress() + ':' + StorageNodeDescriptor.getNodeListenPort());
 
         for (InetAddress ipAddress : ipAddresses) {
             node.getIpAddresses().add(ipAddress.toString());

@@ -16,6 +16,7 @@
 
 package org.stem.domain;
 
+import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.ClusterManagerDaemon;
@@ -32,12 +33,28 @@ import org.stem.utils.TopologyUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 // TODO: Init zookeeper client when cluster has been started?
 public class Cluster {
 
     private static final Logger logger = LoggerFactory.getLogger(Cluster.class);
+
+
+    // TODO: 1. Handle the situation when storage already exists but new disk were added
+    // TODO: 2. Handle the situation when storage is new but its disks are already attached to another storage
+    // TODO:    (maybe disk was moved)
+    public void approve(UUID eventId, UUID nodeId) {
+        freshNodes.approveExisting(eventId);
+        manager.createStateListener(nodeId);
+    }
+
+    public Event.Join approve(UUID nodeId, String datacenter, String rack) {
+        Event.Join result = freshNodes.approveNew(nodeId, datacenter, rack);
+        manager.createStateListener(nodeId);
+        return result;
+    }
 
     public static enum State {
         UNINITIALIZED, INITIALIZING, INITIALIZED
@@ -180,22 +197,13 @@ public class Cluster {
         }
     }
 
-    public synchronized void addStorageIfNotExist(StorageNode storage)  // replace synchronized with Lock
-    {
-        try {
-            manager.addStorageIfNotExist(storage);
-        } catch (Exception e) {
-            throw new StemException("Can nod add storage node", e);
-        }
-    }
-
-    public Collection<StorageNode> getStorageNodes() {
-        return topology.getStorages();
+    public Collection<org.stem.domain.topology.Topology.StorageNode> getStorageNodes() {
+        return topology2.getStorageNodes();
     }
 
     public long getUsedBytes() {
         long sum = 0;
-        for (StorageNode node : getStorageNodes()) {
+        for (org.stem.domain.topology.Topology.StorageNode node : getStorageNodes()) {
             sum += node.getUsedBytes();
         }
         return sum;
@@ -203,7 +211,7 @@ public class Cluster {
 
     public long getTotalBytes() {
         long sum = 0;
-        for (StorageNode node : getStorageNodes()) {
+        for (org.stem.domain.topology.Topology.StorageNode node : getStorageNodes()) {
             sum += node.getTotalBytes();
         }
         return sum;
@@ -218,11 +226,19 @@ public class Cluster {
         }
     }
 
-    public void updateStat(StorageStat stat) {
-        if (topology.storageExists(stat.getEndpoint())) {
-            StorageNode node = topology.getStorage(stat.getEndpoint());
-            node.setDisks(stat.getDisks()); // TODO: Check disks existence
+    // Update only numbers, not entities
+    public void updateStat(REST.StorageNode stat) {
+        org.stem.domain.topology.Topology.StorageNode node = topology2.findStorageNode(stat.getId());
+        if (null != node) {
+            for (REST.Disk diskStat : stat.getDisks()) {
+                org.stem.domain.topology.Topology.Disk disk = topology2.findDisk(UUID.fromString(diskStat.getId()));
+                if (null != disk) {
+                    disk.setUsedBytes(diskStat.getUsed());
+                    disk.setTotalBytes(diskStat.getUsed());
+                }
+            }
         }
+        // TODO: Check disks existence
     }
 
     public TopologyEventListener topologyAutoSaver() {
@@ -343,30 +359,6 @@ public class Cluster {
             client.createNode(ZookeeperPaths.CLUSTER, descriptor);
         }
 
-        private void addStorageIfNotExist(StorageNode storage) throws Exception {
-            ensureInitialized();
-
-            if (!topology.storageExists(storage)) {
-                topology.addStorage(storage);
-
-                // TODO: StorageNode vs. StorageStat vs. JoinRequest = combine ?
-
-                StorageStat nodeStat = new StorageStat(storage.getIpAddress(), storage.getPort());
-                for (Disk disk : storage.getDisks()) {
-                    DiskStat diskStat = new DiskStat(disk.getId());
-                    diskStat.setPath(disk.getPath());
-                    diskStat.setTotalBytes(disk.getTotalBytes());
-                    diskStat.setUsedBytes(disk.getUsedBytes());
-                    nodeStat.getDisks().add(diskStat);
-                }
-
-                client.createNodeIfNotExists(ZookeeperPaths.CLUSTER, nodeStat);
-            }
-            // TODO: 1. Handle the situation when storage already exists but new disk were added
-            // TODO: 2. Handle the situation when storage is new but its disks are already attached to another storage
-            // TODO:    (maybe disk was moved)
-        }
-
         private void computeMapping() throws Exception {
             ensureInitialized();
 
@@ -443,6 +435,17 @@ public class Cluster {
 
         public ZookeeperClient getZookeeperClient() {
             return client;
+        }
+
+        private void createStateListener(UUID nodeId) {
+            try {
+                org.stem.domain.topology.Topology.StorageNode node = topology2.findStorageNode(nodeId);
+                if (null != node)
+                    client.createNodeIfNotExists(ZookeeperPaths.STAT, RestUtils.packNode(node));
+
+            } catch (Exception e) {
+                Throwables.propagate(e);
+            }
         }
     }
 

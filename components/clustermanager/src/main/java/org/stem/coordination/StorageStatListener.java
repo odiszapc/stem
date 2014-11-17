@@ -16,27 +16,28 @@
 
 package org.stem.coordination;
 
+import org.stem.api.REST;
 import org.stem.domain.Cluster;
 
-public class StorageStatListener extends ZookeeperEventListener<StorageStat> {
+public class StorageStatListener extends ZookeeperEventListener<REST.StorageNode> {
 
     @Override
-    public Class<StorageStat> getBaseClass() {
-        return StorageStat.class;
+    public Class<REST.StorageNode> getBaseClass() {
+        return REST.StorageNode.class;
     }
 
     @Override
-    protected void onChildAdded(StorageStat stat) {
+    protected void onChildAdded(REST.StorageNode stat) {
         Cluster.instance.updateStat(stat);
     }
 
     @Override
-    protected void onChildUpdated(StorageStat stat) {
+    protected void onChildUpdated(REST.StorageNode stat) {
         Cluster.instance.updateStat(stat);
     }
 
     @Override
-    protected void onChildRemoved(StorageStat stat) {
+    protected void onChildRemoved(REST.StorageNode stat) {
         // TODO:
     }
 

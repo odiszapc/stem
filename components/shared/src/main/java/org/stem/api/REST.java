@@ -69,7 +69,7 @@ public abstract class REST {
     @Data
     @RequiredArgsConstructor
     @NoArgsConstructor
-    public static class StorageNode {
+    public static class StorageNode extends ZNodeAbstract {
 
         @NonNull UUID id;
         @NonNull String hostname;
@@ -91,6 +91,11 @@ public abstract class REST {
 
         public void setListen(String host, int port) {
             this.listen = host + ':' + port;
+        }
+
+        @Override
+        public String name() {
+            return id.toString();
         }
     }
 

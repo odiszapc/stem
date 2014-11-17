@@ -76,7 +76,7 @@ public class Unauthorized {
             return meta;
     }
 
-    public Event.Join approve(UUID id, String datacenter, String rack) {
+    public Event.Join approveNew(UUID id, String datacenter, String rack) {
         synchronized (cluster) {
             NodeInsertMeta meta = getMeta(id);
             EventFuture future = meta.future();
@@ -103,7 +103,7 @@ public class Unauthorized {
         }
     }
 
-    public Event.Join approveExistingNode(Topology.StorageNode node, UUID uuid) {
+    public Event.Join approveExisting(UUID uuid) {
         try {
             synchronized (cluster) {
                 EventFuture future = EventManager.instance.readSubscription(uuid);

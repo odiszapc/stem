@@ -57,24 +57,12 @@ public class RestUtils {
         response.getCluster().setUsedBytes(cluster.getUsedBytes());
         response.getCluster().setTotalBytes(cluster.getTotalBytes());
 
-        for (org.stem.domain.StorageNode node : cluster.getStorageNodes()) {
-            ClusterResponse.Storage storageREST = new ClusterResponse.Storage(
-                    node.getIpAddress(),
-                    node.getPort(),
-                    node.getUsedBytes(),
-                    node.getTotalBytes()
-            );
 
-            if (attachDiskStat) {
-                for (org.stem.domain.Disk disk : node.getDisks()) {
-                    ClusterResponse.Disk diskREST = new ClusterResponse.Disk();
-                    diskREST.setId(disk.getId());
-                    diskREST.setPath(disk.getPath());
-                    diskREST.setUsedBytes(disk.getUsedBytes());
-                    diskREST.setTotalBytes(disk.getTotalBytes());
-                    storageREST.getDisks().add(diskREST);
-                }
-            }
+        for (org.stem.domain.topology.Topology.StorageNode node : cluster.getStorageNodes()) {
+            REST.StorageNode storageREST = packNode(node);
+
+            if (!attachDiskStat)
+                storageREST.getDisks().clear();
 
             response.getCluster().getNodes().add(storageREST);
         }

@@ -43,6 +43,10 @@ public class StorageNodeDescriptor {
     private static MetaStoreClient metaStoreClient;
     public static UUID id;
 
+    public static UUID getID() {
+        return id;
+    }
+
     static {
         loadConfig();
         loadOrCreateMeta();
@@ -113,11 +117,11 @@ public class StorageNodeDescriptor {
         return config.blob_mount_points;
     }
 
-    public static String getNodeListen() {
+    public static String getNodeListenAddress() { // TODO: change config parameter name according to this method's name
         return config.node_listen;
     }
 
-    public static Integer getNodePort() {
+    public static Integer getNodeListenPort() { // TODO: change config parameter name according to this method's name
         return config.node_port;
     }
 

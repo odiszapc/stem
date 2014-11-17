@@ -69,8 +69,8 @@ public class StorageNodeDaemon {
         }
 
         server = new Server(
-                StorageNodeDescriptor.getNodeListen(),
-                StorageNodeDescriptor.getNodePort());
+                StorageNodeDescriptor.getNodeListenAddress(),
+                StorageNodeDescriptor.getNodeListenPort());
     }
 
     private void startService() {

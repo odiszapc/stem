@@ -17,6 +17,8 @@
 package org.stem.api.response;
 
 
+import org.stem.api.REST;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +40,7 @@ public class ClusterResponse extends StemResponse {
         long usedBytes;
         long totalBytes;
 
-        List<Storage> nodes = new ArrayList<Storage>();
+        List<REST.StorageNode> nodes = new ArrayList<REST.StorageNode>();
 
         public String getName() {
             return name;
@@ -96,11 +98,11 @@ public class ClusterResponse extends StemResponse {
             this.totalBytes = totalBytes;
         }
 
-        public List<Storage> getNodes() {
+        public List<REST.StorageNode> getNodes() {
             return nodes;
         }
 
-        public void setNodes(List<Storage> nodes) {
+        public void setNodes(List<REST.StorageNode> nodes) {
             this.nodes = nodes;
         }
 
@@ -114,99 +116,6 @@ public class ClusterResponse extends StemResponse {
                     ", totalBytes=" + totalBytes +
                     ", nodes=" + nodes +
                     '}';
-        }
-    }
-
-    public static class Storage {
-
-        String endpoint;
-        long usedBytes;
-        long totalBytes;
-
-        List<Disk> disks = new ArrayList<Disk>();
-
-        public Storage() {
-        }
-
-        public Storage(String ip, int port, long used, long total) {
-            endpoint = ip + ":" + port;
-            usedBytes = used;
-            totalBytes = total;
-        }
-
-        public String getEndpoint() {
-            return endpoint;
-        }
-
-        public void setEndpoint(String endpoint) {
-            this.endpoint = endpoint;
-        }
-
-        public long getUsedBytes() {
-            return usedBytes;
-        }
-
-        public void setUsedBytes(long usedBytes) {
-            this.usedBytes = usedBytes;
-        }
-
-        public long getTotalBytes() {
-            return totalBytes;
-        }
-
-        public void setTotalBytes(long totalBytes) {
-            this.totalBytes = totalBytes;
-        }
-
-        public List<Disk> getDisks() {
-            return disks;
-        }
-
-        public void setDisks(List<Disk> disks) {
-            this.disks = disks;
-        }
-    }
-
-    public static class Disk {
-
-        String id;
-        String path;
-        long usedBytes;
-        long totalBytes;
-
-        public Disk() {
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public void setId(String id) {
-            this.id = id;
-        }
-
-        public String getPath() {
-            return path;
-        }
-
-        public void setPath(String path) {
-            this.path = path;
-        }
-
-        public long getUsedBytes() {
-            return usedBytes;
-        }
-
-        public void setUsedBytes(long usedBytes) {
-            this.usedBytes = usedBytes;
-        }
-
-        public long getTotalBytes() {
-            return totalBytes;
-        }
-
-        public void setTotalBytes(long totalBytes) {
-            this.totalBytes = totalBytes;
         }
     }
 }

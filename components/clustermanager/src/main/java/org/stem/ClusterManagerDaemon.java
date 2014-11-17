@@ -192,9 +192,8 @@ public class ClusterManagerDaemon {
 
     private void initZookeeperPaths() {
         try {
-            zookeeperClient.createIfNotExists(ZookeeperPaths.ASYNC_REQUESTS);
-            zookeeperClient.createIfNotExists(ZookeeperPaths.CLUSTER);
-            zookeeperClient.createIfNotExists(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH);
+            for (String path : ZookeeperPaths.containerNodes())
+                zookeeperClient.createIfNotExists(path);
             //client.createIfNotExists(ZooConstants.CLUSTER_DESCRIPTOR_PATH);
         } catch (ZooException e) {
             throw new StemException("Failed connect to Zookeeper", e);
@@ -214,9 +213,9 @@ public class ClusterManagerDaemon {
         final ServerConfiguration config = server.getServerConfiguration();
         final HttpHandler handler = ContainerFactory.createContainer(HttpHandler.class, resourceCfg);
 
-        if (handler != null) {
+        if (handler != null)
             config.addHttpHandler(handler, uri.getPath());
-        }
+
         return server;
     }
 

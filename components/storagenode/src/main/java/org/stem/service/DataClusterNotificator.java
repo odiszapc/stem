@@ -18,14 +18,23 @@ package org.stem.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.stem.api.REST;
 import org.stem.coordination.*;
 import org.stem.db.Layout;
 import org.stem.db.MountPoint;
 import org.stem.db.StorageNodeDescriptor;
+import org.stem.utils.Utils;
+
+import java.util.Collection;
+
+import static org.stem.db.StorageNodeDescriptor.getNodeListenAddress;
+import static org.stem.db.StorageNodeDescriptor.getNodeListenPort;
+import static org.stem.db.StorageNodeDescriptor.id;
 
 public class DataClusterNotificator implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(DataClusterNotificator.class);
+    private static final int DELAY_MS = 1000;
 
     ZookeeperClient client; // TODO: the client instance must be a singleton ???
 
@@ -47,29 +56,34 @@ public class DataClusterNotificator implements Runnable {
     }
 
     private void doWork() throws Exception {
-        StorageStat stat = new StorageStat(StorageNodeDescriptor.getNodeListen(), StorageNodeDescriptor.getNodePort());
-
-        for (MountPoint mp : Layout.getInstance().getMountPoints().values()) {
-            DiskStat disk = new DiskStat(mp.uuid.toString());
-            disk.setPath(mp.getPath());
-            disk.setTotalBytes(mp.getAllocatedSizeInBytes());
-            disk.setUsedBytes(mp.getTotalSizeInBytes());
-            stat.getDisks().add(disk);
-        }
-
         // Stub to test progress bars oscillating values
 //        int from = 60;
 //        int to = 80;
 //        double ratio = Math.random() * (to-from) + from;
 //        stat.getDisks().get(0).setUsedBytes(Math.round(stat.getDisks().get(0).getUsedBytes() * ratio/100));
         // Stub
+        REST.StorageNode stat = packNode(Layout.getInstance().getMountPoints().values());
+        client.updateNode(ZookeeperPaths.STAT, stat);
+    }
 
-        client.updateNode(ZookeeperPaths.CLUSTER, stat);
+    private static REST.StorageNode packNode(Collection<MountPoint> disks) {
+        REST.StorageNode result = new REST.StorageNode(id, Utils.getMachineHostname(),
+                getNodeListenAddress() + ':' + getNodeListenPort(), 0l);
+
+        long total = 0;
+        for (MountPoint mp : disks) {
+            total += mp.getAllocatedSizeInBytes();
+            REST.Disk disk = new REST.Disk(mp.getId().toString(), mp.getPath(),
+                    mp.getTotalSizeInBytes(), mp.getAllocatedSizeInBytes()); // TODO: think about TotalSizeInBytes... it should be ...used...
+            result.getDisks().add(disk);
+        }
+        result.setCapacity(total);
+        return result;
     }
 
     private void sleep() {
         try {
-            Thread.sleep(1000);
+            Thread.sleep(DELAY_MS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

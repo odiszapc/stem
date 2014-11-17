@@ -44,6 +44,10 @@ public class MountPoint {
 
     private DataTracker dataTracker;
 
+    public UUID getId() {
+        return uuid;
+    }
+
     public DataTracker getDataTracker() {
         return dataTracker;
     }

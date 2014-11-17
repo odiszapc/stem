@@ -89,7 +89,7 @@ public class ClusterResource {
             cluster.unauthorized().add(node, future);
         } else {
             // TODO: check node status
-            cluster.unauthorized().approveExistingNode(node, future.eventId());
+            cluster.approve(future.eventId(), node.getId());
         }
 
         return RestUtils.ok(new JoinResponse(future.eventId()));
@@ -115,7 +115,7 @@ public class ClusterResource {
         String datacenter = req.getDatacenter();
         String rack = req.getRack();
 
-        Event.Join response = cluster.unauthorized().approve(req.getNodeId(), datacenter, rack);
+        Event.Join response = cluster.approve(req.getNodeId(), datacenter, rack);
         return RestUtils.ok(response); // TODO: return an empty result on success as we usual do?
     }
 

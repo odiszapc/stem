@@ -308,6 +308,22 @@ public class Topology extends ZNodeAbstract {
                 disk.attachSubscriber(subscriber);
             }
         }
+
+        public long getUsedBytes() {
+            long result = 0;
+            for (Disk disk : disks.values()) {
+                result += disk.getUsedBytes();
+            }
+            return result;
+        }
+
+        public long getTotalBytes() {
+            long result = 0;
+            for (Disk disk : disks.values()) {
+                result += disk.getTotalBytes();
+            }
+            return result;
+        }
     }
 
     /**
@@ -564,5 +580,9 @@ public class Topology extends ZNodeAbstract {
 
     public Disk findDisk(UUID id) {
         return cache.findDisk(id);
+    }
+
+    public Collection<StorageNode> getStorageNodes() {
+        return cache.findAllStorageNodes();
     }
 }

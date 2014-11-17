@@ -87,8 +87,8 @@ public class StreamManager {
             String host = Utils.getHost(session.endpoint);
             int port = Utils.getPort(session.endpoint);
             if (!(
-                    StorageNodeDescriptor.getNodeListen().equals(host) &&
-                            StorageNodeDescriptor.getNodePort() == port)) {
+                    StorageNodeDescriptor.getNodeListenAddress().equals(host) &&
+                            StorageNodeDescriptor.getNodeListenPort() == port)) {
                 return;
             }
 
