@@ -37,5 +37,5 @@ public interface AlgorithmAdapter<
     NODE_OUT convertNode(NODE_IN src);
     REPLICA_SET_OUT convertReplicaSet(REPLICA_SET_IN src);
     TOPOLOGY_OUT convertTopology(TOPOLOGY_IN src);
-    Map<BUCKET_OUT, Topology.ReplicaSet> computeMapping(List<BUCKET_IN> dataset, int rf, TOPOLOGY_IN topology);
+    public Map<BUCKET_OUT, Topology.ReplicaSet> computeMapping(List<BUCKET_IN> dataset, int rf, TOPOLOGY_IN topology);
 }

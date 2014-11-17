@@ -276,6 +276,27 @@ public class Cluster {
 
         }
 
+        synchronized void newCluster(Descriptor newDescriptor) throws Exception {
+            if (!state.compareAndSet(State.UNINITIALIZED, State.INITIALIZING)) {
+                // We race with another initialization, it's ok
+                throw produceInitError(state.get());
+            }
+
+            ensureInitializing();
+
+            tryStartZookeeperClient();
+
+            validate(newDescriptor);
+            descriptor = newDescriptor;
+            topology = new Topology(descriptor.name, descriptor.rf);
+            partitioner = descriptor.partitioner.builder.build();
+
+            initZookeeperPaths();
+            state.set(State.INITIALIZED);
+
+            startListenForStats();
+        }
+
         synchronized boolean loadCluster() throws Exception {
             if (!state.compareAndSet(State.UNINITIALIZED, State.INITIALIZING)) {
                 // We race with another initialization, it's ok
@@ -293,7 +314,8 @@ public class Cluster {
 
             validate(persisted);
             descriptor = persisted;
-            topology = new Topology(descriptor.name, descriptor.rf);  // TODO: Load topology from zookeeper !!!!!!
+            topology = new Topology(descriptor.name, descriptor.rf);
+            partitioner = descriptor.partitioner.builder.build();
             org.stem.domain.topology.Topology persistedTopo = readTopology();
             if (null != persistedTopo) {
                 register(persistedTopo);
@@ -325,27 +347,6 @@ public class Cluster {
             }
 
             return result; // return standalone topology, need to register it on cluster
-        }
-
-        synchronized void newCluster(Descriptor newDescriptor) throws Exception {
-            if (!state.compareAndSet(State.UNINITIALIZED, State.INITIALIZING)) {
-                // We race with another initialization, it's ok
-                throw produceInitError(state.get());
-            }
-
-            ensureInitializing();
-
-            tryStartZookeeperClient();
-
-            validate(newDescriptor);
-            descriptor = newDescriptor;
-            topology = new Topology(descriptor.name, descriptor.rf);
-            partitioner = descriptor.partitioner.builder.build();
-
-            initZookeeperPaths();
-            state.set(State.INITIALIZED);
-
-            startListenForStats();
         }
 
         private void startListenForStats() throws Exception {
