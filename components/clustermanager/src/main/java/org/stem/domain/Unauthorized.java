@@ -108,7 +108,7 @@ public class Unauthorized {
         try {
             synchronized (cluster) {
                 EventFuture future = EventManager.instance.readSubscription(uuid);
-                Event.Join result = success("Existing node has successfully joined back the cluster");
+                Event.Join result = success("Existing node has successfully joined back to cluster");
                 future.setResult(result);
                 return result;
             }

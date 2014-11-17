@@ -105,6 +105,16 @@ public class Topology extends ZNodeAbstract {
         dataCenters.put(dc.id, dc);
         dc.attachSubscriber(this.subscriber);
         subscriber.onDatacenterAdded(dc);
+        for (Rack rack : dc.racks()) {
+            subscriber.onRackAdded(rack);
+            for (StorageNode node : rack.storageNodes()) {
+                subscriber.onStorageNodeAdded(node);
+                for (Disk disk : node.disks()) {
+                    subscriber.onDiskAdded(disk);
+                }
+            }
+        }
+
     }
 
     public void removeDatacenter(Datacenter dc) {
