@@ -34,14 +34,14 @@ public class DistributionManager {
         this.cluster = cluster;
     }
 
-    public synchronized void computeDataMap() {
+    public synchronized void computeMapping() {
         computeDataMap(cluster.descriptor().rf, cluster.descriptor().vBuckets, cluster.topology());
     }
 
     private void computeDataMap(int rf, int buckets, org.stem.domain.topology.Topology topology) {
         List<Long> longs = prepareBucketsArray(buckets);
 
-        Map map = partitioner.algorithm().computeMapping(longs, rf, topology);
+        Map map = (Map<Long, org.stem.domain.topology.Topology.ReplicaSet>) partitioner.algorithm().computeMapping(longs, rf, topology);
     }
 
     private static List<Long> prepareBucketsArray(int buckets) {

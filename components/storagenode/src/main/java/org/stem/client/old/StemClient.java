@@ -56,10 +56,10 @@ public class StemClient implements TopoMapSubscriber {
             metaClient.start();
             zooClient.start();
             // TODO: get mappings directly
-            mapping = zooClient.readZNodeData(ZookeeperPaths.TOPOLOGY + "/" + ZookeeperPaths.TOPO_MAP, TopoMapping.class);
+            mapping = zooClient.readZNodeData(ZookeeperPaths.MAPPING, TopoMapping.class);
             mappingChanged(mapping);
 
-            zooClient.listenForZNode(ZookeeperPaths.TOPOLOGY + "/" + ZookeeperPaths.TOPO_MAP, mappingListener);
+            zooClient.listenForZNode(ZookeeperPaths.MAPPING, mappingListener);
         } catch (Exception e) {
             throw new RuntimeException("Can not start Stem client", e);
         }

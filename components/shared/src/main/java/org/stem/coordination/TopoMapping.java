@@ -40,7 +40,7 @@ public class TopoMapping extends ZNodeAbstract {
 
     @Override
     public String name() {
-        return ZookeeperPaths.TOPO_MAP;
+        return ZookeeperPaths.MAPPING;
     }
 
     public TopoMapping() {

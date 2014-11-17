@@ -27,7 +27,7 @@ import java.util.Arrays;
  * ......descriptor  (name, rf, buckets, zookeeper_endpoint)
  * ......topology    (cluster topology tree: DC -> RACK -> NODE -> DISK)
  * ......stat        (nodes post their state to child ZNodes)
- * ....mappings      (data mappings)
+ * ....mapping       (data mapping)
  * ....streaming
  * ......out
  * ......in
@@ -44,7 +44,7 @@ public class ZookeeperPaths {
     public static final String CLUSTER_TOPOLOGY = "topology";
     public static final String CLUSTER_TOPOLOGY_PATH = CLUSTER + '/' + CLUSTER_TOPOLOGY;
     public static final String STAT = CLUSTER + "/stat";
-    public static final String TOPOLOGY = CLUSTER_MANAGER + "/topology"; // TODO: rename to '/mappings/
+    public static final String MAPPING = CLUSTER_MANAGER + "/mapping"; // TODO: rename to '/mappings/
     public static final String OUT_SESSIONS = CLUSTER_MANAGER + "/streaming/out";
     public static final String IN_SESSIONS = CLUSTER_MANAGER + "/streaming/in"; // TODO: do we really need this? It's pseudo session
     public static final String ASYNC_REQUESTS = CLUSTER_MANAGER + "/async_requests";

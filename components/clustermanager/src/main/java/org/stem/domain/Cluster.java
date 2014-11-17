@@ -70,6 +70,8 @@ public class Cluster {
 
     org.stem.domain.topology.Topology topology2;    // TODO: load topology from Zookeeper
     Partitioner partitioner;
+    private DistributionManager distributionManager;
+
     private Unauthorized freshNodes = new Unauthorized(this);
 
     private Cluster() {
@@ -220,7 +222,7 @@ public class Cluster {
     public synchronized void computeMapping() // TODO: synchronized is BAD
     {
         try {
-            manager.computeMapping();
+            manager.computeMapping2();
         } catch (Exception e) {
             throw new StemException("Compute mapping failed", e);
         }
@@ -290,6 +292,7 @@ public class Cluster {
             descriptor = newDescriptor;
             topology = new Topology(descriptor.name, descriptor.rf);
             partitioner = descriptor.partitioner.builder.build();
+            distributionManager = new DistributionManager(partitioner, Cluster.this);
 
             initZookeeperPaths();
             state.set(State.INITIALIZED);
@@ -316,6 +319,8 @@ public class Cluster {
             descriptor = persisted;
             topology = new Topology(descriptor.name, descriptor.rf);
             partitioner = descriptor.partitioner.builder.build();
+            distributionManager = new DistributionManager(partitioner, Cluster.this);
+
             org.stem.domain.topology.Topology persistedTopo = readTopology();
             if (null != persistedTopo) {
                 register(persistedTopo);
@@ -360,12 +365,13 @@ public class Cluster {
             client.createNode(ZookeeperPaths.CLUSTER, descriptor);
         }
 
+        @Deprecated
         private void computeMapping() throws Exception {
             ensureInitialized();
 
             topology.computeMappings(descriptor.vBuckets);
             TopoMapping topoMap = TopologyUtils.buildTopoMap(topology);
-            client.updateNode(ZookeeperPaths.TOPOLOGY, topoMap);
+            client.updateNode(ZookeeperPaths.MAPPING, topoMap);
 
             List<StreamSession> sessions = topology.computeStreamingSessions();
 
@@ -373,6 +379,12 @@ public class Cluster {
             for (StreamSession s : sessions) {
                 client.createNodeIfNotExists(ZookeeperPaths.OUT_SESSIONS, s);
             }
+        }
+
+        private void computeMapping2() throws Exception {
+            ensureInitialized();
+
+            distributionManager.computeMapping();
         }
 
         private void ensureUninitialized() {
@@ -408,8 +420,8 @@ public class Cluster {
         }
 
         private void initZookeeperPaths() throws Exception {
-            //client.createIfNotExists(ZooConstants.TOPOLOGY + "/" + ZooConstants.TOPO_MAP);
-            client.createNodeIfNotExists(ZookeeperPaths.TOPOLOGY, new TopoMapping());
+            //client.createIfNotExists(ZooConstants.MAPPING);
+            client.createNodeIfNotExists(ZookeeperPaths.MAPPING, new TopoMapping());
             client.createIfNotExists(ZookeeperPaths.OUT_SESSIONS);
         }
 
