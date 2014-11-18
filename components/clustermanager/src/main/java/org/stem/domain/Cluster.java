@@ -23,6 +23,7 @@ import org.stem.ClusterManagerDaemon;
 import org.stem.RestUtils;
 import org.stem.api.REST;
 import org.stem.coordination.*;
+import org.stem.domain.topology.DataMapping;
 import org.stem.domain.topology.Partitioner;
 import org.stem.domain.topology.TopologyChangesListener;
 import org.stem.domain.topology.TopologyEventListener;
@@ -40,7 +41,6 @@ import java.util.concurrent.atomic.AtomicReference;
 public class Cluster {
 
     private static final Logger logger = LoggerFactory.getLogger(Cluster.class);
-
 
     // TODO: 1. Handle the situation when storage already exists but new disk were added
     // TODO: 2. Handle the situation when storage is new but its disks are already attached to another storage
@@ -70,7 +70,7 @@ public class Cluster {
 
     org.stem.domain.topology.Topology topology2;    // TODO: load topology from Zookeeper
     Partitioner partitioner;
-    private DistributionManager distributionManager;
+    private DataDistributionManager distributionManager;
 
     private Unauthorized freshNodes = new Unauthorized(this);
 
@@ -222,7 +222,7 @@ public class Cluster {
     public synchronized void computeMapping() // TODO: synchronized is BAD
     {
         try {
-            manager.computeMapping2();
+            manager.recalculateDataMapping();
         } catch (Exception e) {
             throw new StemException("Compute mapping failed", e);
         }
@@ -292,7 +292,7 @@ public class Cluster {
             descriptor = newDescriptor;
             topology = new Topology(descriptor.name, descriptor.rf);
             partitioner = descriptor.partitioner.builder.build();
-            distributionManager = new DistributionManager(partitioner, Cluster.this);
+            distributionManager = new DataDistributionManager(partitioner, Cluster.this);
 
             initZookeeperPaths();
             state.set(State.INITIALIZED);
@@ -319,7 +319,7 @@ public class Cluster {
             descriptor = persisted;
             topology = new Topology(descriptor.name, descriptor.rf);
             partitioner = descriptor.partitioner.builder.build();
-            distributionManager = new DistributionManager(partitioner, Cluster.this);
+            distributionManager = new DataDistributionManager(partitioner, Cluster.this);
 
             org.stem.domain.topology.Topology persistedTopo = readTopology();
             if (null != persistedTopo) {
@@ -381,10 +381,13 @@ public class Cluster {
             }
         }
 
-        private void computeMapping2() throws Exception {
+        private void recalculateDataMapping() throws Exception {
             ensureInitialized();
 
-            distributionManager.computeMapping();
+            DataMapping mapping = distributionManager.computeMapping();
+
+
+            // TODO: here
         }
 
         private void ensureUninitialized() {

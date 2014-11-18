@@ -46,6 +46,7 @@ public class CrushAdapter implements AlgorithmAdapter<Long, Long, Topology.Node,
         node.setWeight(100);
         node.setType(NodeType.fromClass(src.getClass()).code);
         node.setSelection(Node.Selection.STRAW);
+        node.setChildren(new ArrayList<Node>());
         return node;
     }
 

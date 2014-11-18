@@ -66,6 +66,7 @@ public abstract class REST {
         final List<StorageNode> nodes = new ArrayList<>();
     }
 
+    @EqualsAndHashCode(callSuper = false)
     @Data
     @RequiredArgsConstructor
     @NoArgsConstructor
@@ -108,5 +109,12 @@ public abstract class REST {
         @NonNull String path;
         @NonNull long used;
         @NonNull long total;
+    }
+
+    @Data
+    @RequiredArgsConstructor
+    @NoArgsConstructor
+    public static class ReplicaSet {
+        final List<Disk> disks = new ArrayList<>();
     }
 }

@@ -17,31 +17,38 @@
 package org.stem.domain;
 
 import org.stem.domain.topology.*;
+import org.stem.domain.topology.Topology;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public class DistributionManager {
+public class DataDistributionManager {
 
     final Partitioner partitioner;
+    private final Topology topology;
     private Cluster cluster;
     private ArrayBalancer keysDistributor;
 
-    public DistributionManager(Partitioner partitioner, Cluster cluster) {
+    public DataDistributionManager(Partitioner partitioner, Cluster cluster) {
         this.partitioner = partitioner;
         this.cluster = cluster;
+        this.topology = cluster.topology();
     }
 
-    public synchronized void computeMapping() {
-        computeDataMap(cluster.descriptor().rf, cluster.descriptor().vBuckets, cluster.topology());
+    public synchronized DataMapping computeMapping() {
+        return computeDataMapping(cluster.descriptor().rf, cluster.descriptor().vBuckets, topology);
     }
 
-    private void computeDataMap(int rf, int buckets, org.stem.domain.topology.Topology topology) {
+    private DataMapping computeDataMapping(int rf, int buckets, org.stem.domain.topology.Topology topology) {
         List<Long> longs = prepareBucketsArray(buckets);
 
-        Map map = (Map<Long, org.stem.domain.topology.Topology.ReplicaSet>) partitioner.algorithm().computeMapping(longs, rf, topology);
+        DataMapping result = new DataMapping();
+        Map<Long, org.stem.domain.topology.Topology.ReplicaSet> map = (Map<Long, org.stem.domain.topology.Topology.ReplicaSet>) partitioner.algorithm().computeMapping(longs, rf, topology);
+        for (Map.Entry<Long, Topology.ReplicaSet> entry : map.entrySet()) {
+            result.getMap().put(entry.getKey(), entry.getValue());
+        }
+        return result;
     }
 
     private static List<Long> prepareBucketsArray(int buckets) {

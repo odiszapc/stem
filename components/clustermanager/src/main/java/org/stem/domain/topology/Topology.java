@@ -383,17 +383,26 @@ public class Topology extends ZNodeAbstract {
         }
     }
 
-    public static class ReplicaSet {
+    public static class ReplicaSet implements Iterable<Disk> {
 
         public final List<Disk> disks;
 
         public ReplicaSet(List<Disk> disks) {
             this.disks = disks;
         }
-    }
 
-    public class DataMapping {
+        public boolean isEmpty() {
+            return disks.isEmpty();
+        }
 
+        @Override
+        public Iterator<Disk> iterator() {
+            return disks.iterator();
+        }
+
+        public boolean contains(Disk disk) {
+            return disks.contains(disk); // Note: we operate object ids, not disk ids
+        }
     }
 
     /**
