@@ -37,7 +37,7 @@ public class ZookeeperPaths {
 
     // TODO: think about ZNodes paths
     private static final String STEM_ROOT = "/stem";
-    private static final String CLUSTER_MANAGER = STEM_ROOT + "/clustermanager";
+    public static final String CLUSTER_MANAGER = STEM_ROOT + "/clustermanager";
     public static final String CLUSTER = CLUSTER_MANAGER + "/cluster";
     public static final String CLUSTER_DESCRIPTOR_NAME = "descriptor";
     public static final String CLUSTER_DESCRIPTOR_PATH = CLUSTER + "/" + CLUSTER_DESCRIPTOR_NAME;

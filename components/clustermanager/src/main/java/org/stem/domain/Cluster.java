@@ -70,6 +70,7 @@ public class Cluster {
 
     org.stem.domain.topology.Topology topology2;    // TODO: load topology from Zookeeper
     Partitioner partitioner;
+    private DataMapping mapping = DataMapping.EMPTY;
     private DataDistributionManager distributionManager;
 
     private Unauthorized freshNodes = new Unauthorized(this);
@@ -293,6 +294,7 @@ public class Cluster {
             topology = new Topology(descriptor.name, descriptor.rf);
             partitioner = descriptor.partitioner.builder.build();
             distributionManager = new DataDistributionManager(partitioner, Cluster.this);
+            mapping = distributionManager.getCurrentMappings();
 
             initZookeeperPaths();
             state.set(State.INITIALIZED);
@@ -320,6 +322,7 @@ public class Cluster {
             topology = new Topology(descriptor.name, descriptor.rf);
             partitioner = descriptor.partitioner.builder.build();
             distributionManager = new DataDistributionManager(partitioner, Cluster.this);
+            mapping = distributionManager.getCurrentMappings();
 
             org.stem.domain.topology.Topology persistedTopo = readTopology();
             if (null != persistedTopo) {
@@ -384,10 +387,14 @@ public class Cluster {
         private void recalculateDataMapping() throws Exception {
             ensureInitialized();
 
-            DataMapping mapping = distributionManager.computeMapping();
+            DataMapping newMapping = distributionManager.computeMappingNonMutable();
+            client.updateNode(ZookeeperPaths.CLUSTER_MANAGER, RestUtils.packMapping(newMapping));
 
+            DataMapping.Difference difference = distributionManager.computeMappingDifference(mapping, newMapping);
+            // TODO: check the difference make sense (is there actual delta between mapping);
 
-            // TODO: here
+            // TODO: compute streaming sessions !!!!!!!!!!!!!!!!!!!
+            // TODO: distributionManager.computeStreamingSessions()
         }
 
         private void ensureUninitialized() {

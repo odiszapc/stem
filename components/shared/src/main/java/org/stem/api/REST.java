@@ -17,14 +17,13 @@
 package org.stem.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Lists;
 import lombok.*;
 import org.stem.coordination.ZNodeAbstract;
 import org.stem.coordination.ZookeeperPaths;
 import org.stem.utils.Utils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Type that mirroring existing ones in Cluster or Topology core
@@ -49,6 +48,7 @@ public abstract class REST {
     @Data
     @RequiredArgsConstructor
     @NoArgsConstructor
+    @EqualsAndHashCode(of = {"id"})
     public static class Datacenter {
 
         @NonNull UUID id;
@@ -59,6 +59,7 @@ public abstract class REST {
     @Data
     @RequiredArgsConstructor
     @NoArgsConstructor
+    @EqualsAndHashCode(of = {"id"})
     public static class Rack {
 
         @NonNull UUID id;
@@ -66,10 +67,10 @@ public abstract class REST {
         final List<StorageNode> nodes = new ArrayList<>();
     }
 
-    @EqualsAndHashCode(callSuper = false)
     @Data
     @RequiredArgsConstructor
     @NoArgsConstructor
+    @EqualsAndHashCode(of = {"id"}, callSuper = false)
     public static class StorageNode extends ZNodeAbstract {
 
         @NonNull UUID id;
@@ -103,6 +104,7 @@ public abstract class REST {
     @Data
     @RequiredArgsConstructor
     @NoArgsConstructor
+    @EqualsAndHashCode(of = {"id"})
     public static class Disk {
 
         @NonNull String id; // TODO: use UUID type
@@ -113,8 +115,33 @@ public abstract class REST {
 
     @Data
     @RequiredArgsConstructor
-    @NoArgsConstructor
+    public static class Mapping extends ZNodeAbstract {
+
+        private final Map<Long, ReplicaSet> map = new HashMap<>();
+
+        public List<Long> getBuckets() {
+            return Lists.newArrayList(map.keySet());
+        }
+
+        public ReplicaSet getReplicas(Long bucket) {
+            return map.get(bucket);
+        }
+
+        @Override
+        public String name() {
+            return ZookeeperPaths.MAPPING;
+        }
+    }
+
+
+    @Data
+    @RequiredArgsConstructor
     public static class ReplicaSet {
-        final List<Disk> disks = new ArrayList<>();
+
+        private final Set<Disk> replicas = new HashSet<>();
+
+        public void addDisk(Disk disk) {
+            replicas.add(disk);
+        }
     }
 }

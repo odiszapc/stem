@@ -19,9 +19,11 @@ package org.stem.domain;
 import org.stem.domain.topology.*;
 import org.stem.domain.topology.Topology;
 
+import javax.validation.constraints.Null;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class DataDistributionManager {
 
@@ -30,14 +32,24 @@ public class DataDistributionManager {
     private Cluster cluster;
     private ArrayBalancer keysDistributor;
 
+    private AtomicReference<DataMapping> current = new AtomicReference<>();
+
     public DataDistributionManager(Partitioner partitioner, Cluster cluster) {
         this.partitioner = partitioner;
         this.cluster = cluster;
         this.topology = cluster.topology();
     }
 
-    public synchronized DataMapping computeMapping() {
+    public DataMapping getCurrentMappings() {
+        return current.get();
+    }
+
+    public synchronized DataMapping computeMappingNonMutable() {
         return computeDataMapping(cluster.descriptor().rf, cluster.descriptor().vBuckets, topology);
+    }
+
+    public DataMapping.Difference computeMappingDifference(DataMapping before, DataMapping after) {
+        return DataMapping.Difference.compute(before, after);
     }
 
     private DataMapping computeDataMapping(int rf, int buckets, org.stem.domain.topology.Topology topology) {

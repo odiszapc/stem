@@ -22,8 +22,10 @@ import org.stem.api.response.ListNodesResponse;
 import org.stem.api.response.StemResponse;
 import org.stem.api.response.TopologyResponse;
 import org.stem.domain.Cluster;
+import org.stem.domain.topology.DataMapping;
 import org.stem.domain.topology.Topology;
 import org.stem.utils.Utils;
+import sun.plugin.dom.exception.InvalidStateException;
 
 import javax.ws.rs.core.Response;
 import java.net.InetSocketAddress;
@@ -122,6 +124,25 @@ public class RestUtils {
         List<Topology.Datacenter> result = new ArrayList<>();
         for (REST.Datacenter dcTransient : topologyTransient.getDataCenters()) {
             result.add(extractDatacenter(dcTransient));
+        }
+        return result;
+    }
+
+    public static REST.ReplicaSet packReplicaSet(Topology.ReplicaSet replicaSet) {
+        REST.ReplicaSet result = new REST.ReplicaSet();
+        for (Topology.Disk disk : replicaSet) {
+            result.addDisk(packDisk(disk));
+        }
+        return result;
+    }
+
+    public static REST.Mapping packMapping(DataMapping mapping) {
+        REST.Mapping result = new REST.Mapping();
+        for (Long bucket : mapping.getBuckets()) {
+            Topology.ReplicaSet replicas = mapping.getReplicas(bucket);
+            if (null == replicas)
+                throw new InvalidStateException("replica set is null");
+            result.getMap().put(bucket, packReplicaSet(replicas));
         }
         return result;
     }
