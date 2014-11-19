@@ -27,8 +27,8 @@ public class DiskMovementMap {
     /**
      * {
      * "src_disk_UUID": {
-     * vBucket: "dst_disk_UUID"
-     * }
+     *         vBucket: "dst_disk_UUID"
+     *     }
      * }
      */
     private Map<String, Map<Long, String>> diskMovementMap = new HashMap<String, Map<Long, String>>();
