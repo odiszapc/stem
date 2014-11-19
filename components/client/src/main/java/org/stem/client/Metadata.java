@@ -16,25 +16,24 @@
 
 package org.stem.client;
 
-public class Policies {
+import org.stem.api.response.ClusterResponse;
 
-    private static final ReconnectionPolicy DEFAULT_RECONNECTION_POLICY = new ConstantReconnectionPolicy(1000);
+import java.net.InetSocketAddress;
+import java.util.Collection;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-    private final ReconnectionPolicy reconnectionPolicy;
+public class Metadata {
 
-    public Policies() {
-        this(DEFAULT_RECONNECTION_POLICY);
+    private StemCluster.Manager cluster;
+    private ClusterResponse descriptor;
+    private final ConcurrentMap<InetSocketAddress, Host> hosts = new ConcurrentHashMap<InetSocketAddress, Host>();
+
+    public Metadata(StemCluster.Manager cluster) {
+        this.cluster = cluster;
     }
 
-    public Policies(ReconnectionPolicy reconnectionPolicy) {
-        this.reconnectionPolicy = reconnectionPolicy;
-    }
-
-    public ReconnectionPolicy getReconnectionPolicy() {
-        return reconnectionPolicy;
-    }
-
-    public static ReconnectionPolicy defaultReconnectionPolicy() {
-        return DEFAULT_RECONNECTION_POLICY;
-    }
+    Collection<Host> allHosts() {
+            return hosts.values();
+        }
 }

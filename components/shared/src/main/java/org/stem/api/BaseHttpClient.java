@@ -22,6 +22,7 @@ import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -83,8 +84,11 @@ public abstract class BaseHttpClient {
             setHeaders(request);
             return (T) client.execute(request, getResponseHandler(clazz));
 
+        } catch (HttpHostConnectException e) {
+            throw new RuntimeException("Failed to connect to cluster manager", e);
+
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
+            throw new RuntimeException("Unexpected error while sending request to cluster manager", e);
         }
     }
 

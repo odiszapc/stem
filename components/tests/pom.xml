@@ -46,6 +46,12 @@
     </dependency>
 
     <dependency>
+      <groupId>org.stem</groupId>
+      <artifactId>stem-client</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
       <groupId>org.apache.curator</groupId>
       <artifactId>curator-test</artifactId>
       <version>${curator.version}</version>

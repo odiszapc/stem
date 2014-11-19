@@ -17,12 +17,13 @@
 package org.stem.api.response;
 
 
+import lombok.Data;
 import org.stem.api.REST;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClusterResponse extends StemResponse {
+public class ClusterResponse extends StemResponse { // TODO: Rest.ClusterDescriptor
 
     Cluster cluster = new Cluster();
 
@@ -30,6 +31,7 @@ public class ClusterResponse extends StemResponse {
         return cluster;
     }
 
+    @Data
     public static class Cluster {
 
         String name;
@@ -41,62 +43,6 @@ public class ClusterResponse extends StemResponse {
         long totalBytes;
 
         List<REST.StorageNode> nodes = new ArrayList<REST.StorageNode>();
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public int getvBucketsNum() {
-            return vBucketsNum;
-        }
-
-        public void setvBucketsNum(int vBucketsNum) {
-            this.vBucketsNum = vBucketsNum;
-        }
-
-        public int getRf() {
-            return rf;
-        }
-
-        public void setRf(int rf) {
-            this.rf = rf;
-        }
-
-        public String getPartitioner() {
-            return partitioner;
-        }
-
-        public void setPartitioner(String partitioner) {
-            this.partitioner = partitioner;
-        }
-
-        public String getZookeeperEndpoint() {
-            return zookeeperEndpoint;
-        }
-
-        public void setZookeeperEndpoint(String zookeeperEndpoint) {
-            this.zookeeperEndpoint = zookeeperEndpoint;
-        }
-
-        public long getUsedBytes() {
-            return usedBytes;
-        }
-
-        public void setUsedBytes(long usedBytes) {
-            this.usedBytes = usedBytes;
-        }
-
-        public long getTotalBytes() {
-            return totalBytes;
-        }
-
-        public void setTotalBytes(long totalBytes) {
-            this.totalBytes = totalBytes;
-        }
 
         public List<REST.StorageNode> getNodes() {
             return nodes;

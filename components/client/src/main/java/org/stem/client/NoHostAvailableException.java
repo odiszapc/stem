@@ -16,9 +16,7 @@
 
 package org.stem.client;
 
-import com.datastax.driver.core.exceptions.DriverException;
-
-public class NoHostAvailableException extends DriverException {
+public class NoHostAvailableException extends ClientException {
 
     public NoHostAvailableException(String message) {
         super(message);

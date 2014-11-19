@@ -153,7 +153,7 @@ public class StorageNodeDescriptor {
 
     public static void loadLayout() throws IOException {
         String[] mountPoints = getBlobMountPoints();
-        int vBuckets = StorageNodeDescriptor.cluster().getvBucketsNum(); // Hard binding: Layout -> cluster()
+        int vBuckets = StorageNodeDescriptor.cluster().getVBucketsNum(); // Hard binding: Layout -> cluster()
         Layout.getInstance().load(mountPoints, vBuckets);
     }
 

@@ -35,6 +35,7 @@ import org.stem.db.Layout;
 import org.stem.db.MountPoint;
 import org.stem.db.StorageNodeDescriptor;
 import org.stem.db.StorageService;
+import org.stem.domain.topology.Partitioner;
 import org.stem.service.StorageNodeDaemon;
 import org.stem.transport.ops.WriteBlobMessage;
 import org.stem.utils.TestUtil;
@@ -146,7 +147,11 @@ public class IntegrationTestBase {
     }
 
     protected void initCluster() {
-        clusterManagerClient.initCluster(getClusterName(), getvBucketsNum(), getRF());
+        clusterManagerClient.initCluster(getClusterName(), getvBucketsNum(), getRF(), getPartitioner());
+    }
+
+    private String getPartitioner() {
+        return Partitioner.Type.CRUSH.getName();
     }
 
     protected String getClusterName() {

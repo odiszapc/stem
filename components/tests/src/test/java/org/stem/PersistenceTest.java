@@ -64,6 +64,6 @@ public class PersistenceTest extends IntegrationTestBase {
     private void assertClusterState(ClusterResponse clusterResponse) {
         Assertions.assertThat(clusterResponse.getCluster().getName()).isEqualTo(getClusterName());
         Assertions.assertThat(clusterResponse.getCluster().getRf()).isEqualTo(getRF());
-        Assertions.assertThat(clusterResponse.getCluster().getvBucketsNum()).isEqualTo(getvBucketsNum());
+        Assertions.assertThat(clusterResponse.getCluster().getVBucketsNum()).isEqualTo(getvBucketsNum());
     }
 }

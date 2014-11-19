@@ -52,7 +52,7 @@ public class RestUtils {
         ClusterResponse response = new ClusterResponse();
         Cluster.Descriptor descriptor = cluster.descriptor();
         response.getCluster().setName(descriptor.getName());
-        response.getCluster().setvBucketsNum(descriptor.getvBuckets());
+        response.getCluster().setVBucketsNum(descriptor.getvBuckets());
         response.getCluster().setPartitioner(descriptor.getPartitioner().getName());
         response.getCluster().setRf(descriptor.getRf());
         response.getCluster().setZookeeperEndpoint(descriptor.getZookeeperEndpoint());
