@@ -18,6 +18,7 @@ package org.stem.client;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import org.stem.api.REST;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -36,6 +37,10 @@ public class Host {
     final AtomicReference<ListenableFuture<?>> reconnectionAttempt = new AtomicReference<ListenableFuture<?>>();
 
     final ExecutionInfo defaultExecutionInfo;
+
+    public Host(REST.StorageNode node) { // TODO: tough binding ?
+        this(new InetSocketAddress(node.getListenHost(), node.getListenPort()));
+    }
 
     public Host(InetSocketAddress address) {
         this.address = address;

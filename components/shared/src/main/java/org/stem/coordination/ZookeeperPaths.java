@@ -20,7 +20,7 @@ import java.util.Arrays;
 
 /**
  * ZNodes hierarchy:
- *
+ * <p/>
  * stem
  * ..clustermanager
  * ....cluster
@@ -48,6 +48,10 @@ public class ZookeeperPaths {
     public static final String OUT_SESSIONS = CLUSTER_MANAGER + "/streaming/out";
     public static final String IN_SESSIONS = CLUSTER_MANAGER + "/streaming/in"; // TODO: do we really need this? It's pseudo session
     public static final String ASYNC_REQUESTS = CLUSTER_MANAGER + "/async_requests";
+
+    public static String topologyPath() {
+        return topologyPath();
+    }
 
     public static final String TOPO_MAP = "mapping";
 

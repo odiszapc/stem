@@ -148,6 +148,17 @@ public class ZookeeperClient {
         cache.getListenable().addListener(cacheListener);
     }
 
+    public void forcReadListenForZNode(String path, ZookeeperEventListener listener) throws Exception {
+        NodeCache cache = new NodeCache(client, path);
+        cache.start();
+
+        NodeCacheListener cacheListener = new ZNodeListener(
+                listener.getHandler(), cache);
+
+        cache.getListenable().addListener(cacheListener);
+        cacheListener.nodeChanged();
+    }
+
     public void registerListener(ZNodeListener listener) {
         listener.getNodeCache().getListenable().addListener(listener);
     }
