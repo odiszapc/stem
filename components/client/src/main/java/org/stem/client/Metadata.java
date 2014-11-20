@@ -16,6 +16,7 @@
 
 package org.stem.client;
 
+import org.stem.api.REST;
 import org.stem.api.response.ClusterResponse;
 
 import java.net.InetSocketAddress;
@@ -27,6 +28,8 @@ public class Metadata {
 
     private StemCluster.Manager cluster;
     private ClusterResponse descriptor;
+    private REST.Topology topology;
+
     private final ConcurrentMap<InetSocketAddress, Host> hosts = new ConcurrentHashMap<InetSocketAddress, Host>();
 
     public Metadata(StemCluster.Manager cluster) {

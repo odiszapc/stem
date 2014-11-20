@@ -49,5 +49,7 @@ public class NewClientTest //extends IntegrationTestBase
                 .build();
         cluster.init();
 
+
+        Thread.sleep(1000000);
     }
 }

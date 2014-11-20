@@ -16,7 +16,6 @@
 
 package org.stem.client;
 
-import com.google.common.base.Throwables;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -24,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.api.ClusterManagerClient;
 import org.stem.api.response.ClusterResponse;
-import org.stem.coordination.ZooException;
 import org.stem.coordination.ZookeeperClient;
 import org.stem.coordination.ZookeeperClientFactory;
 
@@ -38,7 +36,7 @@ public class StemCluster {
     private static final int DEFAULT_THREAD_KEEP_ALIVE = 30;
     final Manager manager;
 
-    public static StemCluster buildFrom(Builder initializer) {
+    public static StemCluster buildFrom(Initializer initializer) {
         return new StemCluster(initializer.getClusterManagerUrl(), initializer.getConfiguration());
     }
 
@@ -75,7 +73,6 @@ public class StemCluster {
         return MoreExecutors.listeningDecorator(executor);
     }
 
-
     public static interface Initializer {
 
         String getClusterManagerUrl();
@@ -87,8 +84,6 @@ public class StemCluster {
      */
     class Manager {
 
-        private final String managerUrl;
-
         Metadata metadata;
         final Set<Session> sessions = new CopyOnWriteArraySet<Session>();
         Configuration configuration;
@@ -97,16 +92,18 @@ public class StemCluster {
         final ListeningExecutorService executor;
         final ListeningExecutorService blockingExecutor;
 
-        ZookeeperClient coordinationClient = null;
+        ClusterManagerClient managerClient;
+        ZookeeperClient coordinationClient;
+        ClusterTopologyMappingDescriber clusterDescriber;
 
         public Manager(String managerUrl, Configuration configuration) {
             this.metadata = new Metadata(this);
-            this.managerUrl = managerUrl;
             this.configuration = configuration;
             this.connectionFactory = new Connection.Factory(configuration);
             this.executor = newExecutor(Runtime.getRuntime().availableProcessors(), "Stem Client worker-%d");
             this.blockingExecutor = newExecutor(2, "Stem Client blocking tasks worker-%d");
-
+            this.managerClient = new ClusterManagerClient(managerUrl);
+            this.clusterDescriber = new ClusterTopologyMappingDescriber(this);
         }
 
         public Connection.Factory getConnectionFactory() {
@@ -119,11 +116,12 @@ public class StemCluster {
 
         synchronized void init() {
             try {
-                ClusterManagerClient managerClient = new ClusterManagerClient(managerUrl);
                 ClusterResponse clusterResponse = managerClient.describeCluster();
                 ClusterResponse.Cluster descriptor = clusterResponse.getCluster();
 
                 coordinationClient = ZookeeperClientFactory.newClient(descriptor.getZookeeperEndpoint());
+                clusterDescriber.start();
+
 
             } catch (Exception e) {
                 throw new ClientException("Can not connect to cluster", e);
