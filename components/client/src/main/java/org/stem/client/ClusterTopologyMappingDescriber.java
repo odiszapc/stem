@@ -62,7 +62,7 @@ public class ClusterTopologyMappingDescriber {
             @Override
             public void run() {
                 try {
-                    zookeeperClient().listenForZNode(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, );
+                    zookeeperClient().listenForZNode(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, topologyListener);
                 } catch (Exception e) {
                     Throwables.propagate(e);
                 }
