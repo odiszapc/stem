@@ -80,8 +80,6 @@ public class ClusterTopologyMappingDescriber {
 
     }
 
-
-
     private ZookeeperClient zookeeperClient() {
         return manager.coordinationClient;
     }

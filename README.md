@@ -42,5 +42,15 @@ JIRA: http://tracker.stemstorage.org
 #### Authors
 Alexey Plotnik (odiszapc@gmail.com, http://twitter.com/odiszapc)
 
+##### Development
+
+###### Intellij
+
+- Using  If you're using Intellij, you need to install Lombok-Intellij https://code.google.com/p/lombok-intellij-plugin/
+- Import the project as a Maven Project.
+
+###### Eclipse
+- TODO
+
 #### License
 Apache 2.0
