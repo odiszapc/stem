@@ -24,7 +24,7 @@ import java.util.*;
 
 import static org.stem.utils.TopologyUtils.addChild;
 
-public class CrushAdapter implements AlgorithmAdapter<Long, Long, Topology.Node, Node, Topology.ReplicaSet, List<Node>, Topology, Node> {
+class CrushAdapter implements AlgorithmAdapter<Long, Long, Topology.Node, Node, Topology.ReplicaSet, List<Node>, Topology, Node> {
 
     @Override
     public Long convertBucket(Long src) {
