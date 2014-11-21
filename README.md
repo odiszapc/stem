@@ -34,23 +34,22 @@ Linear scalability, high availability and zer-overhead compaction and repair mak
 
 STEM Object Storage will allow you to install as many disks to storage node as you want. Indexes are located in a separate cluster; you don't need to worry about running out of RAM — meta- and binary- clusters can be scaled out separately.
 
+#### Development
+##### Intellij
+- Using  If you're using Intellij, you need to install Lombok-Intellij https://code.google.com/p/lombok-intellij-plugin/
+- Import the project as a Maven Project.
+
+##### Eclipse
+- TODO
+
 #### Resources
 Project home: http://stemstorage.org
 
 JIRA: http://tracker.stemstorage.org
 
+
 #### Authors
 Alexey Plotnik (odiszapc@gmail.com, http://twitter.com/odiszapc)
-
-##### Development
-
-###### Intellij
-
-- Using  If you're using Intellij, you need to install Lombok-Intellij https://code.google.com/p/lombok-intellij-plugin/
-- Import the project as a Maven Project.
-
-###### Eclipse
-- TODO
 
 #### License
 Apache 2.0
