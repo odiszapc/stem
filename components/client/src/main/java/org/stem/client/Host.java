@@ -38,10 +38,6 @@ public class Host {
 
     final ExecutionInfo defaultExecutionInfo;
 
-    public Host(REST.StorageNode node) { // TODO: tough binding ?
-        this(new InetSocketAddress(node.getListenHost(), node.getListenPort()));
-    }
-
     public Host(InetSocketAddress address) {
         this.address = address;
         this.state = State.ADDED;

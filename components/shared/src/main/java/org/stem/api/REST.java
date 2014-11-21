@@ -23,6 +23,7 @@ import org.stem.coordination.ZNodeAbstract;
 import org.stem.coordination.ZookeeperPaths;
 import org.stem.utils.Utils;
 
+import java.net.InetSocketAddress;
 import java.util.*;
 
 /**
@@ -42,6 +43,18 @@ public abstract class REST {
         @Override
         public String name() {
             return ZookeeperPaths.CLUSTER_TOPOLOGY;
+        }
+
+        public List<StorageNode> nodes() {
+            List<StorageNode> result = new ArrayList<>();
+            for (Datacenter dataCenter : dataCenters) {
+                for (Rack rack : dataCenter.getRacks()) {
+                    for (StorageNode node : rack.getNodes()) {
+                        result.add(node);
+                    }
+                }
+            }
+            return result;
         }
     }
 
@@ -95,6 +108,11 @@ public abstract class REST {
             this.listen = host + ':' + port;
         }
 
+        @JsonIgnore
+        public InetSocketAddress socketAddress() {
+            return new InetSocketAddress(getListenHost(), getListenPort());
+        }
+
         @Override
         public String name() {
             return id.toString();
@@ -113,6 +131,7 @@ public abstract class REST {
         @NonNull long total;
     }
 
+    @EqualsAndHashCode(callSuper = false)
     @Data
     @RequiredArgsConstructor
     public static class Mapping extends ZNodeAbstract {

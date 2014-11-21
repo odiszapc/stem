@@ -39,4 +39,14 @@ public class Metadata {
     Collection<Host> allHosts() {
             return hosts.values();
         }
+
+    public Host getHost(InetSocketAddress addr) {
+        return hosts.get(addr);
+    }
+
+    public Host add(InetSocketAddress addr) {
+        Host newHost = new Host(addr);
+        Host previous = hosts.putIfAbsent(addr, newHost);
+        return null == previous ? newHost : null;
+    }
 }

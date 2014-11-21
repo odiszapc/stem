@@ -16,6 +16,7 @@
 
 package org.stem.client;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -29,6 +30,8 @@ import org.stem.coordination.ZookeeperClientFactory;
 import java.util.Set;
 import java.util.concurrent.*;
 
+
+// TODO: implement close(), isClosed()
 public class StemCluster {
 
     private static final Logger logger = LoggerFactory.getLogger(StemCluster.class);
@@ -94,7 +97,7 @@ public class StemCluster {
 
         ClusterManagerClient managerClient;
         ZookeeperClient coordinationClient;
-        ClusterTopologyMappingDescriber clusterDescriber;
+        ClusterDescriber clusterDescriber;
 
         public Manager(String managerUrl, Configuration configuration) {
             this.metadata = new Metadata(this);
@@ -103,7 +106,7 @@ public class StemCluster {
             this.executor = newExecutor(Runtime.getRuntime().availableProcessors(), "Stem Client worker-%d");
             this.blockingExecutor = newExecutor(2, "Stem Client blocking tasks worker-%d");
             this.managerClient = new ClusterManagerClient(managerUrl);
-            this.clusterDescriber = new ClusterTopologyMappingDescriber(this);
+            this.clusterDescriber = new ClusterDescriber(this);
         }
 
         public Connection.Factory getConnectionFactory() {
@@ -136,6 +139,19 @@ public class StemCluster {
 
         boolean removeSession(Session session) {
             return sessions.remove(session);
+        }
+
+        public ListenableFuture<?> triggerOnAdd(final Host host) {
+            return executor.submit(new ExceptionCatchingRunnable() {
+                @Override
+                public void runMayThrow() throws InterruptedException, ExecutionException {
+                    onAdd(host);
+                }
+            });
+        }
+
+        private void onAdd(final Host host) {
+            logger.info("New Stem Storage Node host {} added", host);
         }
     }
 
