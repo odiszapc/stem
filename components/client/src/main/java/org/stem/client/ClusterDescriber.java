@@ -31,9 +31,10 @@ public class ClusterDescriber {
     final StemCluster.Manager cluster;
     final ZookeeperEventListener<REST.Topology> topologyListener;
 
+    private volatile boolean isShutdown;
+
     public ClusterDescriber(StemCluster.Manager cluster) {
         this.cluster = cluster;
-
         topologyListener = new ZookeeperEventListener<REST.Topology>() {
             @Override
             public Class<REST.Topology> getBaseClass() {
@@ -48,34 +49,27 @@ public class ClusterDescriber {
     }
 
     private void onTopologyChanged(REST.Topology topology) {
-        for (REST.Datacenter datacenter : topology.getDataCenters()) {
-            for (REST.Rack rack : datacenter.getRacks()) {
-                for (REST.StorageNode storageNode : rack.getNodes()) {
-                    //ClusterTopologyMappingDescriber.this.manager.
-                }
-            }
-        }
+        refreshNodeList(cluster, topology, false);
     }
 
     void start() {
-        refreshNodeList(cluster, true);
-        refreshBucketMap(cluster, true);
+        if (isShutdown)
+            return;
 
+        try {
+            REST.Topology topology = tryReadTopology();
+            refreshNodeList(cluster, topology, true);
+            // TODO: refreshBucketMap(cluster, true);
 
-//        manager.executor.submit(new Runnable() {
-//            @Override
-//            public void run() {
-//                try {
-//                    zookeeperClient().listenForZNode(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, );
-//                } catch (Exception e) {
-//                    Throwables.propagate(e);
-//                }
-//            }
-//        });
+            cluster.coordinationClient.listenForZNode(ZookeeperPaths.topologyPath(), topologyListener);
+        } catch (Exception e) {
+            Throwables.propagate(e);
+
+        }
     }
 
-    private void refreshNodeList(StemCluster.Manager cluster, boolean isInitialAttempt) {
-        REST.Topology topology = tryReadTopology();
+    private void refreshNodeList(StemCluster.Manager cluster, REST.Topology topology, boolean isInitialAttempt) {
+
 
         List<InetSocketAddress> foundHosts = new ArrayList<InetSocketAddress>();
         List<String> dcs = new ArrayList<String>(); // TODO: implement extraction of dc name
@@ -102,6 +96,10 @@ public class ClusterDescriber {
 
     }
 
+    private void refreshNodeList() {
+        refreshNodeList(cluster, cluster.metadata.getTopology(), false);
+    }
+
     private REST.Topology tryReadTopology() {
         return readTopology();
     }
@@ -116,10 +114,17 @@ public class ClusterDescriber {
         return null;
     }
 
-
     private ZookeeperClient zookeeperClient() {
         return cluster.coordinationClient;
     }
 
+    public void onRemove(Host host) {
+        refreshNodeList();
+    }
 
+    public CloseFuture closeAsync() {
+        isShutdown = true;
+
+        return CloseFuture.immediateFuture();
+    }
 }

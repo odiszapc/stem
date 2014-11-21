@@ -45,6 +45,26 @@ public class Host {
         defaultExecutionInfo = new ExecutionInfo(this);
     }
 
+    boolean wasJustAdded() {
+        return state == State.ADDED;
+    }
+
+    void setDown() {
+        state = State.DOWN;
+    }
+
+    public void setUp() {
+        state = State.UP;
+    }
+
+    boolean setSuspected() {
+        if (state != State.UP)
+            return false;
+
+        state = State.SUSPECT;
+        return true;
+    }
+
     public boolean isUp() {
         return state == State.UP || state == State.SUSPECT;
     }
@@ -58,7 +78,30 @@ public class Host {
     }
 
     @Override
+    public boolean equals(Object other) {
+        if (other instanceof Host) {
+            Host that = (Host) other;
+            return this.address.equals(that.address);
+        }
+        return false;
+    }
+
+    @Override
     public int hashCode() {
         return address.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return address.toString();
+    }
+
+    public interface StateListener {
+
+        public void onAdd(Host host);
+        public void onUp(Host host);
+        public void onSuspected(Host host);
+        public void onDown(Host host);
+        public void onRemove(Host host);
     }
 }

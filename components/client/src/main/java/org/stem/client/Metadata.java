@@ -30,6 +30,10 @@ public class Metadata {
     private ClusterResponse descriptor;
     private REST.Topology topology;
 
+    public REST.Topology getTopology() {
+        return topology;
+    }
+
     private final ConcurrentMap<InetSocketAddress, Host> hosts = new ConcurrentHashMap<InetSocketAddress, Host>();
 
     public Metadata(StemCluster.Manager cluster) {
@@ -48,5 +52,9 @@ public class Metadata {
         Host newHost = new Host(addr);
         Host previous = hosts.putIfAbsent(addr, newHost);
         return null == previous ? newHost : null;
+    }
+
+    public boolean remove(Host host) {
+        return false;
     }
 }

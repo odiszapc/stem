@@ -16,10 +16,9 @@
 
 package org.stem.client;
 
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.common.base.Predicates;
+import com.google.common.collect.Iterables;
+import com.google.common.util.concurrent.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.api.ClusterManagerClient;
@@ -27,8 +26,11 @@ import org.stem.api.response.ClusterResponse;
 import org.stem.coordination.ZookeeperClient;
 import org.stem.coordination.ZookeeperClientFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 // TODO: implement close(), isClosed()
@@ -55,6 +57,24 @@ public class StemCluster {
     public Metadata getMetadata() {
         manager.init();
         return manager.metadata;
+    }
+
+    public CloseFuture closeAsync() {
+        return manager.close();
+    }
+
+    public void close() {
+        try {
+            closeAsync().get();
+        } catch (ExecutionException e) {
+            throw DefaultResultFuture.extractCauseFromExecutionException(e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    public boolean isClosed() {
+        return manager.closeFuture.get() != null;
     }
 
     static long timeSince(long startNanos, TimeUnit destUnit) {
@@ -87,6 +107,7 @@ public class StemCluster {
      */
     class Manager {
 
+        private boolean isInit;
         Metadata metadata;
         final Set<Session> sessions = new CopyOnWriteArraySet<Session>();
         Configuration configuration;
@@ -98,6 +119,8 @@ public class StemCluster {
         ClusterManagerClient managerClient;
         ZookeeperClient coordinationClient;
         ClusterDescriber clusterDescriber;
+
+        final AtomicReference<CloseFuture> closeFuture = new AtomicReference<CloseFuture>();
 
         public Manager(String managerUrl, Configuration configuration) {
             this.metadata = new Metadata(this);
@@ -118,6 +141,12 @@ public class StemCluster {
         }
 
         synchronized void init() {
+            if (isClosed())
+                throw new IllegalStateException("Can't use this StemCluster instance because it was previously closed");
+            if (isInit)
+                return;
+            isInit = true;
+
             try {
                 ClusterResponse clusterResponse = managerClient.describeCluster();
                 ClusterResponse.Cluster descriptor = clusterResponse.getCluster();
@@ -150,8 +179,140 @@ public class StemCluster {
             });
         }
 
-        private void onAdd(final Host host) {
+        private void onAdd(final Host host) throws ExecutionException, InterruptedException { // Executed in a separate thread
+            if (isClosed())
+                return;
+
             logger.info("New Stem Storage Node host {} added", host);
+
+            host.setUp();
+
+            List<ListenableFuture<Boolean>> futures = new ArrayList<ListenableFuture<Boolean>>(sessions.size());
+            for (Session s : sessions)
+                futures.add(s.maybeAddPool(host, blockingExecutor));
+
+            ListenableFuture<List<Boolean>> f = Futures.allAsList(futures);
+            Futures.addCallback(f, new FutureCallback<List<Boolean>>() {
+                @Override
+                public void onSuccess(List<Boolean> poolCreationResults) {
+                    if (Iterables.any(poolCreationResults, Predicates.equalTo(false))) {
+                        logger.debug("Connection pool cannot be created, not marking {} UP", host);
+                        return;
+                    }
+
+                    host.setUp();
+
+                    //TODO: for (Host.StateListener listener : listeners)
+                    //    listener.onAdd(host);
+                }
+
+                @Override
+                public void onFailure(Throwable t) {
+                    if (!(t instanceof InterruptedException))
+                        logger.error("Unexpected error while adding node: while this shouldn't happen, this shouldn't be critical", t);
+                }
+            });
+
+            f.get();
+
+            for (Session s : sessions)
+                s.updateCreatedPools(blockingExecutor);
+        }
+
+        public void removeHost(Host host, boolean isInitialConnection) {
+            if (host == null)
+                return;
+
+            if (metadata.remove(host)) {
+                if (isInitialConnection) {
+                    logger.warn("You listed {} in your contact points, but it could not be reached at startup", host);
+                } else {
+                    logger.info("Host {} removed", host);
+                    triggerOnRemove(host);
+                }
+            }
+        }
+
+        public ListenableFuture<?> triggerOnRemove(final Host host) {
+            return executor.submit(new ExceptionCatchingRunnable() {
+                @Override
+                public void runMayThrow() throws InterruptedException, ExecutionException {
+                    onRemove(host);
+                }
+            });
+        }
+
+        private void onRemove(Host host) throws InterruptedException, ExecutionException {
+            if (isClosed())
+                return;
+
+            host.setDown();
+
+            logger.debug("Removing host {}", host);
+            clusterDescriber.onRemove(host);
+            for (Session s : sessions)
+                s.onRemove(host);
+
+            // TODO: for (Host.StateListener listener : listeners)
+            //     listener.onRemove(host);
+        }
+
+        boolean isClosed() {
+            return closeFuture.get() != null;
+        }
+
+        private CloseFuture close() {
+            CloseFuture future = closeFuture.get();
+            if (future != null)
+                return future;
+
+            logger.debug("Shutting down");
+
+            blockingExecutor.shutdownNow();
+            executor.shutdown();
+
+            List<CloseFuture> futures = new ArrayList<CloseFuture>(sessions.size() + 1);
+            futures.add(clusterDescriber.closeAsync());
+            for (Session session : sessions)
+                futures.add(session.closeAsync());
+
+            future = new ClusterCloseFuture(futures);
+
+            return closeFuture.compareAndSet(null, future)
+                    ? future
+                    : closeFuture.get();
+        }
+
+        private class ClusterCloseFuture extends CloseFuture.Forwarding {
+
+            ClusterCloseFuture(List<CloseFuture> futures) {
+                super(futures);
+            }
+
+            @Override
+            public CloseFuture force() {
+                executor.shutdownNow();
+                return super.force();
+            }
+
+            @Override
+            protected void onFuturesDone() {
+                (new Thread("Shutdown-checker") {
+                    @Override
+                    public void run() {
+                        try {
+                            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+                            blockingExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+                            connectionFactory.shutdown();
+
+                            set(null);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            setException(e);
+                        }
+                    }
+                }).start();
+            }
         }
     }
 

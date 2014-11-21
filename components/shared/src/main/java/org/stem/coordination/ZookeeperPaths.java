@@ -50,7 +50,7 @@ public class ZookeeperPaths {
     public static final String ASYNC_REQUESTS = CLUSTER_MANAGER + "/async_requests";
 
     public static String topologyPath() {
-        return topologyPath();
+        return CLUSTER_TOPOLOGY_PATH;
     }
 
     public static final String TOPO_MAP = "mapping";
