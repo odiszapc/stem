@@ -77,6 +77,18 @@ public class StemCluster {
         return manager.closeFuture.get() != null;
     }
 
+
+    public Session connect() {
+        init();
+        Session session = manager.newSession();
+        session.init();
+        return session;
+    }
+
+    public Session newSession() {
+        return manager.newSession();
+    }
+
     static long timeSince(long startNanos, TimeUnit destUnit) {
         return destUnit.convert(System.nanoTime() - startNanos, TimeUnit.NANOSECONDS);
     }

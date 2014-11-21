@@ -30,7 +30,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 
-class Session extends AbstractSession {
+public class Session extends AbstractSession {
 
     private static final Logger logger = LoggerFactory.getLogger(ConnectionPool.class);
 
