@@ -59,7 +59,7 @@ public class DefaultResultFuture extends AbstractFuture<Message.Response> implem
                     setException(((Responses.Error) response).asException(connection.address));
                     break;
                 default:
-                    connection.deactivate(new ConnectionException(connection.address, String.format("Got unexpected %s response", response.type)));
+                    connection.defunct(new ConnectionException(connection.address, String.format("Got unexpected %s response", response.type)));
                     setException(new ClientInternalError(String.format("Got unexpected %s response from %s", response.type, connection.address)));
                     break;
             }

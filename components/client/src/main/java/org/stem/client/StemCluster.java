@@ -18,6 +18,7 @@ package org.stem.client;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,7 @@ import org.stem.api.ClusterManagerClient;
 import org.stem.api.response.ClusterResponse;
 import org.stem.coordination.ZookeeperClient;
 import org.stem.coordination.ZookeeperClientFactory;
+import org.stem.exceptions.ConnectionException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -120,6 +122,8 @@ public class StemCluster {
     class Manager {
 
         private boolean isInit;
+        private volatile boolean isFullyInit;
+
         Metadata metadata;
         final Set<Session> sessions = new CopyOnWriteArraySet<Session>();
         Configuration configuration;
@@ -137,7 +141,7 @@ public class StemCluster {
         public Manager(String managerUrl, Configuration configuration) {
             this.metadata = new Metadata(this);
             this.configuration = configuration;
-            this.connectionFactory = new Connection.Factory(configuration);
+            this.connectionFactory = new Connection.Factory(this, configuration);
             this.executor = newExecutor(Runtime.getRuntime().availableProcessors(), "Stem Client worker-%d");
             this.blockingExecutor = newExecutor(2, "Stem Client blocking tasks worker-%d");
             this.managerClient = new ClusterManagerClient(managerUrl);
@@ -158,7 +162,7 @@ public class StemCluster {
             if (isInit)
                 return;
             isInit = true;
-
+            Set<Host> hosts = Sets.newLinkedHashSet(metadata.allHosts());
             try {
                 ClusterResponse clusterResponse = managerClient.describeCluster();
                 ClusterResponse.Cluster descriptor = clusterResponse.getCluster();
@@ -166,8 +170,14 @@ public class StemCluster {
                 coordinationClient = ZookeeperClientFactory.newClient(descriptor.getZookeeperEndpoint());
                 clusterDescriber.start();
 
+                hosts.addAll(metadata.allHosts());
 
+                isFullyInit = true;
+
+                for (Host host : hosts)
+                    triggerOnAdd(host);
             } catch (Exception e) {
+                close();
                 throw new ClientException("Can not connect to cluster", e);
             }
         }
@@ -293,6 +303,76 @@ public class StemCluster {
             return closeFuture.compareAndSet(null, future)
                     ? future
                     : closeFuture.get();
+        }
+
+        public boolean signalConnectionFailure(Host host, ConnectionException exception, boolean isHostAddition, boolean markSuspected) {
+            if (!isFullyInit || isClosed())
+                return true;
+
+            boolean isDown = host.signalConnectionFailure(exception); // TODO: implement ConvictionPolicy ?
+            if (isDown) {
+                if (isHostAddition || !markSuspected) {
+                    triggerOnDown(host, isHostAddition);
+                } else {
+                    // Note that we do want to call onSuspected on the current thread, as the whole point is
+                    // that by the time this method return, the host initialReconnectionAttempt will have been
+                    // set and the load balancing policy informed of the suspection. We know that onSuspected
+                    // does little work (and non blocking one) itself however.
+                    onSuspected(host);
+                }
+            }
+            return isDown;
+        }
+
+        public ListenableFuture<?> triggerOnDown(final Host host) {
+            return triggerOnDown(host, false);
+        }
+
+        public ListenableFuture<?> triggerOnDown(final Host host, final boolean isHostAddition) {
+            return executor.submit(new ExceptionCatchingRunnable() {
+                @Override
+                public void runMayThrow() throws InterruptedException, ExecutionException {
+                    onDown(host, isHostAddition, false);
+                }
+            });
+        }
+
+        private void onDown(final Host host, final boolean isHostAddition, final boolean isSuspectedVerification) throws InterruptedException, ExecutionException {
+            logger.debug("Host {} is DOWN", host);
+
+            if (isClosed())
+                return;
+
+            if (!isSuspectedVerification && host.state == Host.State.SUSPECT)
+                return;
+
+            if (host.reconnectionAttempt.get() != null)
+                return;
+
+            boolean wasUp = host.isUp();
+            host.setDown();
+
+            clusterDescriber.onDown(host);
+            for (Session s : sessions)
+                s.onDown(host);
+
+// TODO:
+//            if (wasUp) {
+//                for (Host.StateListener listener : listeners)
+//                    listener.onDown(host);
+//            }
+
+            // TODO: reconnection logic should be here
+        }
+
+        public void onSuspected(final Host host) {
+            logger.debug("Host {} is Suspected", host);
+
+            if (isClosed())
+                return;
+
+            triggerOnDown(host);
+            return;
         }
 
         private class ClusterCloseFuture extends CloseFuture.Forwarding {

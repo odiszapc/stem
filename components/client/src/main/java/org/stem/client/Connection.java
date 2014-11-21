@@ -51,8 +51,8 @@ public class Connection {
     private final Factory factory;
     private final Channel channel;
     private final Dispatcher dispatcher;
-    private volatile boolean isReady;
-    private volatile boolean isDeactivated;
+    private volatile boolean isInitialized;
+    private volatile boolean isDefunct;
     private final AtomicReference<ConnectionCloseFuture> closeFutureRef = new AtomicReference<>();
 
     public final AtomicInteger inFlight = new AtomicInteger(0);
@@ -74,28 +74,58 @@ public class Connection {
         try {
             this.channel = future.awaitUninterruptibly().channel();
             if (!future.isSuccess()) {
-                throw deactivate(new ClientTransportException(address, "Can't connect", future.cause()));
+                if (logger.isDebugEnabled())
+                    logger.debug(String.format("%s Error connecting to %s%s", this, address, extractMessage(future.cause())));
+                throw defunct(new ClientTransportException(address, "Can't connect", future.cause()));
             }
-        } finally {
+        }
+        finally {
             writeCounter.decrementAndGet();
         }
-        isReady = true;
+
+        logger.trace("{} Connection opened successfully", this);
+        isInitialized = true;
+    }
+
+    private static String extractMessage(Throwable t) {
+        if (t == null)
+            return "";
+        String msg = t.getMessage() == null || t.getMessage().isEmpty()
+                ? t.toString()
+                : t.getMessage();
+        return " (" + msg + ')';
     }
 
     public int maxAvailableStreams() {
         return dispatcher.streamIdPool.maxAvailableStreams();
     }
 
-    <E extends Exception> E deactivate(E e) {
-        isDeactivated = true;
+    <E extends Exception> E defunct(E e) {
+        if (logger.isDebugEnabled())
+            logger.debug("Defuncting connection to " + address, e);
+        isDefunct = true;
 
-        close().force();
+        ConnectionException ce = e instanceof ConnectionException
+                ? (ConnectionException) e
+                : new ConnectionException(address, "Connection problem", e);
+
+        Host host = factory.manager.metadata.getHost(address);
+        if (host != null) {
+            boolean isReconnectionAttempt = (host.state == Host.State.DOWN || host.state == Host.State.SUSPECT)
+                    && !(this instanceof PooledConnection);
+            if (!isReconnectionAttempt) {
+                boolean isDown = factory.manager.signalConnectionFailure(host, ce, host.wasJustAdded(), isInitialized);
+                notifyOwnerWhenDefunct(isDown);
+            }
+        }
+
+        closeAsync().force();
 
         return e;
     }
 
-    public boolean isDeactivated() {
-        return isDeactivated;
+    public boolean isDefunct() {
+        return isDefunct;
     }
 
     public Future write(Message.Request request) throws ConnectionBusyException, ConnectionException {
@@ -110,7 +140,7 @@ public class Connection {
         dispatcher.addHandler(responseHandler);
         request.setStreamId(responseHandler.streamId);
 
-        if (isDeactivated) {
+        if (isDefunct) {
             dispatcher.removeHandler(responseHandler.streamId, true);
             throw new ConnectionException(address, "Writing on deactivated connection");
         }
@@ -120,6 +150,7 @@ public class Connection {
             throw new ConnectionException(address, "Connection has been closed");
         }
 
+        logger.trace("{} writing request {}", this, request);
         writeCounter.incrementAndGet();
         channel.write(request).addListener(writeHandler(request, responseHandler));
         return responseHandler;
@@ -131,26 +162,30 @@ public class Connection {
             public void operationComplete(ChannelFuture future) throws Exception {
                 writeCounter.decrementAndGet();
                 if (!future.isSuccess()) {
+                    logger.debug("{} Error writing request {}", Connection.this, request);
                     dispatcher.removeHandler(handler.streamId, true);
+
                     ConnectionException e;
                     if (future.cause() instanceof ClosedChannelException) {
                         e = new ClientTransportException(address, "Error writing to closed channel");
                     } else {
                         e = new ClientTransportException(address, "Error writing", future.cause());
                     }
-                    handler.callback.onException(Connection.this, deactivate(e), System.nanoTime() - handler.startedAt);
+                    handler.callback.onException(Connection.this, defunct(e), System.nanoTime() - handler.startedAt);
+                } else {
+                    logger.trace("{} request sent successfully", Connection.this);
                 }
             }
         };
     }
 
-    public CloseFuture close() {
+    public CloseFuture closeAsync() {
         ConnectionCloseFuture future = new ConnectionCloseFuture();
         if (!closeFutureRef.compareAndSet(null, future)) {
             return closeFutureRef.get();
         }
 
-        logger.debug("Closing connection", this);
+        logger.debug("{} closing connection", this);
 
         boolean terminated = terminate(false);
 
@@ -161,6 +196,26 @@ public class Connection {
         if (dispatcher.pending.isEmpty())
             future.force();
         return future;
+    }
+
+    private boolean terminate(boolean evenIfPending) {
+        assert isClosed();
+        ConnectionCloseFuture future = closeFutureRef.get();
+        if (future.isDone()) {
+            logger.debug("{} has already terminated", this);
+            return true;
+        } else {
+            synchronized (terminationLock) {
+                if (evenIfPending || dispatcher.pending.isEmpty()) {
+                    future.force();
+                    // Bug ?
+                    return true;
+                } else {
+                    logger.debug("Not terminating {}: there are still pending requests", this);
+                    return false;
+                }
+            }
+        }
     }
 
     public boolean isClosed() {
@@ -174,7 +229,6 @@ public class Connection {
     public String toString() {
         return String.format("Connection[%s, inFlight=%d, closed=%b]", name, inFlight.get(), isClosed());
     }
-
 
     /**
      *
@@ -233,6 +287,7 @@ public class Connection {
 
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
+        private StemCluster.Manager manager;
         private final Configuration configuration;
         public final Timer timer = new HashedWheelTimer(new ThreadFactoryBuilder().setNameFormat("Timeouter-%d").build());
         private volatile boolean isShutdown;
@@ -240,7 +295,8 @@ public class Connection {
 
         private final ConcurrentMap<Host, AtomicInteger> idGenerators = new ConcurrentHashMap<>();
 
-        public Factory(Configuration configuration) {
+        public Factory(StemCluster.Manager manager, Configuration configuration) {
+            this.manager = manager;
             this.configuration = configuration;
         }
 
@@ -367,6 +423,9 @@ public class Connection {
             streamIdPool.release(streamId);
             if (null == handler) {
                 streamIdPool.unmark();
+                if (logger.isDebugEnabled())
+                    logger.debug("{} Response received on stream {} but no handler set anymore (either the request has "
+                            + "timed out or it was closed due to another error). Received message is {}", Connection.this, streamId, asDebugString(response));
                 return;
             }
             handler.cancelTimeout();
@@ -376,13 +435,26 @@ public class Connection {
                 terminate(false);
         }
 
+        private String asDebugString(Object obj) {
+            if (obj == null)
+                return "null";
+
+            String msg = obj.toString();
+            if (msg.length() < 500)
+                return msg;
+
+            return msg.substring(0, 500) + "... [message of size " + msg.length() + " truncated]";
+        }
+
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable e) throws Exception {
-            logger.debug(String.format("%s connection error", Connection.this), e.getCause());
+            if (logger.isDebugEnabled())
+                logger.debug(String.format("%s connection error", Connection.this), e.getCause());
+
             if (writeCounter.get() > 0)
                 return;
 
-            deactivate(new ClientTransportException(address, String.format("Unexpected exception %s", e.getCause()), e.getCause()));
+            defunct(new ClientTransportException(address, String.format("Unexpected exception %s", e.getCause()), e.getCause()));
         }
 
         public void dropAllHandlers(ConnectionException e) {
@@ -405,30 +477,13 @@ public class Connection {
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             ConnectionException closeException = new ClientTransportException(address, "Channel has been closed");
 
-            if (!isReady || isClosed()) {
+            if (!isInitialized || isClosed()) {
                 dropAllHandlers(closeException);
-                Connection.this.close().force();
+                Connection.this.closeAsync().force();
             } else {
-                deactivate(closeException);
+                defunct(closeException);
             }
 
-        }
-    }
-
-    private boolean terminate(boolean evenIfPending) {
-        assert isClosed();
-        ConnectionCloseFuture future = closeFutureRef.get();
-        if (future.isDone()) {
-            return true;
-        } else {
-            synchronized (terminationLock) {
-                if (evenIfPending || dispatcher.pending.isEmpty()) {
-                    future.force();
-                    return true;
-                } else {
-                    return false;
-                }
-            }
         }
     }
 
@@ -526,6 +581,8 @@ public class Connection {
 
         public void cancelHandler() {
             connection.dispatcher.removeHandler(streamId, false);
+            if (connection instanceof PooledConnection)
+                ((PooledConnection) connection).release();
         }
 
         private TimerTask newTimeoutTask() {

@@ -18,7 +18,7 @@ package org.stem.client;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import org.stem.api.REST;
+import org.stem.exceptions.ConnectionException;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -27,6 +27,10 @@ import java.util.concurrent.atomic.AtomicReference;
 public class Host {
 
     private InetSocketAddress address;
+
+    public boolean signalConnectionFailure(ConnectionException exception) {
+        return true; // TODO: implement ConvictionPolicy ?
+    }
 
     enum State {ADDED, DOWN, SUSPECT, UP}
 

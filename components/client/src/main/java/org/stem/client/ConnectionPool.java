@@ -137,7 +137,7 @@ public class ConnectionPool {
 
         int inFlight = connection.inFlight.decrementAndGet();
 
-        if (!connection.isDeactivated()) {
+        if (!connection.isDefunct()) {
             if (trash.contains(connection) && 0 == inFlight) {
                 if (trash.remove(connection))
                     close(connection);
@@ -183,7 +183,7 @@ public class ConnectionPool {
 
     void replace(final Connection connection) {
         connections.remove(connection);
-        connection.close();
+        connection.closeAsync();
         session.blockingExecutor().submit(new Runnable() {
             @Override
             public void run() {
@@ -200,7 +200,7 @@ public class ConnectionPool {
 
         List<CloseFuture> futures = new ArrayList<CloseFuture>(connections.size());
         for (Connection connection : connections) {
-            CloseFuture future = connection.close();
+            CloseFuture future = connection.closeAsync();
             future.addListener(new Runnable() {
                 public void run() {
                     open.decrementAndGet();
@@ -223,7 +223,7 @@ public class ConnectionPool {
     }
 
     private void close(final Connection connection) {
-        connection.close();
+        connection.closeAsync();
     }
 
     public CloseFuture closeAsync() {
@@ -335,7 +335,8 @@ public class ConnectionPool {
         waiter++;
         try {
             hasAvailableConnection.await(timeout, unit);
-        } finally {
+        }
+        finally {
             waiter--;
             waitLock.unlock();
         }
@@ -349,7 +350,8 @@ public class ConnectionPool {
         waitLock.lock();
         try {
             hasAvailableConnection.signal();
-        } finally {
+        }
+        finally {
             waitLock.unlock();
         }
     }
@@ -361,7 +363,8 @@ public class ConnectionPool {
         waitLock.lock();
         try {
             hasAvailableConnection.signalAll();
-        } finally {
+        }
+        finally {
             waitLock.unlock();
         }
     }

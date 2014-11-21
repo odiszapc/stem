@@ -21,6 +21,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -84,5 +85,29 @@ public class Utils {
         } catch (UnknownHostException e) {
             return "unknown";
         }
+    }
+
+    public static String listenStr(InetSocketAddress address) {
+        String ip = extractHostAddr(address);
+
+        int port = address.getPort();
+        return ip + ':' + port;
+    }
+
+    public static String extractHostAddr(InetSocketAddress address) {
+        if (null != address.getAddress())
+            return address.getAddress().getHostAddress();
+        else if (null != address.getHostName()) {
+            if (address.getHostName().contains("/")) {
+                int index = address.getHostName().indexOf("/");
+                return address.getHostName().substring(index + 1);
+            } else
+                return address.getHostName();
+        } else
+            throw new RuntimeException("Can not extract ip address");
+    }
+
+    public static InetSocketAddress normalizeSocketAddr(InetSocketAddress address) {
+        return new InetSocketAddress(extractHostAddr(address), address.getPort());
     }
 }

@@ -105,7 +105,7 @@ public class RestUtils {
     }
 
     public static REST.StorageNode packNode(Topology.StorageNode node) {
-        REST.StorageNode result = new REST.StorageNode(node.getId(), node.getHostname(), node.getAddress().toString(), 0l);
+        REST.StorageNode result = new REST.StorageNode(node.getId(), node.getHostname(), Utils.listenStr(node.getAddress()), 0l);
 
         long total = 0;
         for (Topology.Disk disk : node.disks()) {

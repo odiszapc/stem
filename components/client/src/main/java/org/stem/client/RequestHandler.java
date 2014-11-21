@@ -86,7 +86,7 @@ public class RequestHandler implements Connection.ResponseCallback {
                             logger.warn("{} replied with server error ({}), trying next host.", connection.address, err.message);
                             ClientException exception = new ClientException("Host replied with server error: " + err.message);
                             logError(connection.address, exception);
-                            connection.deactivate(exception);
+                            connection.defunct(exception);
                             return;
                         default:
                             break;
@@ -135,7 +135,7 @@ public class RequestHandler implements Connection.ResponseCallback {
     public void onTimeout(Connection connection, long latency) {
         try {
             ClientException timeoutException = new ClientException("Timed out waiting for server response");
-            connection.deactivate(timeoutException); // TODO: and what?
+            connection.defunct(timeoutException); // TODO: and what?
             logError(connection.address, timeoutException);
         } catch (Exception e) {
             setFinalException(null, new ClientInternalError("An unexpected error happened while handling timeout", e));
@@ -197,7 +197,8 @@ public class RequestHandler implements Connection.ResponseCallback {
         try {
             if (timerContext != null)
                 timerContext.stop();
-        } finally {
+        }
+        finally {
             callback.onException(connection, exception, System.nanoTime() - startTime);
         }
     }

@@ -118,13 +118,20 @@ public class ClusterDescriber {
         return cluster.coordinationClient;
     }
 
-    public void onRemove(Host host) {
-        refreshNodeList();
-    }
-
     public CloseFuture closeAsync() {
         isShutdown = true;
 
         return CloseFuture.immediateFuture();
+    }
+
+    public void onUp(Host host) {
+    }
+
+    public void onDown(Host host) {
+
+    }
+
+    public void onRemove(Host host) {
+        refreshNodeList();
     }
 }

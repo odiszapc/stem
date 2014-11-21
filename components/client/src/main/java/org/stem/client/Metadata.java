@@ -41,8 +41,8 @@ public class Metadata {
     }
 
     Collection<Host> allHosts() {
-            return hosts.values();
-        }
+        return hosts.values();
+    }
 
     public Host getHost(InetSocketAddress addr) {
         return hosts.get(addr);

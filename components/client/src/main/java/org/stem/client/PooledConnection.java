@@ -30,6 +30,9 @@ public class PooledConnection extends Connection {
     }
 
     public void release() {
+        if (pool == null)
+            return;
+
         pool.returnConnection(this);
     }
 

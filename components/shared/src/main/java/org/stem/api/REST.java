@@ -110,7 +110,7 @@ public abstract class REST {
 
         @JsonIgnore
         public InetSocketAddress socketAddress() {
-            return new InetSocketAddress(getListenHost(), getListenPort());
+            return Utils.normalizeSocketAddr(new InetSocketAddress(getListenHost(), getListenPort()));
         }
 
         @Override

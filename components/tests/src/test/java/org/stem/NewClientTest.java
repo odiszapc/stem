@@ -34,5 +34,6 @@ public class NewClientTest //extends IntegrationTestBase
 
         Session session = cluster.connect();
 
+        Thread.sleep(1000000);
     }
 }

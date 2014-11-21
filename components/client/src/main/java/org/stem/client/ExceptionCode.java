@@ -24,6 +24,7 @@ public enum ExceptionCode {
 
     public final int value;
     private static final Map<Integer, ExceptionCode> valueToCode = new HashMap<Integer, ExceptionCode>(ExceptionCode.values().length);
+
     static {
         for (ExceptionCode code : ExceptionCode.values())
             valueToCode.put(code.value, code);
