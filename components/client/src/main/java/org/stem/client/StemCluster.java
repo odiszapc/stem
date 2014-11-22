@@ -431,6 +431,7 @@ public class StemCluster {
             new AbstractReconnectionHandler(reconnectionExecutor, reconnectionPolicy().newSchedule(), host.reconnectionAttempt) {
 
                 protected Connection tryReconnect() throws ConnectionException, InterruptedException {
+                    logger.debug("Trying to reconnect to {}", host);
                     return connectionFactory.open(host);
                 }
 
