@@ -27,7 +27,7 @@ public class NewClientTest //extends IntegrationTestBase
 
 
     @Test
-    public void testName() throws Exception {
+    public void testConnect() throws Exception {
         StemCluster cluster = new StemCluster.Builder()
                 .withClusterManagerUrl("http://127.0.0.1:9997")
                 .build();
