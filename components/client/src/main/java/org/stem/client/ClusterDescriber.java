@@ -138,4 +138,8 @@ public class ClusterDescriber {
     public void onSuspected(Host host) {
 
     }
+
+    public void refreshNodeInfo(Host host) {
+        // TODO: should or not we to implement it?
+    }
 }
