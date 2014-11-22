@@ -26,7 +26,6 @@ import org.stem.api.ClusterManagerClient;
 import org.stem.api.response.ClusterResponse;
 import org.stem.coordination.ZookeeperClient;
 import org.stem.coordination.ZookeeperClientFactory;
-import org.stem.exceptions.ConnectionException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -129,6 +128,7 @@ public class StemCluster {
         Configuration configuration;
         final Connection.Factory connectionFactory;
 
+        final ScheduledExecutorService reconnectionExecutor = Executors.newScheduledThreadPool(2, threadFactory("Reconnection-%d"));
         final ListeningExecutorService executor;
         final ListeningExecutorService blockingExecutor;
 
@@ -146,6 +146,10 @@ public class StemCluster {
             this.blockingExecutor = newExecutor(2, "Stem Client blocking tasks worker-%d");
             this.managerClient = new ClusterManagerClient(managerUrl);
             this.clusterDescriber = new ClusterDescriber(this);
+        }
+
+        StemCluster getCluster() {
+            return StemCluster.this;
         }
 
         public Connection.Factory getConnectionFactory() {
@@ -190,6 +194,70 @@ public class StemCluster {
 
         boolean removeSession(Session session) {
             return sessions.remove(session);
+        }
+
+        public ListenableFuture<?> triggerOnUp(final Host host) {
+            return executor.submit(new ExceptionCatchingRunnable() {
+                @Override
+                public void runMayThrow() throws InterruptedException, ExecutionException {
+                    onUp(host);
+                }
+            });
+        }
+
+        private void onUp(final Host host) throws InterruptedException, ExecutionException {
+            onUp(host, blockingExecutor);
+        }
+
+        private void onUp(final Host host, ListeningExecutorService poolCreationExecutor) throws InterruptedException, ExecutionException {
+            logger.debug("Host {} is UP", host);
+
+            if (isClosed())
+                return;
+
+            if (host.state == Host.State.UP)
+                return;
+
+            ScheduledFuture<?> scheduledAttempt = host.reconnectionAttempt.getAndSet(null);
+            if (scheduledAttempt != null) {
+                logger.debug("Cancelling reconnection attempt since node is UP");
+                scheduledAttempt.cancel(false);
+            }
+
+            logger.trace("Adding/renewing host pools for newly UP host {}", host);
+
+            List<ListenableFuture<Boolean>> futures = new ArrayList<ListenableFuture<Boolean>>(sessions.size());
+            for (Session s : sessions)
+                futures.add(s.forceRenewPool(host, poolCreationExecutor));
+
+            ListenableFuture<List<Boolean>> f = Futures.allAsList(futures);
+            Futures.addCallback(f, new FutureCallback<List<Boolean>>() {
+                public void onSuccess(List<Boolean> poolCreationResults) {
+                    // If any of the creation failed, they will have signaled a connection failure
+                    // which will trigger a reconnection to the node. So don't bother marking UP.
+                    if (Iterables.any(poolCreationResults, Predicates.equalTo(false))) {
+                        logger.debug("Connection pool cannot be created, not marking {} UP", host);
+                        return;
+                    }
+
+                    host.setUp();
+
+                    // TODO:
+//                    for (Host.StateListener listener : listeners)
+//                        listener.onUp(host);
+                }
+
+                public void onFailure(Throwable t) {
+                    // That future is not really supposed to throw unexpected exceptions
+                    if (!(t instanceof InterruptedException))
+                        logger.error("Unexpected error while marking node UP: while this shouldn't happen, this shouldn't be critical", t);
+                }
+            });
+
+            f.get();
+
+            for (Session s : sessions)
+                s.updateCreatedPools(blockingExecutor);
         }
 
         public ListenableFuture<?> triggerOnAdd(final Host host) {
@@ -290,7 +358,8 @@ public class StemCluster {
 
             logger.debug("Shutting down");
 
-            blockingExecutor.shutdownNow();
+            reconnectionExecutor.shutdownNow();
+            //blockingExecutor.shutdownNow(); TODO: think about this line
             executor.shutdown();
 
             List<CloseFuture> futures = new ArrayList<CloseFuture>(sessions.size() + 1);
@@ -314,10 +383,6 @@ public class StemCluster {
                 if (isHostAddition || !markSuspected) {
                     triggerOnDown(host, isHostAddition);
                 } else {
-                    // Note that we do want to call onSuspected on the current thread, as the whole point is
-                    // that by the time this method return, the host initialReconnectionAttempt will have been
-                    // set and the load balancing policy informed of the suspection. We know that onSuspected
-                    // does little work (and non blocking one) itself however.
                     onSuspected(host);
                 }
             }
@@ -362,7 +427,42 @@ public class StemCluster {
 //                    listener.onDown(host);
 //            }
 
-            // TODO: reconnection logic should be here
+            logger.debug("{} is down, scheduling connection retries", host);
+            new AbstractReconnectionHandler(reconnectionExecutor, reconnectionPolicy().newSchedule(), host.reconnectionAttempt) {
+
+                protected Connection tryReconnect() throws ConnectionException, InterruptedException {
+                    return connectionFactory.open(host);
+                }
+
+                protected void onReconnection(Connection connection) {
+                    connection.closeAsync();
+                    logger.debug("Successful reconnection to {}, setting host UP", host);
+
+                    clusterDescriber.refreshNodeInfo(host);
+                    try {
+                        if (isHostAddition)
+                            onAdd(host);
+                        else
+                            onUp(host);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    } catch (Exception e) {
+                        logger.error("Unexpected error while setting node up", e);
+                    }
+                }
+
+                protected boolean onConnectionException(ConnectionException e, long nextDelayMs) {
+                    if (logger.isDebugEnabled())
+                        logger.debug("Failed reconnection to {} ({}), scheduling retry in {} milliseconds", host, e.getMessage(), nextDelayMs);
+                    return true;
+                }
+
+                protected boolean onUnknownException(Exception e, long nextDelayMs) {
+                    logger.error(String.format("Unknown error during control connection reconnection, scheduling retry in %d milliseconds", nextDelayMs), e);
+                    return true;
+                }
+
+            }.start();
         }
 
         public void onSuspected(final Host host) {
@@ -371,8 +471,34 @@ public class StemCluster {
             if (isClosed())
                 return;
 
-            triggerOnDown(host);
-            return;
+            //triggerOnDown(host);
+
+            synchronized (host) {
+                if (!host.setSuspected() || host.reconnectionAttempt.get() != null)
+                    return;
+
+                host.initialReconnectionAttempt.set(executor.submit(new ExceptionCatchingRunnable() {
+                    @Override
+                    public void runMayThrow() throws InterruptedException, ExecutionException {
+                        try {
+                            connectionFactory.open(host).closeAsync();
+                            onUp(host, MoreExecutors.sameThreadExecutor());
+                        } catch (Exception e) {
+                            onDown(host, false, true);
+                        }
+                    }
+                }));
+            }
+
+            clusterDescriber.onSuspected(host);
+        }
+
+
+        public void ensurePoolsSizing() {
+            for (Session session : sessions) {
+                for (ConnectionPool pool : session.pools.values())
+                    pool.ensureCoreConnections();
+            }
         }
 
         private class ClusterCloseFuture extends CloseFuture.Forwarding {
@@ -393,8 +519,9 @@ public class StemCluster {
                     @Override
                     public void run() {
                         try {
+                            reconnectionExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
                             executor.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
-                            blockingExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+                            //blockingExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS); TODO: think about this
                             connectionFactory.shutdown();
 
                             set(null);
@@ -439,6 +566,11 @@ public class StemCluster {
 
         public Builder withClusterManagerUrl(String url) {
             clusterManagerUrl = url;
+            return this;
+        }
+
+        public Builder withReconnectionPolicy(ReconnectionPolicy policy) {
+            this.reconnectionPolicy = policy;
             return this;
         }
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.stem.exceptions;
+package org.stem.client;
 
 public class ConnectionBusyException extends Exception {
 

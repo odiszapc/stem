@@ -19,8 +19,6 @@ package org.stem.client;
 import com.codahale.metrics.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stem.exceptions.ConnectionBusyException;
-import org.stem.exceptions.ConnectionException;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;

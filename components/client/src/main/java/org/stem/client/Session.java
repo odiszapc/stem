@@ -19,7 +19,6 @@ package org.stem.client;
 import com.google.common.util.concurrent.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stem.exceptions.ConnectionException;
 
 import java.util.ArrayList;
 import java.util.List;

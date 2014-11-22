@@ -14,17 +14,26 @@
  * limitations under the License.
  */
 
-package org.stem.exceptions;
+package org.stem.client;
 
 import java.net.InetSocketAddress;
 
-public class ClientTransportException extends ConnectionException {
+public class ConnectionException extends Exception {
 
-    public ClientTransportException(InetSocketAddress address, String message, Throwable cause) {
-        super(address, message, cause);
+    public final InetSocketAddress address;
+
+    public ConnectionException(InetSocketAddress address, String message, Throwable cause) {
+        super(message, cause);
+        this.address = address;
     }
 
-    public ClientTransportException(InetSocketAddress address, String message) {
-        super(address, message);
+    public ConnectionException(InetSocketAddress address, String message) {
+        super(message);
+        this.address = address;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("[%s] %s", address, super.getMessage());
     }
 }

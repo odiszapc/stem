@@ -20,9 +20,6 @@ public interface ReconnectionPolicy {
 
     public ReconnectionSchedule newSchedule();
 
-    /**
-     * Schedules reconnection attempts to a node.
-     */
     public interface ReconnectionSchedule {
 
         public long nextDelayMs();

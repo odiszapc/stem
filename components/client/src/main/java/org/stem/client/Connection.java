@@ -29,9 +29,6 @@ import io.netty.util.Timer;
 import io.netty.util.TimerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stem.exceptions.ClientTransportException;
-import org.stem.exceptions.ConnectionBusyException;
-import org.stem.exceptions.ConnectionException;
 
 import java.net.InetSocketAddress;
 import java.nio.channels.ClosedChannelException;

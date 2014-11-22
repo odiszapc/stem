@@ -16,8 +16,6 @@
 
 package org.stem.client;
 
-import org.stem.exceptions.ConnectionBusyException;
-
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 

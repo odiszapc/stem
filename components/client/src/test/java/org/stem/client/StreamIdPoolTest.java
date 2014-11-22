@@ -19,7 +19,6 @@ package org.stem.client;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.stem.exceptions.ConnectionBusyException;
 
 public class StreamIdPoolTest {
 

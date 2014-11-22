@@ -134,4 +134,8 @@ public class ClusterDescriber {
     public void onRemove(Host host) {
         refreshNodeList();
     }
+
+    public void onSuspected(Host host) {
+
+    }
 }
