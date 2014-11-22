@@ -69,8 +69,12 @@ public class ConnectionPool {
         };
 
         List<PooledConnection> l = new ArrayList<>(options().getStartConnectionsPerHost());
-        for (int i = 0; i < options().getStartConnectionsPerHost(); i++) {
-            l.add(session.connectionFactory().open(this));
+        try {
+            for (int i = 0; i < options().getStartConnectionsPerHost(); i++) {
+                l.add(session.connectionFactory().open(this));
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
         this.connections = new CopyOnWriteArrayList<>(l);
         this.open = new AtomicInteger(connections.size());
@@ -307,6 +311,11 @@ public class ConnectionPool {
             connections.add(session.connectionFactory().open(this));
             signalAvailableConnection();
             return true;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            // Skip the open but ignore otherwise
+            open.decrementAndGet();
+            return false;
         } catch (ConnectionException e) {
             open.decrementAndGet();
             logger.debug("Connection error to {} while creating additional connection", host);
@@ -314,7 +323,6 @@ public class ConnectionPool {
         }
 
     }
-
 
     private void maybeSpawnNewConnection() {
         while (true) {

@@ -306,7 +306,7 @@ public class Connection {
             return new Connection(name, address, this);
         }
 
-        public PooledConnection open(ConnectionPool pool) throws ConnectionException {
+        public PooledConnection open(ConnectionPool pool) throws ConnectionException, InterruptedException {
             InetSocketAddress address = pool.host.getSocketAddress();
 
             if (isShutdown)
