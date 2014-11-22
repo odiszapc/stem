@@ -23,9 +23,6 @@ import org.stem.client.StemCluster;
 
 public class NewClientTest //extends IntegrationTestBase
 {
-
-
-
     @Test
     public void testConnect() throws Exception {
         StemCluster cluster = new StemCluster.Builder()
