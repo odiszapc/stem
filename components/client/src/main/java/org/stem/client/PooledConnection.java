@@ -16,9 +16,14 @@
 
 package org.stem.client;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.InetSocketAddress;
 
 public class PooledConnection extends Connection {
+
+    private final static Logger logger = LoggerFactory.getLogger(PooledConnection.class);
 
     private ConnectionPool pool;
 
