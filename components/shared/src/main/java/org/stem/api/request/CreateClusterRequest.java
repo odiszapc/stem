@@ -16,12 +16,17 @@
 
 package org.stem.api.request;
 
-public class InitClusterRequest extends ClusterManagerRequest {
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public class CreateClusterRequest extends ClusterManagerRequest {
 
     String name;
     int vBuckets;
     int rf;
     String partitioner;
+
+    @JsonProperty(value = "meta")
+    MetaStoreConfiguration metaStoreConfiguration = new MetaStoreConfiguration();
 
     public String getName() {
         return name;
@@ -39,13 +44,22 @@ public class InitClusterRequest extends ClusterManagerRequest {
         return partitioner;
     }
 
-    public InitClusterRequest() {
+    public MetaStoreConfiguration getMetaStoreConfiguration() {
+        return metaStoreConfiguration;
     }
 
-    public InitClusterRequest(String name, int vBuckets, int rf, String partitioner) {
+    public CreateClusterRequest() {
+    }
+
+    public CreateClusterRequest(String name,
+                                int vBuckets,
+                                int rf,
+                                String partitioner,
+                                MetaStoreConfiguration metaStoreConfiguration) {
         this.name = name;
         this.vBuckets = vBuckets;
         this.rf = rf;
         this.partitioner = partitioner;
+        this.metaStoreConfiguration = metaStoreConfiguration;
     }
 }

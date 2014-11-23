@@ -19,7 +19,7 @@ package org.stem.api.resources;
 import org.stem.RestUtils;
 import org.stem.api.RESTConstants;
 import org.stem.api.request.AuthorizeNodeRequest;
-import org.stem.api.request.InitClusterRequest;
+import org.stem.api.request.CreateClusterRequest;
 import org.stem.api.request.JoinRequest;
 import org.stem.api.request.ListUnauthorizedNodesRequest;
 import org.stem.api.response.ClusterResponse;
@@ -48,9 +48,10 @@ public class ClusterResource {
      */
     @POST
     @Path(RESTConstants.Api.Cluster.Init.BASE)
-    public Response create(InitClusterRequest req) {
-        Cluster.instance.initialize(req.getName(), req.getvBuckets(), req.getRf(), req.getPartitioner());
-        Cluster.instance().save();
+    public Response create(CreateClusterRequest req) {
+
+        Cluster.instance.initialize(req.getName(), req.getvBuckets(), req.getRf(), req.getPartitioner(),
+                req.getMetaStoreConfiguration());
 
         return RestUtils.ok();
     }

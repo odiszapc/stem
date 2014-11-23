@@ -1,11 +1,11 @@
-CREATE KEYSPACE stem WITH replication = {
+CREATE KEYSPACE IF NOT EXISTS stem WITH REPLICATION = {
   'class': 'SimpleStrategy',
-  'replication_factor': '1'
+  'replication_factor': 1
 };
 
 USE stem;
 
-CREATE TABLE blobs_meta (
+CREATE TABLE IF NOT EXISTS blobs_meta (
   blob blob,
   disk uuid,
   data blob,

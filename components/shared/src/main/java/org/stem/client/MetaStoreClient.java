@@ -40,8 +40,10 @@ public class MetaStoreClient {
     private static final String DELETE_STATEMENT = "DELETE FROM stem.blobs_meta WHERE blob = ?";
     private static final String DELETE_REPLICA_STATEMENT = "DELETE FROM stem.blobs_meta WHERE blob=? AND disk=?";
 
-    private Cluster cluster;
-    private Session session;
+    protected Cluster cluster;
+    protected Session session;
+    private volatile boolean started;
+    private final String[] contactPoints;
 
     PreparedStatement insertToBlobsMeta;
     PreparedStatement selectBlobsMeta;
@@ -50,14 +52,18 @@ public class MetaStoreClient {
     PreparedStatement deleteBlobsMeta;
     PreparedStatement deleteReplicaBlobsMeta;
 
-    public MetaStoreClient() // TODO: host and port must be here
-    {
 
+    public MetaStoreClient(String... contactPoints)
+    {
+        this.contactPoints = contactPoints;
     }
 
     public void start() {
+        if (started)
+            throw new IllegalStateException("Cassandra client is already started");
+
         cluster = Cluster.builder()
-                .addContactPoint("127.0.0.1") // TODO: make configurable
+                .addContactPoints(contactPoints)
                 .withClusterName(Schema.CLUSTER)
                 .withLoadBalancingPolicy(new RoundRobinPolicy())
                 .withRetryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE)
@@ -70,15 +76,20 @@ public class MetaStoreClient {
         session.execute("use stem");
 
         prepareStatements();
+        started = true;
+    }
+
+    public boolean isStarted() {
+        return started;
     }
 
     private void prepareStatements() {
-        insertToBlobsMeta = getSession().prepare(INSERT_STATEMENT);
-        selectBlobsMeta = getSession().prepare(SELECT_STATEMENT);
-        selectReplicaBlobsMeta = getSession().prepare(SELECT_REPLICA_STATEMENT);
-        updateBlobsMeta = getSession().prepare(UPDATE_STATEMENT);
-        deleteBlobsMeta = getSession().prepare(DELETE_STATEMENT);
-        deleteReplicaBlobsMeta = getSession().prepare(DELETE_REPLICA_STATEMENT);
+        insertToBlobsMeta = session.prepare(INSERT_STATEMENT);
+        selectBlobsMeta = session.prepare(SELECT_STATEMENT);
+        selectReplicaBlobsMeta = session.prepare(SELECT_REPLICA_STATEMENT);
+        updateBlobsMeta = session.prepare(UPDATE_STATEMENT);
+        deleteBlobsMeta = session.prepare(DELETE_STATEMENT);
+        deleteReplicaBlobsMeta = session.prepare(DELETE_REPLICA_STATEMENT);
     }
 
     public void stop() {

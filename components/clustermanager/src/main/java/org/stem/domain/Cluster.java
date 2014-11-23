@@ -20,8 +20,10 @@ import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.ClusterManagerDaemon;
+import org.stem.MetaStoreInitializer;
 import org.stem.RestUtils;
 import org.stem.api.REST;
+import org.stem.api.request.MetaStoreConfiguration;
 import org.stem.coordination.*;
 import org.stem.domain.topology.DataMapping;
 import org.stem.domain.topology.Partitioner;
@@ -41,6 +43,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class Cluster {
 
     private static final Logger logger = LoggerFactory.getLogger(Cluster.class);
+
 
     // TODO: 1. Handle the situation when storage already exists but new disk were added
     // TODO: 2. Handle the situation when storage is new but its disks are already attached to another storage
@@ -64,6 +67,7 @@ public class Cluster {
 
     final Manager manager;
     Descriptor descriptor;
+    private MetaStoreConfiguration metaStoreConfiguration;
 
     @Deprecated
     Topology topology; // TODO: get rid of entirely
@@ -138,11 +142,15 @@ public class Cluster {
         return true;
     }
 
-    public void initialize(String name, int vBuckets, int rf, String partitioner) {
+    public void initialize(String name, int vBuckets, int rf, String partitioner, MetaStoreConfiguration metaStoreConfiguration) {
         try {
-            manager.ensureUninitialized();
-            Descriptor desc = new Descriptor(name, vBuckets, rf, manager.endpoint, Partitioner.Type.byName(partitioner));
+            this.metaStoreConfiguration = metaStoreConfiguration;
+            manager.ensureUninitialized(); // TODO: seal into the manager instance
+            Descriptor desc = new Descriptor(name, vBuckets, rf, manager.endpoint,
+                    Partitioner.Type.byName(partitioner),
+                    metaStoreConfiguration.getContactPoints());
             manager.newCluster(desc);
+            save();
         } catch (Exception e) {
             state.compareAndSet(State.INITIALIZING, State.UNINITIALIZED);
             throw new StemException(String.format("Error while initializing a new cluster: %s", e.getMessage()), e);
@@ -297,9 +305,20 @@ public class Cluster {
             mapping = distributionManager.getCurrentMappings();
 
             initZookeeperPaths();
+
+            tryInitializeMetaStore();
+
             state.set(State.INITIALIZED);
 
             startListenForStats();
+        }
+
+        private void tryInitializeMetaStore() {
+            MetaStoreInitializer configurator = new MetaStoreInitializer(metaStoreConfiguration);
+            configurator.createSchema();
+            configurator.stop();
+
+            logger.info("MetaStore initialized successfully");
         }
 
         synchronized boolean loadCluster() throws Exception {
@@ -482,6 +501,7 @@ public class Cluster {
         int rf;
         Partitioner.Type partitioner = Partitioner.Type.CRUSH;
         String zookeeperEndpoint;
+        String[] metaStoreContactPoints;
 
         public Descriptor() {
         }
@@ -506,12 +526,17 @@ public class Cluster {
             return zookeeperEndpoint;
         }
 
-        public Descriptor(String name, int vBuckets, int rf, String zookeeperEndpoint, Partitioner.Type partitioner) {
+        public String[] getMetaStoreContactPoints() {
+            return metaStoreContactPoints;
+        }
+
+        public Descriptor(String name, int vBuckets, int rf, String zookeeperEndpoint, Partitioner.Type partitioner, String[] contactPoints) {
             this.name = name;
             this.vBuckets = vBuckets;
             this.rf = rf;
             this.zookeeperEndpoint = zookeeperEndpoint;
             this.partitioner = partitioner;
+            this.metaStoreContactPoints = contactPoints;
         }
 
         @Override

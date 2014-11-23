@@ -21,8 +21,9 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stem.api.request.InitClusterRequest;
+import org.stem.api.request.CreateClusterRequest;
 import org.stem.api.request.JoinRequest;
+import org.stem.api.request.MetaStoreConfiguration;
 import org.stem.api.response.ClusterResponse;
 import org.stem.api.response.JoinResponse;
 import org.stem.api.response.StemResponse;
@@ -83,7 +84,8 @@ public class ClusterManagerClient extends BaseHttpClient {
         URI uri = getURI(RESTConstants.Api.Cluster.Init.URI);
         HttpPut request = new HttpPut(uri);
 
-        InitClusterRequest initRequest = new InitClusterRequest(clusterName, vBuckets, rf, partitioner);
+        // Initialize with local Cassandra cluster, RF = 1
+        CreateClusterRequest initRequest = new CreateClusterRequest(clusterName, vBuckets, rf, partitioner, new MetaStoreConfiguration());
 
         return send(request, initRequest, StemResponse.class);
     }
