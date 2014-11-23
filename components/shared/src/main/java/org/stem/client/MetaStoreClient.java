@@ -54,6 +54,9 @@ public class MetaStoreClient {
 
 
     public MetaStoreClient(String... contactPoints) {
+        if (contactPoints.length == 0)
+            throw new RuntimeException("No contact points specified");
+
         cluster = Cluster.builder()
                 .addContactPoints(contactPoints)
                 .withClusterName(Schema.CLUSTER)

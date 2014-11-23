@@ -29,6 +29,7 @@ import org.stem.transport.ops.WriteBlobMessage;
 
 import java.util.*;
 
+@Deprecated
 public class StemClient implements TopoMapSubscriber {
 
     private MetaStoreClient metaClient;

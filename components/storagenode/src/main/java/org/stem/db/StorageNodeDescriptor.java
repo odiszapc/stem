@@ -160,7 +160,7 @@ public class StorageNodeDescriptor {
     public static void describeCluster() {
         cluster = ClusterService.describeAndInit();
         logger.info("Cluster loaded: {}", cluster);
-        metaStoreClient = new MetaStoreClient(); // TODO: Metastore client? Here? Why?
+        metaStoreClient = new MetaStoreClient(cluster.getMetaStoreContactPoints()); // TODO: MetaStore client? Here? Why? (Because fuck you that's why, to update meta store directly from Storage Node)
         metaStoreClient.start();
     }
 

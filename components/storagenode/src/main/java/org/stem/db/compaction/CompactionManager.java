@@ -49,7 +49,7 @@ public class CompactionManager {
     }
 
     public CompactionManager() {
-        client = new MetaStoreClient();
+        client = new MetaStoreClient(StorageNodeDescriptor.cluster().getMetaStoreContactPoints());
         client.start(); // TODO: close ?
     }
 
