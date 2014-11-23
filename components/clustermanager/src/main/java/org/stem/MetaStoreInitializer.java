@@ -69,7 +69,7 @@ public class MetaStoreInitializer extends MetaStoreClient {
 
     @Override
     public void start() {
-        super.start();
+        super.start(false);
         prepareStatements();
     }
 

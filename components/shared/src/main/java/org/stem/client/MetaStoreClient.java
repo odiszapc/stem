@@ -43,7 +43,6 @@ public class MetaStoreClient {
     protected Cluster cluster;
     protected Session session;
     private volatile boolean started;
-    private final String[] contactPoints;
 
     PreparedStatement insertToBlobsMeta;
     PreparedStatement selectBlobsMeta;
@@ -53,15 +52,7 @@ public class MetaStoreClient {
     PreparedStatement deleteReplicaBlobsMeta;
 
 
-    public MetaStoreClient(String... contactPoints)
-    {
-        this.contactPoints = contactPoints;
-    }
-
-    public void start() {
-        if (started)
-            throw new IllegalStateException("Cassandra client is already started");
-
+    public MetaStoreClient(String... contactPoints) {
         cluster = Cluster.builder()
                 .addContactPoints(contactPoints)
                 .withClusterName(Schema.CLUSTER)
@@ -70,10 +61,21 @@ public class MetaStoreClient {
                 .withReconnectionPolicy(new ExponentialReconnectionPolicy(100, 10000))
                 .withoutMetrics()
                 .build();
+    }
+
+    public void start() {
+        start(true);
+    }
+
+    protected void start(boolean setKeyspace) {
+        if (started)
+            throw new IllegalStateException("Cassandra client is already started");
+
 
         session = cluster.connect(Schema.KEYSPACE);
 
-        session.execute("use stem");
+        if (setKeyspace)
+            session.execute("use stem");
 
         prepareStatements();
         started = true;
@@ -100,7 +102,6 @@ public class MetaStoreClient {
         return session;
     }
 
-
     public List<ExtendedBlobDescriptor> readMeta(byte[] key) {
         BoundStatement statement = selectBlobsMeta.bind(ByteBuffer.wrap(key));
         List<Row> rows = getSession().execute(statement).all();
@@ -110,14 +111,13 @@ public class MetaStoreClient {
         for (Row row : rows) {
             ExtendedBlobDescriptor writeResult = extractMeta(row);
             results.add(writeResult);
-
         }
         return results;
     }
 
     public ExtendedBlobDescriptor readMeta(byte[] key, UUID diskId) {
         BoundStatement statement = selectReplicaBlobsMeta.bind(ByteBuffer.wrap(key), diskId);
-        Row row = getSession().execute(statement).one();// TODO: check is there are many replicas for this particular blob and disk ??? (is it possible?)
+        Row row = getSession().execute(statement).one(); // TODO: check is there are many replicas for this particular blob and disk ??? (is it possible?)
         if (null == row)
             return null;
 
