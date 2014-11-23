@@ -51,14 +51,15 @@ public class RestUtils {
     public static ClusterResponse buildClusterResponse(Cluster cluster, boolean attachDiskStat) {
         ClusterResponse response = new ClusterResponse();
         Cluster.Descriptor descriptor = cluster.descriptor();
-        response.getCluster().setName(descriptor.getName());
-        response.getCluster().setVBucketsNum(descriptor.getvBuckets());
-        response.getCluster().setPartitioner(descriptor.getPartitioner().getName());
-        response.getCluster().setRf(descriptor.getRf());
-        response.getCluster().setZookeeperEndpoint(descriptor.getZookeeperEndpoint());
-        response.getCluster().setUsedBytes(cluster.getUsedBytes());
-        response.getCluster().setTotalBytes(cluster.getTotalBytes());
-
+        ClusterResponse.Cluster rest = response.getCluster();
+        rest.setName(descriptor.getName());
+        rest.setVBucketsNum(descriptor.getvBuckets());
+        rest.setPartitioner(descriptor.getPartitioner().getName());
+        rest.setRf(descriptor.getRf());
+        rest.setZookeeperEndpoint(descriptor.getZookeeperEndpoint());
+        rest.setMetaStoreContactPoints(descriptor.getMetaStoreContactPoints());
+        rest.setUsedBytes(cluster.getUsedBytes());
+        rest.setTotalBytes(cluster.getTotalBytes());
 
         for (org.stem.domain.topology.Topology.StorageNode node : cluster.getStorageNodes()) {
             REST.StorageNode storageREST = packNode(node);
@@ -66,7 +67,7 @@ public class RestUtils {
             if (!attachDiskStat)
                 storageREST.getDisks().clear();
 
-            response.getCluster().getNodes().add(storageREST);
+            rest.getNodes().add(storageREST);
         }
         return response;
     }

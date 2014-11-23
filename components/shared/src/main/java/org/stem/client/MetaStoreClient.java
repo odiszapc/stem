@@ -43,13 +43,14 @@ public class MetaStoreClient {
     protected Cluster cluster;
     protected Session session;
     private volatile boolean started;
+    private volatile boolean statementsPrepared;
 
-    PreparedStatement insertToBlobsMeta;
-    PreparedStatement selectBlobsMeta;
-    PreparedStatement selectReplicaBlobsMeta;
-    PreparedStatement updateBlobsMeta;
-    PreparedStatement deleteBlobsMeta;
-    PreparedStatement deleteReplicaBlobsMeta;
+    private PreparedStatement insertToBlobsMeta;
+    private PreparedStatement selectBlobsMeta;
+    private PreparedStatement selectReplicaBlobsMeta;
+    private PreparedStatement updateBlobsMeta;
+    private PreparedStatement deleteBlobsMeta;
+    private PreparedStatement deleteReplicaBlobsMeta;
 
 
     public MetaStoreClient(String... contactPoints) {
@@ -67,17 +68,15 @@ public class MetaStoreClient {
         start(true);
     }
 
-    protected void start(boolean setKeyspace) {
+    protected void start(boolean prepareStatements) {
         if (started)
             throw new IllegalStateException("Cassandra client is already started");
 
-
         session = cluster.connect();
 
-        if (setKeyspace)
-            session.execute("use stem");
+        if (prepareStatements)
+            maybePrepareStatements();
 
-        prepareStatements();
         started = true;
     }
 
@@ -86,12 +85,21 @@ public class MetaStoreClient {
     }
 
     private void prepareStatements() {
+        session.execute("use stem");
+
         insertToBlobsMeta = session.prepare(INSERT_STATEMENT);
         selectBlobsMeta = session.prepare(SELECT_STATEMENT);
         selectReplicaBlobsMeta = session.prepare(SELECT_REPLICA_STATEMENT);
         updateBlobsMeta = session.prepare(UPDATE_STATEMENT);
         deleteBlobsMeta = session.prepare(DELETE_STATEMENT);
         deleteReplicaBlobsMeta = session.prepare(DELETE_REPLICA_STATEMENT);
+    }
+
+    private void maybePrepareStatements() {
+        if (!statementsPrepared) {
+            prepareStatements();
+            statementsPrepared = true;
+        }
     }
 
     public void stop() {
@@ -116,6 +124,7 @@ public class MetaStoreClient {
     }
 
     public ExtendedBlobDescriptor readMeta(byte[] key, UUID diskId) {
+        maybePrepareStatements();
         BoundStatement statement = selectReplicaBlobsMeta.bind(ByteBuffer.wrap(key), diskId);
         Row row = getSession().execute(statement).one(); // TODO: check is there are many replicas for this particular blob and disk ??? (is it possible?)
         if (null == row)
@@ -125,6 +134,7 @@ public class MetaStoreClient {
     }
 
     public void writeMeta(Collection<ExtendedBlobDescriptor> results) {
+        maybePrepareStatements();
         BatchStatement batch = new BatchStatement();
         for (ExtendedBlobDescriptor wr : results) {
             ByteBuffer key = ByteBuffer.wrap(wr.getKey());
@@ -141,13 +151,21 @@ public class MetaStoreClient {
     }
 
     public void updateMeta(byte[] key, UUID diskId, int fatFileIndex, int offset, int length) {
+        maybePrepareStatements();
         ByteBuffer data = buildMeta(fatFileIndex, offset, length);
         BoundStatement statement = updateBlobsMeta.bind(data, ByteBuffer.wrap(key), diskId);
         session.execute(statement);
     }
 
     public void deleteMeta(byte[] key) {
+        maybePrepareStatements();
         BoundStatement statement = deleteBlobsMeta.bind(ByteBuffer.wrap(key));
+        getSession().execute(statement);
+    }
+
+    public void deleteReplica(byte[] key, UUID diskId) {
+        maybePrepareStatements();
+        BoundStatement statement = deleteReplicaBlobsMeta.bind(ByteBuffer.wrap(key), diskId);
         getSession().execute(statement);
     }
 
@@ -172,11 +190,5 @@ public class MetaStoreClient {
         int length = buf.getInt();
 
         return new ExtendedBlobDescriptor(key, length, disk, fatFileIndex, -1, offset);
-    }
-
-
-    public void deleteReplica(byte[] key, UUID diskId) {
-        BoundStatement statement = deleteReplicaBlobsMeta.bind(ByteBuffer.wrap(key), diskId);
-        getSession().execute(statement);
     }
 }

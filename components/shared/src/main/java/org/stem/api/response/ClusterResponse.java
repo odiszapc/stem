@@ -21,6 +21,7 @@ import lombok.Data;
 import org.stem.api.REST;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ClusterResponse extends StemResponse { // TODO: Rest.ClusterDescriptor
@@ -39,6 +40,7 @@ public class ClusterResponse extends StemResponse { // TODO: Rest.ClusterDescrip
         int rf;
         String partitioner;
         String zookeeperEndpoint;
+        String[] metaStoreContactPoints;
         long usedBytes;
         long totalBytes;
 
@@ -58,9 +60,9 @@ public class ClusterResponse extends StemResponse { // TODO: Rest.ClusterDescrip
                     "name='" + name + '\'' +
                     ", vBucketsNum=" + vBucketsNum +
                     ", rf=" + rf +
-                    ", usedBytes=" + usedBytes +
-                    ", totalBytes=" + totalBytes +
-                    ", nodes=" + nodes +
+                    ", partitioner='" + partitioner + '\'' +
+                    ", zookeeperEndpoint='" + zookeeperEndpoint + '\'' +
+                    ", metaStoreContactPoints=" + Arrays.toString(metaStoreContactPoints) +
                     '}';
         }
     }

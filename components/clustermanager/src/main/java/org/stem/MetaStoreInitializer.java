@@ -18,6 +18,8 @@ package org.stem;
 
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.stem.api.request.MetaStoreConfiguration;
 import org.stem.client.MetaStoreClient;
 
@@ -26,12 +28,14 @@ import java.util.List;
 
 public class MetaStoreInitializer extends MetaStoreClient {
 
+    private static final Logger logger = LoggerFactory.getLogger(MetaStoreInitializer.class);
+
     private final String KEYSPACE = "stem";
 
-    private static final String CREATE_KEYSPACE = "CREATE KEYSPACE IF NOT EXISTS stem" +
+    private static final String CREATE_KEYSPACE = "CREATE KEYSPACE IF NOT EXISTS stem " +
             "WITH REPLICATION = {\n" +
             "  'class': 'SimpleStrategy',\n" +
-            "  'replication_factor': ?\n" +
+            "  'replication_factor': %s\n" +
             "};";
 
     private static final String USE_KEYSPACE = "USE stem;";
@@ -44,7 +48,7 @@ public class MetaStoreInitializer extends MetaStoreClient {
             "WITH COMPACT STORAGE AND\n" +
             "compaction = {\n" +
             "    'class': 'LeveledCompactionStrategy',\n" +
-            "    'sstable_size_in_mb': ?,\n" +
+            "    'sstable_size_in_mb': %s,\n" +
             "    'tombstone_compaction_interval': 86400,\n" +
             "    'tombstone_threshold': 0.2\n" +
             "};";
@@ -59,11 +63,15 @@ public class MetaStoreInitializer extends MetaStoreClient {
     }
 
     public void createSchema() {
-        if (!isStarted())
-            start();
+        try {
+            if (!isStarted())
+                start();
 
-        for (Statement statement : statements) {
-            session.execute(statement);
+            for (Statement statement : statements) {
+                session.execute(statement);
+            }
+        } catch (Exception e) {
+            logger.error("Can't create schema", e);
         }
     }
 
@@ -74,10 +82,8 @@ public class MetaStoreInitializer extends MetaStoreClient {
     }
 
     private void prepareStatements() {
-        statements.add(new SimpleStatement(CREATE_KEYSPACE, configuration.getReplicationFactor()));
+        statements.add(new SimpleStatement(String.format(CREATE_KEYSPACE, configuration.getReplicationFactor())));
         statements.add(new SimpleStatement(USE_KEYSPACE));
-        statements.add(new SimpleStatement(CREATE_TABLE, configuration.getLcsSstableSizeInMb()));
+        statements.add(new SimpleStatement(String.format(CREATE_TABLE, configuration.getLcsSstableSizeInMb())));
     }
-
-
 }
