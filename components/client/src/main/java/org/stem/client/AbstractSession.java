@@ -17,6 +17,7 @@
 package org.stem.client;
 
 import java.io.Closeable;
+import java.util.concurrent.ExecutionException;
 
 public abstract class AbstractSession implements Closeable {
 
@@ -26,5 +27,15 @@ public abstract class AbstractSession implements Closeable {
 
     public abstract DefaultResultFuture executeAsync(Message.Request operation);
 
-    public abstract void close();
+    public abstract CloseFuture closeAsync();
+
+    public void close() {
+        try {
+            closeAsync().get();
+        } catch (ExecutionException e) {
+            throw DefaultResultFuture.extractCauseFromExecutionException(e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
 }

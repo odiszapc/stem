@@ -45,7 +45,6 @@ public class RequestHandler implements Connection.ResponseCallback {
     private final long startTime;
 
     public RequestHandler(Session session, Callback callback) {
-
         this.session = session;
         this.callback = callback;
 
@@ -143,6 +142,7 @@ public class RequestHandler implements Connection.ResponseCallback {
     public void sendRequest() {
         try {
             Host host = null; //TODO: get host!!!!
+            session.cluster.getMetadata();
             if (query(host))
                 return;
 

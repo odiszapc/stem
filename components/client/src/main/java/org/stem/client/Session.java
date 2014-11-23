@@ -29,7 +29,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 
-public class Session extends AbstractSession {
+public class Session extends AbstractSession implements StemSession {
 
     private static final Logger logger = LoggerFactory.getLogger(ConnectionPool.class);
 
@@ -66,13 +66,22 @@ public class Session extends AbstractSession {
         return this;
     }
 
-    Configuration configuration() {
-        return cluster.manager.configuration;
+    @Override
+    public Blob get(byte[] key) {
+        //new Requests.ReadBlob()
+        return Blob.create(key, new byte[]{});
     }
 
-    Connection.Factory connectionFactory() {
-        return cluster.manager.connectionFactory;
+    @Override
+    public void put(Blob object) {
+
     }
+
+    @Override
+    public void delete(byte[] key) {
+
+    }
+
 
     @Override
     public DefaultResultFuture executeAsync(Message.Request request) {
@@ -87,10 +96,14 @@ public class Session extends AbstractSession {
         new RequestHandler(this, callback).sendRequest();
     }
 
-    @Override
-    public void close() {
-
+    Configuration configuration() {
+        return cluster.manager.configuration;
     }
+
+    Connection.Factory connectionFactory() {
+        return cluster.manager.connectionFactory;
+    }
+
 
     public CloseFuture closeAsync() {
         CloseFuture future = closeFuture.get();
