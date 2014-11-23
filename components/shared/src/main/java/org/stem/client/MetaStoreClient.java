@@ -72,7 +72,7 @@ public class MetaStoreClient {
             throw new IllegalStateException("Cassandra client is already started");
 
 
-        session = cluster.connect(Schema.KEYSPACE);
+        session = cluster.connect();
 
         if (setKeyspace)
             session.execute("use stem");
@@ -141,7 +141,6 @@ public class MetaStoreClient {
     }
 
     public void updateMeta(byte[] key, UUID diskId, int fatFileIndex, int offset, int length) {
-        // UPDATE stem.blobs_meta SET data = ? WHERE blob = ? AND disk = ?
         ByteBuffer data = buildMeta(fatFileIndex, offset, length);
         BoundStatement statement = updateBlobsMeta.bind(data, ByteBuffer.wrap(key), diskId);
         session.execute(statement);
