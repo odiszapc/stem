@@ -32,6 +32,41 @@ import java.util.*;
  */
 public abstract class REST {
 
+    @Data
+    public static class Cluster {
+
+        String name;
+        int vBucketsNum;
+        int rf;
+        String partitioner;
+        String zookeeperEndpoint;
+        String[] metaStoreContactPoints;
+        long usedBytes;
+        long totalBytes;
+
+        List<StorageNode> nodes = new ArrayList<>();
+
+        public List<StorageNode> getNodes() {
+            return nodes;
+        }
+
+        public void setNodes(List<StorageNode> nodes) {
+            this.nodes = nodes;
+        }
+
+        @Override
+        public String toString() {
+            return "Cluster{" +
+                    "name='" + name + '\'' +
+                    ", vBucketsNum=" + vBucketsNum +
+                    ", rf=" + rf +
+                    ", partitioner='" + partitioner + '\'' +
+                    ", zookeeperEndpoint='" + zookeeperEndpoint + '\'' +
+                    ", metaStoreContactPoints=" + Arrays.toString(metaStoreContactPoints) +
+                    '}';
+        }
+    }
+
     @EqualsAndHashCode(callSuper = false)
     @Data
     @RequiredArgsConstructor

@@ -18,7 +18,7 @@ package org.stem.db;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stem.api.response.ClusterResponse;
+import org.stem.api.REST;
 import org.stem.client.MetaStoreClient;
 import org.stem.config.Config;
 import org.stem.service.ClusterService;
@@ -39,7 +39,7 @@ public class StorageNodeDescriptor {
     private static Config config;
     private static final String STEM_CONFIG_PROPERTY = "stem.config";
     private static final String STEM_ID_PROPERTY = "stem.node.id";
-    private static ClusterResponse.Cluster cluster; // This should be some of Topology or Cluster globals class, not from Response*
+    private static REST.Cluster cluster; // This should be some of Topology or Cluster globals class, not from Response*
     private static MetaStoreClient metaStoreClient;
     public static UUID id;
 
@@ -172,7 +172,7 @@ public class StorageNodeDescriptor {
         Layout.getInstance().detach();
     }
 
-    public static ClusterResponse.Cluster cluster() {
+    public static REST.Cluster cluster() {
         return cluster;
     }
 

@@ -23,7 +23,7 @@ import com.google.common.util.concurrent.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.api.ClusterManagerClient;
-import org.stem.api.response.ClusterResponse;
+import org.stem.api.REST;
 import org.stem.coordination.ZookeeperClient;
 import org.stem.coordination.ZookeeperClientFactory;
 
@@ -116,7 +116,7 @@ public class StemCluster {
     }
 
     /**
-     *
+     * For internal purposes
      */
     class Manager {
 
@@ -133,6 +133,7 @@ public class StemCluster {
         final ListeningExecutorService blockingExecutor;
 
         ClusterManagerClient managerClient;
+        MetaStoreClient metaStoreClient;
         ZookeeperClient coordinationClient;
         ClusterDescriber clusterDescriber;
 
@@ -168,8 +169,10 @@ public class StemCluster {
             isInit = true;
             Set<Host> hosts = Sets.newLinkedHashSet(metadata.allHosts());
             try {
-                ClusterResponse clusterResponse = managerClient.describeCluster();
-                ClusterResponse.Cluster descriptor = clusterResponse.getCluster();
+                REST.Cluster descriptor = managerClient.describeCluster().getCluster();
+                metadata.setDescriptor(descriptor);
+                metaStoreClient = new MetaStoreClient(descriptor.getMetaStoreContactPoints());
+                metaStoreClient.start();
 
                 coordinationClient = ZookeeperClientFactory.newClient(descriptor.getZookeeperEndpoint());
                 clusterDescriber.start();

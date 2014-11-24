@@ -57,7 +57,7 @@ public class ClusterService {
         }
     }
 
-    public ClusterService(ClusterResponse.Cluster cluster) {
+    public ClusterService(REST.Cluster cluster) {
         String endpoint = cluster.getZookeeperEndpoint();
         try {
             zookeeperClient = ZookeeperClientFactory.newClient(endpoint);
@@ -98,7 +98,7 @@ public class ClusterService {
         return req;
     }
 
-    public static ClusterResponse.Cluster describeAndInit() {
+    public static REST.Cluster describeAndInit() {
         ClusterResponse resp = client.describeCluster();
         instance = new ClusterService(resp.getCluster());
         return resp.getCluster();

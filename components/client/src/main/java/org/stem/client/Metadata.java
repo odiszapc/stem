@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentMap;
 public class Metadata {
 
     private StemCluster.Manager cluster;
-    private ClusterResponse descriptor;
+    private REST.Cluster descriptor;
     private REST.Topology topology;
 
     public REST.Topology getTopology() {
@@ -56,5 +56,9 @@ public class Metadata {
 
     public boolean remove(Host host) {
         return false;
+    }
+
+    public void setDescriptor(REST.Cluster descriptor) {
+        this.descriptor = descriptor;
     }
 }

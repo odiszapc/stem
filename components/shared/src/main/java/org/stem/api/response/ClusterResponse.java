@@ -17,53 +17,13 @@
 package org.stem.api.response;
 
 
-import lombok.Data;
 import org.stem.api.REST;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class ClusterResponse extends StemResponse { // TODO: Rest.ClusterDescriptor
 
-    Cluster cluster = new Cluster();
+    REST.Cluster cluster = new REST.Cluster();
 
-    public Cluster getCluster() {
+    public REST.Cluster getCluster() {
         return cluster;
-    }
-
-    @Data
-    public static class Cluster {
-
-        String name;
-        int vBucketsNum;
-        int rf;
-        String partitioner;
-        String zookeeperEndpoint;
-        String[] metaStoreContactPoints;
-        long usedBytes;
-        long totalBytes;
-
-        List<REST.StorageNode> nodes = new ArrayList<REST.StorageNode>();
-
-        public List<REST.StorageNode> getNodes() {
-            return nodes;
-        }
-
-        public void setNodes(List<REST.StorageNode> nodes) {
-            this.nodes = nodes;
-        }
-
-        @Override
-        public String toString() {
-            return "Cluster{" +
-                    "name='" + name + '\'' +
-                    ", vBucketsNum=" + vBucketsNum +
-                    ", rf=" + rf +
-                    ", partitioner='" + partitioner + '\'' +
-                    ", zookeeperEndpoint='" + zookeeperEndpoint + '\'' +
-                    ", metaStoreContactPoints=" + Arrays.toString(metaStoreContactPoints) +
-                    '}';
-        }
     }
 }

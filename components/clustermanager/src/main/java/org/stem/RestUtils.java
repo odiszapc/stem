@@ -51,7 +51,7 @@ public class RestUtils {
     public static ClusterResponse buildClusterResponse(Cluster cluster, boolean attachDiskStat) {
         ClusterResponse response = new ClusterResponse();
         Cluster.Descriptor descriptor = cluster.descriptor();
-        ClusterResponse.Cluster rest = response.getCluster();
+        REST.Cluster rest = response.getCluster();
         rest.setName(descriptor.getName());
         rest.setVBucketsNum(descriptor.getvBuckets());
         rest.setPartitioner(descriptor.getPartitioner().getName());
