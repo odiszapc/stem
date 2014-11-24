@@ -19,6 +19,8 @@ package org.stem.client;
 import com.google.common.util.concurrent.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.stem.domain.ExtendedBlobDescriptor;
+import org.stem.exceptions.StemException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,9 +70,44 @@ public class Session extends AbstractSession implements StemSession {
 
     @Override
     public Blob get(byte[] key) {
-        //metastoreClient.readMeta(key);
-        //new Requests.ReadBlob()
+        List<Requests.ReadBlob> requests = prepareReadRequests(key);
+        List<DefaultResultFuture> futures = prepareFutures(requests);
+        for (DefaultResultFuture future : futures) {
+            // TODO: determine host to send request
+            // TODO: ((Requests.ReadBlob) future.request()).diskUuid;
+            new RequestHandler(this, future/* , */).sendRequest();
+        }
+
+        try {
+            List<Message.Response> responses = Uninterruptibles.getUninterruptibly(Futures.allAsList(futures));
+
+        } catch (ExecutionException e) {
+            throw new StemException("Error while reading blob");
+        }
+
         return Blob.create(key, new byte[]{});
+    }
+
+    private List<DefaultResultFuture> prepareFutures(List<? extends Message.Request> requests) {
+        List<DefaultResultFuture> futures = new ArrayList<>();
+        for (Message.Request request : requests) {
+            futures.add(new DefaultResultFuture(this, request));
+        }
+        return futures;
+    }
+
+    private List<Requests.ReadBlob> prepareReadRequests(byte[] key) {
+        List<ExtendedBlobDescriptor> pointers = cluster.manager.metaStoreClient.readMeta(key);
+        List<Requests.ReadBlob> requests = new ArrayList<>();
+        for (ExtendedBlobDescriptor pointer : pointers) {
+            requests.add(prepareRequest(pointer));
+        }
+        return requests;
+    }
+
+    private Requests.ReadBlob prepareRequest(ExtendedBlobDescriptor pointer) {
+        Requests.ReadBlob request = new Requests.ReadBlob(pointer.getDisk(), pointer.getFFIndex(), pointer.getOffset(), pointer.getLength());
+        return request;
     }
 
     @Override

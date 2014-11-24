@@ -22,7 +22,7 @@ public class ExtendedBlobDescriptor extends BlobDescriptor {
 
     final byte[] key;
     final int length;
-    UUID disk = null;
+    UUID disk;
 
     public ExtendedBlobDescriptor(byte[] key, int length, UUID disk, BlobDescriptor d) {
         this(key, length, disk, d.FFIndex, d.offset, d.bodyOffset);

@@ -96,30 +96,29 @@ class Requests {
     public static class DeleteBlob extends Message.Request {
 
         public final UUID diskUuid;
-        public final byte[] key;
-        public final byte[] blob;
+        public final Integer fatFileIndex;
+        public final Integer offset;
 
         public static final Message.Coder<DeleteBlob> coder = new Coder<DeleteBlob>() {
 
             @Override
             public void encode(DeleteBlob msg, ByteBuf dest) {
                 BBUtils.writeString(msg.diskUuid.toString(), dest);
-                dest.writeBytes(msg.key);
-                dest.writeInt(msg.blob.length);
-                dest.writeBytes(msg.blob);
+                dest.writeInt(msg.fatFileIndex);
+                dest.writeInt(msg.offset);
             }
 
             @Override
             public int encodedSize(DeleteBlob msg) {
-                return BBUtils.sizeOfString(msg.diskUuid.toString()) + msg.key.length + 4 + msg.blob.length;
+                return BBUtils.sizeOfString(msg.diskUuid.toString()) + 4 + 4;
             }
         };
 
-        public DeleteBlob(UUID diskUuid, byte[] key, byte[] blob) {
+        public DeleteBlob(UUID diskUuid, Integer fatFileIndex, Integer offset) {
             super(Type.DELETE_BLOB);
             this.diskUuid = diskUuid;
-            this.key = key;
-            this.blob = blob;
+            this.fatFileIndex = fatFileIndex;
+            this.offset = offset;
         }
     }
 }
