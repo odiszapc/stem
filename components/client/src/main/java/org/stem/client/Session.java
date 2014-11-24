@@ -68,6 +68,7 @@ public class Session extends AbstractSession implements StemSession {
 
     @Override
     public Blob get(byte[] key) {
+        //metastoreClient.readMeta(key);
         //new Requests.ReadBlob()
         return Blob.create(key, new byte[]{});
     }
