@@ -17,24 +17,26 @@
 package org.stem.client;
 
 import org.stem.api.REST;
-import org.stem.api.response.ClusterResponse;
+import org.stem.domain.ArrayBalancer;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Metadata {
 
     private StemCluster.Manager cluster;
     private REST.Cluster descriptor;
-    private REST.Topology topology;
-
-    public REST.Topology getTopology() {
-        return topology;
-    }
+    private final AtomicReference<REST.Topology> topology = new AtomicReference<>();
+    private ArrayBalancer hashTable;
 
     private final ConcurrentMap<InetSocketAddress, Host> hosts = new ConcurrentHashMap<InetSocketAddress, Host>();
+
+    private final AtomicReference<REST.Mapping> mapping = new AtomicReference<>();
+    private final ConcurrentMap<REST.Disk, REST.StorageNode> disks = new ConcurrentHashMap<>();
+
 
     public Metadata(StemCluster.Manager cluster) {
         this.cluster = cluster;
@@ -55,10 +57,27 @@ public class Metadata {
     }
 
     public boolean remove(Host host) {
-        return false;
+        return hosts.remove(host.getSocketAddress()) != null;
     }
 
     public void setDescriptor(REST.Cluster descriptor) {
         this.descriptor = descriptor;
+    }
+
+    public REST.Topology getTopology() {
+        return topology.get();
+    }
+
+    public void setTopology(REST.Topology topology) {
+        REST.Topology previous = this.topology.getAndSet(topology);
+    }
+
+
+    public void setMapping(REST.Mapping mapping) {
+        this.mapping.getAndSet(mapping);
+    }
+
+    public REST.Mapping getMapping() {
+        return mapping.get();
     }
 }

@@ -26,7 +26,7 @@ class Requests {
     /**
      *
      */
-    public static class ReadBlob extends Message.Request {
+    public static class ReadBlob extends Message.Request implements NodeMatched {
 
         public final UUID diskUuid;  // TODO: encode to bytes, not string
         public final Integer fatFileIndex;
@@ -55,12 +55,17 @@ class Requests {
             this.offset = offset;
             this.length = length;
         }
+
+        @Override
+        public Object getRoutingKey() {
+            return diskUuid;
+        }
     }
 
     /**
      *
      */
-    public static class WriteBlob extends Message.Request {
+    public static class WriteBlob extends Message.Request implements NodeMatched {
 
         public final UUID diskUuid;
         public final byte[] key;
@@ -88,12 +93,17 @@ class Requests {
             this.key = key;
             this.blob = blob;
         }
+
+        @Override
+        public Object getRoutingKey() {
+            return diskUuid;
+        }
     }
 
     /**
      *
      */
-    public static class DeleteBlob extends Message.Request {
+    public static class DeleteBlob extends Message.Request implements NodeMatched {
 
         public final UUID diskUuid;
         public final Integer fatFileIndex;
@@ -120,5 +130,14 @@ class Requests {
             this.fatFileIndex = fatFileIndex;
             this.offset = offset;
         }
+
+        @Override
+        public Object getRoutingKey() {
+            return diskUuid;
+        }
+    }
+
+    public interface NodeMatched {
+        Object getRoutingKey();
     }
 }

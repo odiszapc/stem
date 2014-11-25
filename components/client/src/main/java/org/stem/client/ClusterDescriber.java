@@ -29,7 +29,8 @@ import java.util.List;
 public class ClusterDescriber {
 
     final StemCluster.Manager cluster;
-    final ZookeeperEventListener<REST.Topology> topologyListener;
+    final ZookeeperEventListener<REST.Topology> topologyListener; // TODO: topology and mapping are changes synchronously
+    final ZookeeperEventListener<REST.Mapping> mappingListener;
 
     private volatile boolean isShutdown;
 
@@ -46,10 +47,26 @@ public class ClusterDescriber {
                 onTopologyChanged(topology);
             }
         };
+
+        mappingListener = new ZookeeperEventListener<REST.Mapping>() {
+            @Override
+            public Class<? extends REST.Mapping> getBaseClass() {
+                return REST.Mapping.class;
+            }
+
+            @Override
+            protected void onNodeUpdated(REST.Mapping mapping) {
+                onMappingChanged(mapping);
+            }
+        };
     }
 
     private void onTopologyChanged(REST.Topology topology) {
         refreshNodeList(cluster, topology, false);
+    }
+
+    private void onMappingChanged(REST.Mapping mapping) {
+        cluster.metadata.setMapping(mapping);
     }
 
     void start() {
@@ -69,8 +86,6 @@ public class ClusterDescriber {
     }
 
     private void refreshNodeList(StemCluster.Manager cluster, REST.Topology topology, boolean isInitialAttempt) {
-
-
         List<InetSocketAddress> foundHosts = new ArrayList<InetSocketAddress>();
         List<String> dcs = new ArrayList<String>(); // TODO: implement extraction of dc name
         List<String> racks = new ArrayList<String>(); // TODO: implement extraction of rack name
@@ -93,7 +108,7 @@ public class ClusterDescriber {
                 cluster.triggerOnAdd(host);
         }
 
-
+        cluster.metadata.setTopology(topology);
     }
 
     private void refreshNodeList() {
