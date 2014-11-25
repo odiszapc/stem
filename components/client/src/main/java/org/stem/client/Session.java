@@ -73,7 +73,7 @@ public class Session extends AbstractSession implements StemSession {
         List<Requests.ReadBlob> requests = prepareReadRequests(key);
         List<DefaultResultFuture> futures = prepareFutures(requests);
         for (DefaultResultFuture future : futures) {
-            // TODO: determine host to send request
+            // TODO: determine host to send request to
             // TODO: ((Requests.ReadBlob) future.request()).diskUuid;
             new RequestHandler(this, future/* , */).sendRequest();
         }
