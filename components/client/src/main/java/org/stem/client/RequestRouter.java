@@ -30,11 +30,11 @@ public class RequestRouter {
         if (request instanceof Requests.DestinationSpecific) {
             Object routingKey = ((Requests.DestinationSpecific) request).getRoutingKey();
             if (null == routingKey)
-                throw new NoHostAvailableException(String.format("Routing key is null");
+                throw new NoHostAvailableException(String.format("Routing key is null"));
 
             Host host = getHostForRoutingKey(routingKey);
             if (null == host)
-                throw new NoHostAvailableException(String.format("No host found for key %s", routingKey);
+                throw new NoHostAvailableException(String.format("No host found for key %s", routingKey));
             return host;
         } else {
             return null; // It's up to QueryPlan;

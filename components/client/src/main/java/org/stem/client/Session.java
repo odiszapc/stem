@@ -48,7 +48,7 @@ public class Session extends AbstractSession implements StemSession {
     public Session(StemCluster cluster) {
         this.cluster = cluster;
         this.pools = new ConcurrentHashMap<>();
-        this.router = new RequestRouter(this)
+        this.router = new RequestRouter(this);
     }
 
     public synchronized Session init() {
@@ -133,7 +133,7 @@ public class Session extends AbstractSession implements StemSession {
     void execute(RequestHandler.Callback callback) {
         if (!isInit)
             init();
-        new RequestHandler(this, callback, future.request()).sendRequest();
+        new RequestHandler(this, callback, callback.request()).sendRequest();
     }
 
     Configuration configuration() {
