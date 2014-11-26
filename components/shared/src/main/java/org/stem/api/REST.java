@@ -171,7 +171,7 @@ public abstract class REST {
     @RequiredArgsConstructor
     public static class Mapping extends ZNodeAbstract {
 
-        private final Map<Long, ReplicaSet> map = new HashMap<>();
+        private final Map<Long, ReplicaSet> map = new HashMap<>(); // TODO: pack to Map<Long, Set<UUID> >
 
         public List<Long> getBuckets() {
             return Lists.newArrayList(map.keySet());
