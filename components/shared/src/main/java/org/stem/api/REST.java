@@ -160,7 +160,7 @@ public abstract class REST {
     @EqualsAndHashCode(of = {"id"})
     public static class Disk {
 
-        @NonNull String id; // TODO: use UUID type
+        @NonNull UUID id;
         @NonNull String path;
         @NonNull long used;
         @NonNull long total;

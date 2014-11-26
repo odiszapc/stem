@@ -118,7 +118,7 @@ public class RestUtils {
     }
 
     public static REST.Disk packDisk(Topology.Disk disk) {
-        return new REST.Disk(disk.getId().toString(), disk.getPath(), disk.getUsedBytes(), disk.getTotalBytes());
+        return new REST.Disk(disk.getId(), disk.getPath(), disk.getUsedBytes(), disk.getTotalBytes());
     }
 
     public static List<Topology.Datacenter> extractDataCenters(REST.Topology topologyTransient) {
@@ -184,7 +184,7 @@ public class RestUtils {
 
     public static Topology.Disk extractDisk(REST.Disk diskTransient) {
         Topology.Disk disk = new Topology.Disk();
-        disk.setId(UUID.fromString(diskTransient.getId()));
+        disk.setId(diskTransient.getId());
         disk.setPath(diskTransient.getPath());
         disk.setUsedBytes(diskTransient.getUsed());
         disk.setTotalBytes(diskTransient.getTotal());

@@ -73,7 +73,7 @@ public class DataClusterNotificator implements Runnable {
         long total = 0;
         for (MountPoint mp : disks) {
             total += mp.getAllocatedSizeInBytes();
-            REST.Disk disk = new REST.Disk(mp.getId().toString(), mp.getPath(),
+            REST.Disk disk = new REST.Disk(mp.getId(), mp.getPath(),
                     mp.getTotalSizeInBytes(), mp.getAllocatedSizeInBytes()); // TODO: think about TotalSizeInBytes... it should be ...used...
             result.getDisks().add(disk);
         }

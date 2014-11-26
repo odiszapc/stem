@@ -71,7 +71,7 @@ public class StorageNode {
         this.port = port;
         this.disks = new ArrayList<Disk>();
         for (REST.Disk diskREST : disksFromRequest) {
-            Disk disk = new Disk(diskREST.getId());
+            Disk disk = new Disk(diskREST.getId().toString());
             disk.setPath(diskREST.getPath());
             disk.setUsedBytes(diskREST.getUsed());
             disk.setTotalBytes(diskREST.getTotal());

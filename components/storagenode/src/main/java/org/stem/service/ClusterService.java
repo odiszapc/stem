@@ -87,7 +87,7 @@ public class ClusterService {
         long capacity = 0;
         for (MountPoint mp : mountPoints.values()) {
             REST.Disk disk = new REST.Disk(
-                    mp.uuid.toString(),
+                    mp.getId(),
                     mp.getPath(),
                     mp.getTotalSizeInBytes(),
                     mp.getAllocatedSizeInBytes());

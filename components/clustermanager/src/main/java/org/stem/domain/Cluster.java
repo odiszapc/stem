@@ -242,7 +242,7 @@ public class Cluster {
         org.stem.domain.topology.Topology.StorageNode node = topology2.findStorageNode(stat.getId());
         if (null != node) {
             for (REST.Disk diskStat : stat.getDisks()) {
-                org.stem.domain.topology.Topology.Disk disk = topology2.findDisk(UUID.fromString(diskStat.getId()));
+                org.stem.domain.topology.Topology.Disk disk = topology2.findDisk(diskStat.getId());
                 if (null != disk) {
                     disk.setUsedBytes(diskStat.getUsed());
                     disk.setTotalBytes(diskStat.getUsed());
