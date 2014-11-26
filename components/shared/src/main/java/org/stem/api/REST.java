@@ -144,7 +144,7 @@ public abstract class REST {
         }
 
         @JsonIgnore
-        public InetSocketAddress socketAddress() {
+        public InetSocketAddress getSocketAddress() {
             return Utils.normalizeSocketAddr(new InetSocketAddress(getListenHost(), getListenPort()));
         }
 
@@ -181,9 +181,26 @@ public abstract class REST {
             return map.get(bucket);
         }
 
+        public Collection<ReplicaSet> getAllReplicas() {
+            return map.values();
+        }
+
         @Override
         public String name() {
             return ZookeeperPaths.MAPPING;
+        }
+    }
+
+    @EqualsAndHashCode(callSuper = false)
+    @Data
+    @RequiredArgsConstructor
+    public static class TopologySnapshot extends ZNodeAbstract {
+        private final Topology topology;
+        private final Mapping mapping;
+
+        @Override
+        public String name() {
+            return null;
         }
     }
 

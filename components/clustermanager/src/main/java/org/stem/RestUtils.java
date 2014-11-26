@@ -31,7 +31,6 @@ import javax.ws.rs.core.Response;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class RestUtils {
 
@@ -79,6 +78,10 @@ public class RestUtils {
         }
 
         return result;
+    }
+
+    public static REST.TopologySnapshot packTopologySnapshot(Topology topology, DataMapping mapping) {
+        return new REST.TopologySnapshot(packTopology(topology), packMapping(mapping));
     }
 
     public static REST.Topology packTopology(Topology topology) {

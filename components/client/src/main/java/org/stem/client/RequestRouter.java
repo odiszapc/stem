@@ -16,29 +16,41 @@
 
 package org.stem.client;
 
+import java.util.UUID;
+
 public class RequestRouter {
 
     private final Session session;
-    private final Message.Request request;
 
-    public RequestRouter(Session session, Message.Request request) {
+    RequestRouter(Session session) {
         this.session = session;
-        this.request = request;
     }
 
-    Host getHost() {
-           if (request instanceof Requests.DiskSpecific) {
-               Object routingKey = ((Requests.DiskSpecific) request).getRoutingKey();
-               Host host = getHost(routingKey);
-               return host;
-           } else {
-               return null; // It's up to QueryPlan;
-           }
+    Host getHost(Message.Request request) {
+        if (request instanceof Requests.DestinationSpecific) {
+            Object routingKey = ((Requests.DestinationSpecific) request).getRoutingKey();
+            if (null == routingKey)
+                throw new NoHostAvailableException(String.format("Routing key is null");
+
+            Host host = getHostForRoutingKey(routingKey);
+            if (null == host)
+                throw new NoHostAvailableException(String.format("No host found for key %s", routingKey);
+            return host;
+        } else {
+            return null; // It's up to QueryPlan;
+        }
     }
 
-    private Host getHost(Object routingKey) {
+    private Metadata metadata() {
+        return session.cluster.manager.metadata;
+    }
+
+    private Host getHostForRoutingKey(Object routingKey) {
         Metadata metadata = session.cluster.manager.metadata;
-
+        if (routingKey instanceof UUID) {
+            UUID disk = (UUID) routingKey;
+            Host host = metadata().findHostForDisk(disk);
+        }
 
         return null;
     }

@@ -29,36 +29,53 @@ import java.util.List;
 public class ClusterDescriber {
 
     final StemCluster.Manager cluster;
-    final ZookeeperEventListener<REST.Topology> topologyListener; // TODO: topology and mapping are changes synchronously
-    final ZookeeperEventListener<REST.Mapping> mappingListener;
+    final Notifier notifier;
+
 
     private volatile boolean isShutdown;
 
+    private class Notifier {
+
+        final ZookeeperEventListener<REST.Topology> topology; // TODO: topology and mapping are changed synchronously
+        final ZookeeperEventListener<REST.Mapping> mapping;
+
+        public Notifier() {
+            topology = new ZookeeperEventListener<REST.Topology>() {
+                @Override
+                public Class<REST.Topology> getBaseClass() {
+                    return REST.Topology.class;
+                }
+
+                @Override
+                protected void onNodeUpdated(REST.Topology topology) {
+                    onTopologyChanged(topology);
+                }
+            };
+
+            mapping = new ZookeeperEventListener<REST.Mapping>() {
+                @Override
+                public Class<? extends REST.Mapping> getBaseClass() {
+                    return REST.Mapping.class;
+                }
+
+                @Override
+                protected void onNodeUpdated(REST.Mapping mapping) {
+                    onMappingChanged(mapping);
+                }
+            };
+        }
+
+        void start() throws Exception {
+            cluster.coordinationClient.listenForZNode(ZookeeperPaths.topologyPath(), topology);
+            cluster.coordinationClient.listenForZNode(ZookeeperPaths.mappingPath(), mapping);
+        }
+
+        // TODO: stop() {}
+    }
+
     public ClusterDescriber(StemCluster.Manager cluster) {
         this.cluster = cluster;
-        topologyListener = new ZookeeperEventListener<REST.Topology>() {
-            @Override
-            public Class<REST.Topology> getBaseClass() {
-                return REST.Topology.class;
-            }
-
-            @Override
-            protected void onNodeUpdated(REST.Topology topology) {
-                onTopologyChanged(topology);
-            }
-        };
-
-        mappingListener = new ZookeeperEventListener<REST.Mapping>() {
-            @Override
-            public Class<? extends REST.Mapping> getBaseClass() {
-                return REST.Mapping.class;
-            }
-
-            @Override
-            protected void onNodeUpdated(REST.Mapping mapping) {
-                onMappingChanged(mapping);
-            }
-        };
+        this.notifier = new Notifier();
     }
 
     private void onTopologyChanged(REST.Topology topology) {
@@ -66,7 +83,7 @@ public class ClusterDescriber {
     }
 
     private void onMappingChanged(REST.Mapping mapping) {
-        cluster.metadata.setMapping(mapping);
+        updateMapping(mapping);
     }
 
     void start() {
@@ -78,7 +95,7 @@ public class ClusterDescriber {
             refreshNodeList(cluster, topology, true);
             // TODO: refreshBucketMap(cluster, true);
 
-            cluster.coordinationClient.listenForZNode(ZookeeperPaths.topologyPath(), topologyListener);
+            notifier.start();
         } catch (Exception e) {
             Throwables.propagate(e);
 
@@ -91,10 +108,9 @@ public class ClusterDescriber {
         List<String> racks = new ArrayList<String>(); // TODO: implement extraction of rack name
 
         for (REST.StorageNode nodeInfo : topology.nodes()) {
-            InetSocketAddress addr = nodeInfo.socketAddress();
+            InetSocketAddress addr = nodeInfo.getSocketAddress();
             foundHosts.add(addr);
         }
-
 
         for (InetSocketAddress addr : foundHosts) {
             Host host = cluster.metadata.getHost(addr);
@@ -106,9 +122,17 @@ public class ClusterDescriber {
 
             if (isNew && !isInitialAttempt)
                 cluster.triggerOnAdd(host);
+
+            // TODO: remove hosts
         }
 
+        // TODO: wait until all pools will be online
         cluster.metadata.setTopology(topology);
+    }
+
+
+    private void updateMapping(REST.Mapping mapping) {
+        cluster.metadata.setMapping(mapping);
     }
 
     private void refreshNodeList() {

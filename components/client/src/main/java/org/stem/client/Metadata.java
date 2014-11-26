@@ -21,6 +21,9 @@ import org.stem.domain.ArrayBalancer;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -32,10 +35,14 @@ public class Metadata {
     private final AtomicReference<REST.Topology> topology = new AtomicReference<>();
     private ArrayBalancer hashTable;
 
-    private final ConcurrentMap<InetSocketAddress, Host> hosts = new ConcurrentHashMap<InetSocketAddress, Host>();
-
     private final AtomicReference<REST.Mapping> mapping = new AtomicReference<>();
-    private final ConcurrentMap<REST.Disk, REST.StorageNode> disks = new ConcurrentHashMap<>();
+
+    private final ConcurrentMap<InetSocketAddress, Host> hosts = new ConcurrentHashMap<InetSocketAddress, Host>();
+    //private final ConcurrentMap<UUID, InetSocketAddress> diskHostAddresses = new ConcurrentHashMap<>();
+    private final AtomicReference<Map<UUID, InetSocketAddress>> diskHostAddresses = new AtomicReference<>();
+
+
+    //private final ConcurrentMap<REST.Disk, REST.StorageNode> disks = new ConcurrentHashMap<>();
 
 
     public Metadata(StemCluster.Manager cluster) {
@@ -73,11 +80,40 @@ public class Metadata {
     }
 
 
-    public void setMapping(REST.Mapping mapping) {
+    public void setMapping(REST.Mapping mapping) { // TODO: what if mapping will be received first
+
+        REST.Topology topology = this.topology.get();
+        if (null == topology) { // topology update has not been received yet
+            this.mapping.getAndSet(mapping);
+            return;
+        }
+
+        updateDiskHostsAddressesMap(mapping, topology);
+
         this.mapping.getAndSet(mapping);
+    }
+
+    private void updateDiskHostsAddressesMap(REST.Mapping mapping, REST.Topology topology) {
+        Map<UUID, InetSocketAddress> cache = buildDiskHostsAddressesMap(topology);
+        this.diskHostAddresses.getAndSet(cache);
+    }
+
+    private Map<UUID, InetSocketAddress> buildDiskHostsAddressesMap(REST.Topology topology) {
+        Map<UUID, InetSocketAddress> result = new HashMap<>();
+        for (REST.StorageNode node : topology.nodes()) {
+            for (REST.Disk disk : node.getDisks()) {
+                result.put(disk.getId(), node.getSocketAddress());
+            }
+        }
+
+        return result;
     }
 
     public REST.Mapping getMapping() {
         return mapping.get();
+    }
+
+    public Host findHostForDisk(UUID disk) {
+        return null;
     }
 }

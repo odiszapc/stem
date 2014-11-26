@@ -32,6 +32,7 @@ public class RequestHandler implements Connection.ResponseCallback {
 
     private final Session session;
     private final Callback callback;
+    private final Message.Request request;
 
     private volatile Host current;
     private volatile ConnectionPool currentPool;
@@ -44,9 +45,10 @@ public class RequestHandler implements Connection.ResponseCallback {
     private final Timer.Context timerContext;
     private final long startTime;
 
-    public RequestHandler(Session session, Callback callback) {
+    public RequestHandler(Session session, Callback callback, Message.Request request) {
         this.session = session;
         this.callback = callback;
+        this.request = request;
 
         callback.register(this);
 
@@ -141,6 +143,8 @@ public class RequestHandler implements Connection.ResponseCallback {
 
     public void sendRequest() {
         try {
+
+
             Host host = null; //TODO: get host!!!!
             session.cluster.getMetadata();
             if (query(host))

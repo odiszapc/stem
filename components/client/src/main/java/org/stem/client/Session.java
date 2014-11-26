@@ -37,6 +37,7 @@ public class Session extends AbstractSession implements StemSession {
 
     final StemCluster cluster;
     final ConcurrentMap<Host, ConnectionPool> pools;
+    final RequestRouter router;
     final AtomicReference<CloseFuture> closeFuture = new AtomicReference<CloseFuture>();
 
     private final Striped<Lock> poolCreationLocks = Striped.lazyWeakLock(5);
@@ -47,6 +48,7 @@ public class Session extends AbstractSession implements StemSession {
     public Session(StemCluster cluster) {
         this.cluster = cluster;
         this.pools = new ConcurrentHashMap<>();
+        this.router = new RequestRouter(this)
     }
 
     public synchronized Session init() {
@@ -75,7 +77,7 @@ public class Session extends AbstractSession implements StemSession {
         for (DefaultResultFuture future : futures) {
             // TODO: determine host to send request to
             // TODO: ((Requests.ReadBlob) future.request()).diskUuid;
-            new RequestHandler(this, future/* , */).sendRequest();
+            new RequestHandler(this, future, future.request()).sendRequest();
         }
 
         try {
@@ -131,7 +133,7 @@ public class Session extends AbstractSession implements StemSession {
     void execute(RequestHandler.Callback callback) {
         if (!isInit)
             init();
-        new RequestHandler(this, callback).sendRequest();
+        new RequestHandler(this, callback, future.request()).sendRequest();
     }
 
     Configuration configuration() {
@@ -247,7 +249,7 @@ public class Session extends AbstractSession implements StemSession {
                 try {
                     while (true) {
                         ConnectionPool previous = pools.get(host);
-                        if (previous != null && !previous.isClosed())
+                        if (previous != null && !previous.isClosed()) // pool is already alive, just skip it
                             return true;
 
                         if (replacePool(host, previous)) {
