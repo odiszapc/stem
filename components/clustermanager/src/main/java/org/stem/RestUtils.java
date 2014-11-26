@@ -16,6 +16,7 @@
 
 package org.stem;
 
+import com.google.common.collect.Lists;
 import org.stem.api.REST;
 import org.stem.api.response.ClusterResponse;
 import org.stem.api.response.ListNodesResponse;
@@ -140,6 +141,17 @@ public class RestUtils {
         return result;
     }
 
+    public static Topology.ReplicaSet extractReplicaSet(REST.ReplicaSet replicaSet) {
+        List<REST.Disk> disks = Lists.newArrayList(replicaSet.getReplicas());
+
+        List<Topology.Disk> replicas = new ArrayList<>();
+        for (REST.Disk disk : disks) {
+            replicas.add(extractDisk(disk));
+        }
+
+        return new Topology.ReplicaSet(replicas);
+    }
+
     public static REST.Mapping packMapping(DataMapping mapping) {
         REST.Mapping result = new REST.Mapping();
         for (Long bucket : mapping.getBuckets()) {
@@ -147,6 +159,14 @@ public class RestUtils {
             if (null == replicas)
                 throw new InvalidStateException("replica set is null");
             result.getMap().put(bucket, packReplicaSet(replicas));
+        }
+        return result;
+    }
+
+    public static DataMapping extractMapping(REST.Mapping mapping) {
+        DataMapping result = new DataMapping();
+        for (Long bucket : mapping.getBuckets()) {
+            result.getMap().put(bucket, extractReplicaSet(mapping.getReplicas(bucket)));
         }
         return result;
     }

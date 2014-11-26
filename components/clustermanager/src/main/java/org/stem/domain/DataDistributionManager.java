@@ -16,10 +16,11 @@
 
 package org.stem.domain;
 
-import org.stem.domain.topology.*;
+import org.stem.domain.topology.DataMapping;
+import org.stem.domain.topology.Partitioner;
 import org.stem.domain.topology.Topology;
+import org.stem.exceptions.TopologyException;
 
-import javax.validation.constraints.Null;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -28,24 +29,56 @@ import java.util.concurrent.atomic.AtomicReference;
 public class DataDistributionManager {
 
     final Partitioner partitioner;
+
     private final Topology topology;
     private Cluster cluster;
     private ArrayBalancer keysDistributor;
 
-    private AtomicReference<DataMapping> current = new AtomicReference<>();
+    private final AtomicReference<DataMapping> current = new AtomicReference<>(new DataMapping());
+    private final AtomicReference<DataMapping> previous = new AtomicReference<>(new DataMapping());
 
-    public DataDistributionManager(Partitioner partitioner, Cluster cluster) {
-        this.partitioner = partitioner;
+    public DataDistributionManager(Cluster cluster, Partitioner partitioner) {
         this.cluster = cluster;
+        this.partitioner = partitioner;
         this.topology = cluster.topology();
+    }
+
+    public DataDistributionManager(Cluster cluster, Partitioner partitioner,
+                                   DataMapping currentMapping, DataMapping previousMapping) {
+        this(cluster, partitioner);
+        this.current.set(currentMapping);
+        this.previous.set(previousMapping);
     }
 
     public DataMapping getCurrentMappings() {
         return current.get();
     }
 
+    public DataMapping getPreviousMapping() {
+        return previous.get();
+    }
+
     public synchronized DataMapping computeMappingNonMutable() {
-        return computeDataMapping(cluster.descriptor().rf, cluster.descriptor().vBuckets, topology);
+        DataMapping current = computeDataMapping(cluster.descriptor().rf, cluster.descriptor().vBuckets, topology);
+        DataMapping previous = this.current.getAndSet(current);
+        this.previous.set(previous);
+        return current;
+    }
+
+    public DataMapping.Difference computeMappingDifference() {
+        DataMapping current = this.current.get();
+        DataMapping previous = this.previous.get();
+
+        if (current.isEmpty() && previous.isEmpty())
+            throw new TopologyException("Can not calculate difference between empty data mappings");
+
+        if (current.isEmpty()) {
+            current = previous;
+        } else if (null == previous) {
+            previous = current;
+        }
+
+        return computeMappingDifference(previous, current);
     }
 
     public DataMapping.Difference computeMappingDifference(DataMapping before, DataMapping after) {

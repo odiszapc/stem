@@ -226,6 +226,9 @@ public class Topology extends ZNodeAbstract {
                 storageNodes.put(node.id, node);
                 node.rack = this;
                 subscriber.onStorageNodeAdded(node);
+                for (Disk disk : node.disks()) {
+                    subscriber.onDiskAdded(disk);
+                }
             }
         }
 

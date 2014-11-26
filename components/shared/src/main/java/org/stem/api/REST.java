@@ -171,6 +171,9 @@ public abstract class REST {
     @RequiredArgsConstructor
     public static class Mapping extends ZNodeAbstract {
 
+        @JsonIgnore
+        private String name;
+
         private final Map<Long, ReplicaSet> map = new HashMap<>(); // TODO: pack to Map<Long, Set<UUID> >
 
         public List<Long> getBuckets() {
@@ -185,9 +188,13 @@ public abstract class REST {
             return map.values();
         }
 
+        public void setName(String name) {
+            this.name = name;
+        }
+
         @Override
         public String name() {
-            return ZookeeperPaths.MAPPING;
+            return null != name ? name : ZookeeperPaths.MAPPING;
         }
     }
 
@@ -200,7 +207,7 @@ public abstract class REST {
 
         @Override
         public String name() {
-            return null;
+            return ZookeeperPaths.TOPOLOGY_SNAPSHOT;
         }
     }
 

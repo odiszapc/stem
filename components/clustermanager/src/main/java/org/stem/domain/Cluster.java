@@ -44,6 +44,8 @@ public class Cluster {
 
     private static final Logger logger = LoggerFactory.getLogger(Cluster.class);
 
+    private static final String CURRENT_MAPPING = ZookeeperPaths.CURRENT_MAPPING;
+    private static final String PREVIOUS_MAPPING = ZookeeperPaths.PREVIOUS_MAPPING;
 
     // TODO: 1. Handle the situation when storage already exists but new disk were added
     // TODO: 2. Handle the situation when storage is new but its disks are already attached to another storage
@@ -110,6 +112,10 @@ public class Cluster {
         }
 
         rack.addStorageNode(node);
+
+        // Recompute mappings
+        computeMapping();
+
         // TODO: I'm 100% sure there should be much more arbitrary checks and validations
 
     }
@@ -301,7 +307,7 @@ public class Cluster {
             descriptor = newDescriptor;
             topology = new Topology(descriptor.name, descriptor.rf);
             partitioner = descriptor.partitioner.builder.build();
-            distributionManager = new DataDistributionManager(partitioner, Cluster.this);
+            distributionManager = new DataDistributionManager(Cluster.this, partitioner);
             mapping = distributionManager.getCurrentMappings();
 
             initZookeeperPaths();
@@ -340,7 +346,8 @@ public class Cluster {
             descriptor = persisted;
             topology = new Topology(descriptor.name, descriptor.rf);
             partitioner = descriptor.partitioner.builder.build();
-            distributionManager = new DataDistributionManager(partitioner, Cluster.this);
+            distributionManager = new DataDistributionManager(Cluster.this, partitioner,
+                    loadMapping(ZookeeperPaths.mappingPath()), loadMapping(ZookeeperPaths.previousMappingPath()));
             mapping = distributionManager.getCurrentMappings();
 
             org.stem.domain.topology.Topology persistedTopo = readTopology();
@@ -353,6 +360,23 @@ public class Cluster {
 
             startListenForStats();
             return true;
+        }
+
+        private DataMapping loadMapping(String path) throws Exception {
+            REST.Mapping raw = getZookeeperClient().readZNodeData(path, REST.Mapping.class);
+            if (null == raw)
+                return DataMapping.EMPTY;
+
+            return RestUtils.extractMapping(raw);
+        }
+
+        private void saveMapping(String kind, DataMapping entity) throws Exception { // TODO: string kind to enum type
+
+            REST.Mapping raw = RestUtils.packMapping(entity); // TODO: 22 MB is too large. Let's try to pack into binary format
+            raw.setName(kind);
+
+            getZookeeperClient().createNodeIfNotExists(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, raw);
+            getZookeeperClient().updateNode(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, raw);
         }
 
         private void register(org.stem.domain.topology.Topology persistedTopo) {
@@ -406,10 +430,21 @@ public class Cluster {
         private void recalculateDataMapping() throws Exception {
             ensureInitialized();
 
-            DataMapping newMapping = distributionManager.computeMappingNonMutable();
-            client.updateNode(ZookeeperPaths.CLUSTER_MANAGER, RestUtils.packMapping(newMapping));
+            DataMapping current = distributionManager.computeMappingNonMutable();
+            saveMapping(CURRENT_MAPPING, current);
 
-            DataMapping.Difference difference = distributionManager.computeMappingDifference(mapping, newMapping);
+            DataMapping previous = distributionManager.getPreviousMapping();
+            if (null != previous) {
+                saveMapping(PREVIOUS_MAPPING, previous);
+            }
+
+
+            DataMapping.Difference difference = distributionManager.computeMappingDifference();
+            REST.TopologySnapshot snapshot = RestUtils.packTopologySnapshot(topology2, current);
+            getZookeeperClient().createNodeIfNotExists(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, snapshot);
+            getZookeeperClient().updateNode(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, snapshot);
+
+
             // TODO: check the difference make sense (is there actual delta between mapping);
 
             // TODO: compute streaming sessions !!!!!!!!!!!!!!!!!!!

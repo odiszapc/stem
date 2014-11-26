@@ -38,6 +38,10 @@ public class DataMapping {
         return map.get(bucket);
     }
 
+    public boolean isEmpty() {
+        return getMap().isEmpty();
+    }
+
     /**
      * Class that calculates how disk were moved between arbitrary data mappings
      * Thanks to developers of libcrunch (Twitter)
