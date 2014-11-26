@@ -27,8 +27,8 @@ public class RequestRouter {
     }
 
     Host getHost() {
-           if (request instanceof Requests.NodeMatched) {
-               Object routingKey = ((Requests.NodeMatched) request).getRoutingKey();
+           if (request instanceof Requests.DiskSpecific) {
+               Object routingKey = ((Requests.DiskSpecific) request).getRoutingKey();
                Host host = getHost(routingKey);
                return host;
            } else {
@@ -38,7 +38,6 @@ public class RequestRouter {
 
     private Host getHost(Object routingKey) {
         Metadata metadata = session.cluster.manager.metadata;
-        metadata.get
 
 
         return null;
