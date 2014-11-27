@@ -17,18 +17,22 @@
 package org.stem.domain.topology;
 
 import com.fasterxml.jackson.databind.type.ArrayType;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import org.junit.Assert;
 import org.junit.Test;
 import org.stem.RestUtils;
 import org.stem.api.REST;
+import org.stem.utils.BBUtils;
 import org.stem.utils.JsonUtils;
+import org.stem.utils.MappingUtils;
 import org.stem.utils.TopologyUtils;
 
 import java.net.InetSocketAddress;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
+import static org.stem.utils.MappingUtils.Encoder.prepareFormat;
+import static org.stem.utils.MappingUtils.NumberFormat.*;
 
 public class TopologyCoderTest {
 
@@ -64,12 +68,50 @@ public class TopologyCoderTest {
         String encoded = JsonUtils.encode(original);
 
         ArrayType type = JsonUtils.getTypeFactory().constructArrayType(Byte.class);
-        Byte[] decoded = (Byte[])JsonUtils.decode(encoded, type);
+        Byte[] decoded = (Byte[]) JsonUtils.decode(encoded, type);
 
         Assert.assertArrayEquals(original, decoded);
     }
 
-    public void binaryPackUnpack() throws Exception {
+    @Test
+    public void prepareFormatFromBits() throws Exception {
+        for (int i = 0; i <= 16; i++)
+            Assert.assertEquals("bits=" + i, SHORT, minimalFormat(i));
+
+        for (int i = 17; i <= 32; i++)
+            Assert.assertEquals("bits=" + i, INT, minimalFormat(i));
+
+        for (int i = 33; i <= 64; i++)
+            Assert.assertEquals("bits=" + i, LONG, minimalFormat(i));
+    }
+
+    @Test
+    public void prepareFormatFromNumber() throws Exception {
+        Assert.assertEquals(SHORT, prepareFormat(1l));
+        Assert.assertEquals(SHORT, prepareFormat(65536l - 1));
+
+        Assert.assertEquals(INT, prepareFormat(65536l));
+        Assert.assertEquals(INT, prepareFormat(65536l + 1));
+        Assert.assertEquals(INT, prepareFormat(4l * 1024 * 1024 * 1024 - 1));
+
+        Assert.assertEquals(LONG, prepareFormat(4l * 1024 * 1024 * 1024 + 1));
+    }
+
+    @Test
+    public void codeUuid() throws Exception {
+        ByteBuf buf = Unpooled.buffer();
+        UUID val = UUID.randomUUID();
+        BBUtils.writeUuid(val, buf);
+
+        Assert.assertEquals(buf.readableBytes(), 16);
+        Assert.assertEquals(val, BBUtils.readUuid(buf));
+    }
+
+    @Test
+    public void binaryCodeDecode() throws Exception {
+        DataMapping source = prepareMapping(100000);
+        MappingUtils.Encoder encoder = new MappingUtils.Encoder(RestUtils.packMapping(source));
+        byte[] encoded = encoder.encode();
 
     }
 

@@ -202,6 +202,14 @@ public abstract class REST {
         public String name() {
             return null != name ? name : ZookeeperPaths.MAPPING;
         }
+
+        @JsonIgnore
+        public Set<Disk> getDisks() {
+            Set<Disk> result = new HashSet<>();
+            for (ReplicaSet set : getAllReplicas())
+                result.addAll(set.getReplicas());
+            return result;
+        }
     }
 
     @EqualsAndHashCode(callSuper = false)
