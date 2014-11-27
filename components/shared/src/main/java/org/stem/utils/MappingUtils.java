@@ -149,6 +149,15 @@ public class MappingUtils {
 
     public static class Decoder {
 
+        final ByteBuf buf;
+
+        public Decoder(byte[] data) {
+            buf = Unpooled.wrappedBuffer(data);
+        }
+
+        public REST.Mapping decode() {
+            // TODO:
+        }
     }
 
     public static enum NumberFormat {
