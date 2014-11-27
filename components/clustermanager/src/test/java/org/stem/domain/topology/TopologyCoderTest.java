@@ -74,7 +74,7 @@ public class TopologyCoderTest {
     }
 
     @Test
-    public void prepareFormatFromBits() throws Exception {
+    public void fitFormatFromBits() throws Exception {
         for (int i = 0; i <= 16; i++)
             Assert.assertEquals("bits=" + i, SHORT, minimalFormat(i));
 
