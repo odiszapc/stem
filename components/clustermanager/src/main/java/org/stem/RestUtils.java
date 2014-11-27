@@ -157,13 +157,20 @@ public class RestUtils {
     public static REST.Mapping packMapping(DataMapping mapping) {
         REST.Mapping result = new REST.Mapping();
         List<REST.Disk> diskCache = new ArrayList<>();
-        Set<REST.Disk> asdasd = new HashSet<>();
+        List<REST.ReplicaSet> cache = new ArrayList<>();
         for (Long bucket : mapping.getBuckets()) {
             Topology.ReplicaSet replicas = mapping.getReplicas(bucket);
             if (null == replicas)
                 throw new InvalidStateException("replica set is null");
 
-            result.getMap().put(bucket, packReplicaSet(replicas, diskCache));
+            REST.ReplicaSet packed = packReplicaSet(replicas, diskCache);
+            if (!cache.contains(packed))
+                cache.add(packed);
+            else {
+                int index = cache.indexOf(packed);
+                packed = cache.get(index);
+            }
+            result.getMap().put(bucket, packed);
         }
         return result;
     }
@@ -174,10 +181,9 @@ public class RestUtils {
             REST.Disk packed = packDisk(disk);
             if (!diskCache.contains(packed)) {
                 diskCache.add(packed);
-
             } else {
                 int index = diskCache.indexOf(packed);
-                result.addDisk(diskCache.get(index));
+                packed = diskCache.get(index);
             }
 
             result.addDisk(packed);
@@ -188,7 +194,7 @@ public class RestUtils {
     public static DataMapping extractMapping(REST.Mapping mapping) {
         DataMapping result = new DataMapping();
         for (Long bucket : mapping.getBuckets()) {
-            result.getMap().put(bucket, extractReplicaSet(mapping.getReplicas(bucket)));
+            result.getMap().put(bucket, extractReplicaSet(mapping.getReplicaSet(bucket)));
         }
         return result;
     }

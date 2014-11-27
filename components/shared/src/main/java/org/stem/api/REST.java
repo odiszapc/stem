@@ -185,8 +185,13 @@ public abstract class REST {
         }
 
         @JsonIgnore
-        public ReplicaSet getReplicas(Long bucket) {
+        public ReplicaSet getReplicaSet(Long bucket) {
             return map.get(bucket);
+        }
+
+        @JsonIgnore
+        public Set<Disk> getReplicas(Long bucket) {
+            return map.get(bucket).getReplicas();
         }
 
         @JsonIgnore
@@ -226,9 +231,9 @@ public abstract class REST {
         }
     }
 
-
     @Data
     @RequiredArgsConstructor
+    @EqualsAndHashCode(of = {"replicas"})
     public static class ReplicaSet {
 
         private final Set<Disk> replicas = new HashSet<>();

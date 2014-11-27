@@ -25,6 +25,8 @@ import java.util.*;
 
 public class MappingUtils {
 
+    public static final int UUID_PACKED_SIZE = 16;
+
     public static class Encoder {
 
         private final REST.Mapping mapping;
@@ -32,6 +34,8 @@ public class MappingUtils {
         private final ArrayList<Long> buckets; // buckets numbers sorted
         private final int numberOfBuckets;
         private final Map<Long, UUID> diskMap;
+        private final Map<UUID, Long> invertedDiskMap;
+        private final int rf;
 
         public Encoder(REST.Mapping mapping) {
             this.mapping = mapping;
@@ -41,47 +45,105 @@ public class MappingUtils {
             Collections.sort(buckets);
             numberOfBuckets = buckets.size();
 
+            rf = reconstructReplicationFactor();
+
             // List of unique disks
             List<REST.Disk> disks = Lists.newArrayList(mapping.getDisks());
             formatter = prepareFormat(disks.size());
             diskMap = prepareDiskMap(disks);
+
+            invertedDiskMap = new HashMap<>(diskMap.size());
+            for (Map.Entry<Long, UUID> entry : diskMap.entrySet())
+                invertedDiskMap.put(entry.getValue(), entry.getKey());
+        }
+
+        private int reconstructReplicationFactor() {
+            int rf = -1;
+            for (REST.ReplicaSet replicaSet : mapping.getAllReplicas()) {
+                int replicas = replicaSet.getReplicas().size();
+                if (rf == -1)
+                    rf = replicas;
+                else if (rf != replicas)
+                    throw new RuntimeException(String.format("Corrupted mappings, rf(%s) != replicas(%s)", rf, replicas));
+            }
+
+            if (rf < 0)
+                throw new RuntimeException("mappings corrupted");
+
+            return rf;
         }
 
         private Map<Long, UUID> prepareDiskMap(List<REST.Disk> disks) { // TODO: We dont support more then 2^32 disks
             Map<Long, UUID> result = new HashMap<>(disks.size());
-            for(int i = 0; i < disks.size(); i++)
-                result.put((long)i, disks.get(i).getId());
+            for (int i = 0; i < disks.size(); i++)
+                result.put((long) i, disks.get(i).getId());
 
             return result;
         }
 
         public byte[] encode() {
-            ByteBuf buf = Unpooled.buffer();
-            writeHeader(buf);
+            final int diskMapSize = diskMap.size() * (formatter.granularityInBytes + UUID_PACKED_SIZE);
+            final int bucketsSize = rf * formatter.granularityInBytes * numberOfBuckets;
+            final int bufferSize = Header.PACKED_SIZE + diskMapSize + bucketsSize;
+            ByteBuf buf = Unpooled.buffer(bufferSize);
+
+            Header header = new Header(numberOfBuckets, rf, formatter);
+            writeHeader(header, buf);
+
             writeDiskMap(buf);
+
             writeBuckets(buf);
 
-            return new byte[]{};
+            return buf.nioBuffer().array();
         }
 
-        private void writeBuckets(ByteBuf buf) {
-            // TODO:
-        }
-
-        private void writeHeader(ByteBuf buf) {
-            // TODO:
+        private void writeHeader(Header header, ByteBuf buf) {
+            header.writeTo(buf);
         }
 
         private void writeDiskMap(ByteBuf buf) {
-            Unpooled.buffer(formatter.sizeInBytes * diskMap.size());
-            // TODO:
+            List<Long> indexes = Lists.newArrayList(diskMap.keySet());
+            Collections.sort(indexes);
+
+            for (Long ident : indexes) {
+                formatter.codec.write(ident, buf);
+                BBUtils.writeUuid(diskMap.get(ident), buf);
+            }
         }
 
+        private void writeBuckets(ByteBuf buf) {
+            for (long bucket : buckets) {
+                for (REST.Disk disk : mapping.getReplicas(bucket)) {
+                    long ident = invertedDiskMap.get(disk.getId());
+                    formatter.codec.write(ident, buf);
+                }
+            }
+        }
 
         public static NumberFormat prepareFormat(long maxBucketNumber) {
             final int longSize = 64;
             int cap = longSize - Long.numberOfLeadingZeros(maxBucketNumber);
             return NumberFormat.minimalFormat(cap);
+        }
+    }
+
+    private static class Header {
+
+        private final int buckets;
+        private int rf;
+        private final NumberFormat formatter;
+        private static final int PACKED_SIZE = 16;
+
+        public Header(int buckets, int rf, NumberFormat formatter) {
+            this.buckets = buckets;
+            this.rf = rf;
+            this.formatter = formatter;
+        }
+
+        public void writeTo(ByteBuf buf) {
+            buf.writeLong(buckets);
+            buf.writeInt(rf);
+            buf.writeInt(formatter.granularityInBytes);
         }
     }
 
@@ -100,11 +162,15 @@ public class MappingUtils {
             else return LONG;
         }
 
-        private final int sizeInBytes;
+        public static NumberFormat fromSize(int sizeInBytes) {
+            return minimalFormat(sizeInBytes * 8);
+        }
+
+        private final int granularityInBytes; // TODO: rename
         private final NumberCodec codec;
 
         NumberFormat(int size, NumberCodec codec) {
-            this.sizeInBytes = size;
+            this.granularityInBytes = size;
             this.codec = codec;
         }
     }

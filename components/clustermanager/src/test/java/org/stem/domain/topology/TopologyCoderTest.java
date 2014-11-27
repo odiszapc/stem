@@ -38,7 +38,7 @@ public class TopologyCoderTest {
 
     @Test
     public void jsonPackAndUnpackEquality() throws Exception {
-        DataMapping mapping = prepareMapping(100000);
+        DataMapping mapping = prepareMapping(100000, 1);
 
         REST.Mapping original = RestUtils.packMapping(mapping);
         String encoded = JsonUtils.encode(original);
@@ -47,8 +47,8 @@ public class TopologyCoderTest {
         // Assert
         Set<Integer> diskObjIds = new HashSet<>();
         for (Long bucket : decoded.getBuckets()) {
-            REST.ReplicaSet originalReplicas = original.getReplicas(bucket);
-            REST.ReplicaSet decodedReplicas = decoded.getReplicas(bucket);
+            REST.ReplicaSet originalReplicas = original.getReplicaSet(bucket);
+            REST.ReplicaSet decodedReplicas = decoded.getReplicaSet(bucket);
             for (REST.Disk disk : decodedReplicas.getReplicas()) {
                 int originalId = System.identityHashCode(disk);
                 diskObjIds.add(originalId);
@@ -108,22 +108,28 @@ public class TopologyCoderTest {
     }
 
     @Test
-    public void binaryCodeDecode() throws Exception {
-        DataMapping source = prepareMapping(100000);
+    public void binaryCoderDecoderRfOne() throws Exception {
+        DataMapping source = prepareMapping(100000, 1);
         MappingUtils.Encoder encoder = new MappingUtils.Encoder(RestUtils.packMapping(source));
         byte[] encoded = encoder.encode();
+    }
 
+    @Test
+    public void binaryCoderDecoderRfThree() throws Exception {
+        DataMapping source = prepareMapping(100000, 3);
+        MappingUtils.Encoder encoder = new MappingUtils.Encoder(RestUtils.packMapping(source));
+        byte[] encoded = encoder.encode();
     }
 
     private void validateReplicasEquality(REST.ReplicaSet original, REST.ReplicaSet decoded) {
         Assert.assertEquals(original.getReplicas(), decoded.getReplicas());
     }
 
-    private DataMapping prepareMapping(int buckets) {
+    private DataMapping prepareMapping(int buckets, int rf) {
         Topology topology = createTopology();
         Partitioner partitioner = Partitioner.Type.CRUSH.builder.build();
         List<Long> bucketsArray = TopologyUtils.prepareBucketsArray(buckets);
-        Map<Long, Topology.ReplicaSet> map = ((CrushAdapter) partitioner.algorithm()).computeMapping(bucketsArray, 1, topology);
+        Map<Long, Topology.ReplicaSet> map = ((CrushAdapter) partitioner.algorithm()).computeMapping(bucketsArray, rf, topology);
         return new DataMapping(map);
     }
 
