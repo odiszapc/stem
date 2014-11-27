@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.SimpleType;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,6 +31,10 @@ import java.util.Map;
 public class JsonUtils {
 
     private static ObjectMapper mapper = new ObjectMapper();
+
+    public static TypeFactory getTypeFactory() {
+        return mapper.getTypeFactory();
+    }
 
     static {
         //jsonEncoder.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);

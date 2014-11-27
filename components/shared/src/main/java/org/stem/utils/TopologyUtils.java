@@ -144,4 +144,15 @@ public class TopologyUtils {
     public static String extractDiskUUID(String name) {
         return name.substring(5);
     }
+
+    public static List<Long> prepareBucketsArray(int buckets) {
+        Long[] arr = new Long[buckets];
+        for (int i = 0; i < buckets; i++) {
+            arr[i] = (long) i;
+        }
+
+        return Arrays.asList(arr);
+    }
+
+    //public static byte[] packTopology()
 }

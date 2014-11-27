@@ -16,7 +16,9 @@
 
 package org.stem.api;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.google.common.collect.Lists;
 import lombok.*;
 import org.stem.coordination.ZNodeAbstract;
@@ -158,6 +160,7 @@ public abstract class REST {
     @RequiredArgsConstructor
     @NoArgsConstructor
     @EqualsAndHashCode(of = {"id"})
+    @JsonIdentityInfo(property = "@", generator = ObjectIdGenerators.IntSequenceGenerator.class)
     public static class Disk {
 
         @NonNull UUID id;
@@ -176,14 +179,17 @@ public abstract class REST {
 
         private final Map<Long, ReplicaSet> map = new HashMap<>(); // TODO: pack to Map<Long, Set<UUID> >
 
+        @JsonIgnore
         public List<Long> getBuckets() {
             return Lists.newArrayList(map.keySet());
         }
 
+        @JsonIgnore
         public ReplicaSet getReplicas(Long bucket) {
             return map.get(bucket);
         }
 
+        @JsonIgnore
         public Collection<ReplicaSet> getAllReplicas() {
             return map.values();
         }
@@ -202,6 +208,7 @@ public abstract class REST {
     @Data
     @RequiredArgsConstructor
     public static class TopologySnapshot extends ZNodeAbstract {
+
         private final Topology topology;
         private final Mapping mapping;
 

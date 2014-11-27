@@ -26,6 +26,19 @@ public class DataMapping {
 
     private final Map<Long, Topology.ReplicaSet> map = new HashMap<>();
 
+    public DataMapping(Map<Long, Topology.ReplicaSet> map) {
+        if (map == null)
+            return;
+
+        for (Map.Entry<Long, Topology.ReplicaSet> entry : map.entrySet()) {
+            this.map.put(entry.getKey(), entry.getValue());
+        }
+    }
+
+    public DataMapping() {
+
+    }
+
     public Map<Long, Topology.ReplicaSet> getMap() {
         return map;
     }

@@ -384,6 +384,11 @@ public class Topology extends ZNodeAbstract {
         public Rack rack() {
             return storageNode.rack;
         }
+
+        @Override
+        public String toString() {
+            return String.format("Disk: id=%s, path=%s", id, path);
+        }
     }
 
     public static class ReplicaSet implements Iterable<Disk> {

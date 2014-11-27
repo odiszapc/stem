@@ -20,6 +20,7 @@ import org.stem.domain.topology.DataMapping;
 import org.stem.domain.topology.Partitioner;
 import org.stem.domain.topology.Topology;
 import org.stem.exceptions.TopologyException;
+import org.stem.utils.TopologyUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -86,22 +87,9 @@ public class DataDistributionManager {
     }
 
     private DataMapping computeDataMapping(int rf, int buckets, org.stem.domain.topology.Topology topology) {
-        List<Long> longs = prepareBucketsArray(buckets);
+        List<Long> longs = TopologyUtils.prepareBucketsArray(buckets);
 
-        DataMapping result = new DataMapping();
         Map<Long, org.stem.domain.topology.Topology.ReplicaSet> map = (Map<Long, org.stem.domain.topology.Topology.ReplicaSet>) partitioner.algorithm().computeMapping(longs, rf, topology);
-        for (Map.Entry<Long, Topology.ReplicaSet> entry : map.entrySet()) {
-            result.getMap().put(entry.getKey(), entry.getValue());
-        }
-        return result;
-    }
-
-    private static List<Long> prepareBucketsArray(int buckets) {
-        Long[] arr = new Long[buckets];
-        for (int i = 0; i < buckets; i++) {
-            arr[i] = (long) i;
-        }
-
-        return Arrays.asList(arr);
+        return new DataMapping(map);
     }
 }

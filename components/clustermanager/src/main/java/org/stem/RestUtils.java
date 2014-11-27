@@ -31,7 +31,9 @@ import sun.plugin.dom.exception.InvalidStateException;
 import javax.ws.rs.core.Response;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class RestUtils {
 
@@ -154,11 +156,31 @@ public class RestUtils {
 
     public static REST.Mapping packMapping(DataMapping mapping) {
         REST.Mapping result = new REST.Mapping();
+        List<REST.Disk> diskCache = new ArrayList<>();
+        Set<REST.Disk> asdasd = new HashSet<>();
         for (Long bucket : mapping.getBuckets()) {
             Topology.ReplicaSet replicas = mapping.getReplicas(bucket);
             if (null == replicas)
                 throw new InvalidStateException("replica set is null");
-            result.getMap().put(bucket, packReplicaSet(replicas));
+
+            result.getMap().put(bucket, packReplicaSet(replicas, diskCache));
+        }
+        return result;
+    }
+
+    private static REST.ReplicaSet packReplicaSet(Topology.ReplicaSet replicaSet, List<REST.Disk> diskCache) {
+        REST.ReplicaSet result = new REST.ReplicaSet();
+        for (Topology.Disk disk : replicaSet) {
+            REST.Disk packed = packDisk(disk);
+            if (!diskCache.contains(packed)) {
+                diskCache.add(packed);
+
+            } else {
+                int index = diskCache.indexOf(packed);
+                result.addDisk(diskCache.get(index));
+            }
+
+            result.addDisk(packed);
         }
         return result;
     }
