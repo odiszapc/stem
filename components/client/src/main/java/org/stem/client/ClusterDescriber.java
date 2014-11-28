@@ -18,6 +18,7 @@ package org.stem.client;
 
 import com.google.common.base.Throwables;
 import org.stem.api.REST;
+import org.stem.coordination.ZNode;
 import org.stem.coordination.ZookeeperClient;
 import org.stem.coordination.ZookeeperEventListener;
 import org.stem.coordination.ZookeeperPaths;
@@ -36,38 +37,30 @@ public class ClusterDescriber {
 
     private class Notifier {
 
-        final ZookeeperEventListener<REST.Topology> topology; // TODO: topology and mapping are changed synchronously
-        final ZookeeperEventListener<REST.Mapping> mapping;
+        final ZookeeperEventListener<REST.TopologySnapshot> stateWatcher;
 
         public Notifier() {
-            topology = new ZookeeperEventListener<REST.Topology>() {
+
+            stateWatcher = new ZookeeperEventListener<REST.TopologySnapshot>() {
                 @Override
-                public Class<REST.Topology> getBaseClass() {
-                    return REST.Topology.class;
+                public Class<? extends REST.TopologySnapshot> getBaseClass() {
+                    return REST.TopologySnapshot.class;
                 }
 
                 @Override
-                protected void onNodeUpdated(REST.Topology topology) {
-                    onTopologyChanged(topology);
-                }
-            };
-
-            mapping = new ZookeeperEventListener<REST.Mapping>() {
-                @Override
-                public Class<? extends REST.Mapping> getBaseClass() {
-                    return REST.Mapping.class;
+                protected ZNode.Codec codec() {
+                    return REST.TopologySnapshot.CODEC;
                 }
 
                 @Override
-                protected void onNodeUpdated(REST.Mapping mapping) {
-                    onMappingChanged(mapping);
+                protected void onNodeUpdated(REST.TopologySnapshot object) {
+                    onTopologyChanged(object);
                 }
             };
         }
 
         void start() throws Exception {
-            cluster.coordinationClient.listenForZNode(ZookeeperPaths.topologyPath(), topology);
-            cluster.coordinationClient.listenForZNode(ZookeeperPaths.mappingPath(), mapping);
+            cluster.coordinationClient.listenForZNode(ZookeeperPaths.topologySnapshotPath(), stateWatcher);
         }
 
         // TODO: stop() {}
@@ -78,12 +71,14 @@ public class ClusterDescriber {
         this.notifier = new Notifier();
     }
 
-    private void onTopologyChanged(REST.Topology topology) {
-        refreshNodeList(cluster, topology, false);
+    private void onTopologyChanged(REST.TopologySnapshot state) {
+        refreshNodeList(cluster, state.getTopology(), false);
+        updateMapping(state.getMapping());
+        // TODO: !!!!!!!!!!!
     }
 
-    private void onMappingChanged(REST.Mapping mapping) {
-        updateMapping(mapping);
+    private void updateMapping(REST.Mapping mapping) {
+        cluster.metadata.setMapping(mapping);
     }
 
     void start() {
@@ -98,7 +93,6 @@ public class ClusterDescriber {
             notifier.start();
         } catch (Exception e) {
             Throwables.propagate(e);
-
         }
     }
 
@@ -128,11 +122,6 @@ public class ClusterDescriber {
 
         // TODO: wait until all pools will be online
         cluster.metadata.setTopology(topology);
-    }
-
-
-    private void updateMapping(REST.Mapping mapping) {
-        cluster.metadata.setMapping(mapping);
     }
 
     private void refreshNodeList() {

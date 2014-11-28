@@ -19,10 +19,9 @@ package org.stem.coordination;
 import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stem.utils.JsonUtils;
 
 // This is a Handler, not listener
-public abstract class ZookeeperEventListener<T> {
+public abstract class ZookeeperEventListener<T extends ZNode> {
 
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperEventListener.class);
 
@@ -72,8 +71,12 @@ public abstract class ZookeeperEventListener<T> {
         };
     }
 
-    private T decode(byte[] data) {
-        return JsonUtils.decode(data, getBaseClass());
+    protected T decode(byte[] data) {
+        return codec().decode(data, getBaseClass());
+    }
+
+    protected ZNode.Codec codec() {
+        return ZNodeAbstract.JSON_CODEC;
     }
 
     protected void onChildAdded(T object) {

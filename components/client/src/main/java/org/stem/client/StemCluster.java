@@ -276,7 +276,7 @@ public class StemCluster {
             if (isClosed())
                 return;
 
-            logger.info("New Stem Storage Node host {} added", host);
+            logger.info("New storage node host {} added", host);
 
             host.setUp();
 
