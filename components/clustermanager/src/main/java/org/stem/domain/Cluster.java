@@ -365,7 +365,7 @@ public class Cluster {
         }
 
         private DataMapping loadMapping(String path) throws Exception {
-            REST.Mapping raw = getZookeeperClient().readZNodeData(path, REST.Mapping.class);
+            REST.Mapping raw = getZookeeperClient().readZNodeData(path, REST.Mapping.class, REST.Mapping.CODEC);
             if (null == raw)
                 return DataMapping.EMPTY;
 
@@ -437,6 +437,7 @@ public class Cluster {
             }
 
             DataMapping.Difference difference = distributionManager.computeMappingDifference();
+
             REST.TopologySnapshot snapshot = RestUtils.packTopologySnapshot(topology2, current);
             getZookeeperClient().saveNode(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, snapshot);
 
