@@ -165,13 +165,11 @@ public class TopologyCoderTest {
     private void assertMappingsEquality(REST.Mapping m1, REST.Mapping m2) {
         Assert.assertEquals(m1.size(), m2.size());
 
-        for (Long b : m1.getBuckets()) {
+        for (Long b : m1.getBuckets())
             Assert.assertEquals(m2.getReplicaSet(b), m1.getReplicaSet(b));
-        }
 
-        for (Long b : m2.getBuckets()) {
+        for (Long b : m2.getBuckets())
             Assert.assertEquals(m1.getReplicaSet(b), m2.getReplicaSet(b));
-        }
     }
 
     private void validateReplicasEquality(REST.ReplicaSet original, REST.ReplicaSet decoded) {
