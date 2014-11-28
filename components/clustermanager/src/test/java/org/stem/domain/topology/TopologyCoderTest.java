@@ -109,15 +109,33 @@ public class TopologyCoderTest {
 
     @Test
     public void binaryCoderDecoderRfOne() throws Exception {
-        DataMapping source = prepareMapping(100000, 1);
-        Mappings.Encoder encoder = new Mappings.Encoder(RestUtils.packMapping(source));
+        REST.Mapping original = RestUtils.packMapping(prepareMapping(100000, 1));
+
+        Mappings.Encoder encoder = new Mappings.Encoder(original);
         byte[] encoded = encoder.encode();
+
+        Mappings.Decoder decoder = new Mappings.Decoder(encoded);
+        REST.Mapping decoded = decoder.decode();
+
+        assertMappingsEquality(original, decoded);
     }
 
     @Test
     public void binaryCoderDecoderRfThree() throws Exception {
         REST.Mapping original = RestUtils.packMapping(prepareMapping(100000, 3));
 
+        Mappings.Encoder encoder = new Mappings.Encoder(original);
+        byte[] encoded = encoder.encode();
+
+        Mappings.Decoder decoder = new Mappings.Decoder(encoded);
+        REST.Mapping decoded = decoder.decode();
+
+        assertMappingsEquality(original, decoded);
+    }
+
+    @Test
+    public void binaryCoderDecoderLarge() throws Exception {
+        REST.Mapping original = RestUtils.packMapping(prepareMapping(1000000, 3));
 
         Mappings.Encoder encoder = new Mappings.Encoder(original);
         byte[] encoded = encoder.encode();
