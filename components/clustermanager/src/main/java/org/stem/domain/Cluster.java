@@ -114,7 +114,7 @@ public class Cluster {
         rack.addStorageNode(node);
 
         // Recompute mappings
-        computeMapping();
+        computeMapping(); // TODO: move this occurrence to topology listener callback
 
         // TODO: I'm 100% sure there should be much more arbitrary checks and validations
 
@@ -239,7 +239,9 @@ public class Cluster {
         try {
             manager.recalculateDataMapping();
         } catch (Exception e) {
+            logger.error("Compute mapping failed");
             throw new StemException("Compute mapping failed", e);
+
         }
     }
 
@@ -371,12 +373,11 @@ public class Cluster {
         }
 
         private void saveMapping(String kind, DataMapping entity) throws Exception { // TODO: string kind to enum type
-
             REST.Mapping raw = RestUtils.packMapping(entity); // TODO: 22 MB is too large. Let's try to pack into binary format
             raw.setName(kind);
 
-            getZookeeperClient().createNodeIfNotExists(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, raw);
-            getZookeeperClient().updateNode(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, raw);
+            //getZookeeperClient().createNodeIfNotExists(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, raw);
+            getZookeeperClient().saveNode(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, raw);
         }
 
         private void register(org.stem.domain.topology.Topology persistedTopo) {
@@ -387,7 +388,6 @@ public class Cluster {
         // TODO: persist and restore nodes and disks states (Topology.NodeState, Topology.DiskState enums)
         // TODO: turn off listeners until we load topology ???
         private org.stem.domain.topology.Topology readTopology() throws Exception {
-
             REST.Topology topologyTransient = client.readZNodeData(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, REST.Topology.class);
             if (null == topologyTransient)
                 return null;
@@ -438,15 +438,13 @@ public class Cluster {
                 saveMapping(PREVIOUS_MAPPING, previous);
             }
 
-
             DataMapping.Difference difference = distributionManager.computeMappingDifference();
             REST.TopologySnapshot snapshot = RestUtils.packTopologySnapshot(topology2, current);
-            getZookeeperClient().createNodeIfNotExists(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, snapshot);
-            getZookeeperClient().updateNode(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, snapshot);
+            //getZookeeperClient().createNodeIfNotExists(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, snapshot);
+            getZookeeperClient().saveNode(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, snapshot);
 
 
             // TODO: check the difference make sense (is there actual delta between mapping);
-
             // TODO: compute streaming sessions !!!!!!!!!!!!!!!!!!!
             // TODO: distributionManager.computeStreamingSessions()
         }

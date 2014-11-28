@@ -67,7 +67,7 @@ public class Mappings {
                     throw new RuntimeException(String.format("Corrupted mappings, rf(%s) != replicas(%s)", rf, replicas));
             }
 
-            if (rf < 0)
+            if (rf < 0 && !mapping.isEmpty())
                 throw new RuntimeException("mappings corrupted");
 
             return rf;
@@ -82,6 +82,9 @@ public class Mappings {
         }
 
         public byte[] encode() {
+            if (mapping.isEmpty())
+                return new byte[]{};
+
             final int diskMapSize = diskMap.size() * (formatter.granularityInBytes + UUID_PACKED_SIZE);
             final int bucketsSize = rf * formatter.granularityInBytes * numberOfBuckets;
             final int bufferSize = Header.PACKED_SIZE + diskMapSize + bucketsSize;
@@ -128,41 +131,6 @@ public class Mappings {
         }
     }
 
-//    public static class Binary {
-//        final Header header;
-//        final Map<Long, UUID> diskIndex;
-//        final byte[] replicas;
-//
-//    }
-
-    private static class Header {
-
-        private final long buckets;
-        private int rf;
-        private final NumberFormat formatter;
-        private static final int PACKED_SIZE = 16;
-
-        public Header(long buckets, int rf, NumberFormat formatter) {
-            this.buckets = buckets;
-            this.rf = rf;
-            this.formatter = formatter;
-        }
-
-        public void writeTo(ByteBuf buf) {
-            buf.writeLong(buckets);
-            buf.writeInt(rf);
-            buf.writeInt(formatter.granularityInBytes);
-        }
-
-        public static Header create(ByteBuf buf) {
-            long buckets = buf.readLong();
-            int rf = buf.readInt();
-            int numberCapacity = buf.readInt();
-
-            return new Header(buckets, rf, NumberFormat.fromSize(numberCapacity));
-        }
-    }
-
     public static class Decoder {
 
         final ByteBuf buf;
@@ -173,6 +141,10 @@ public class Mappings {
 
         public REST.Mapping decode() {
             // TODO: add validation
+
+            if (!buf.isReadable())
+                return new REST.Mapping();
+
             Header header = readHeader(buf);
             Map<Long, UUID> diskMap = readDiskMap(header, buf);
 
@@ -226,15 +198,6 @@ public class Mappings {
 
         }
 
-//        private void writeBuckets(ByteBuf buf) {
-//            for (long bucket : buckets) {
-//                for (REST.Disk disk : mapping.getReplicas(bucket)) {
-//                    long ident = invertedDiskMap.get(disk.getId());
-//                    formatter.codec.write(ident, buf);
-//                }
-//            }
-//        }
-
         private Map<Long, UUID> readDiskMap(Header header, ByteBuf buf) {
 
             long size = buf.readLong();
@@ -251,8 +214,34 @@ public class Mappings {
         private Header readHeader(ByteBuf buf) {
             return Header.create(buf);
         }
+    }
 
+    private static class Header {
 
+        private final long buckets;
+        private int rf;
+        private final NumberFormat formatter;
+        private static final int PACKED_SIZE = 16;
+
+        public Header(long buckets, int rf, NumberFormat formatter) {
+            this.buckets = buckets;
+            this.rf = rf;
+            this.formatter = formatter;
+        }
+
+        public void writeTo(ByteBuf buf) {
+            buf.writeLong(buckets);
+            buf.writeInt(rf);
+            buf.writeInt(formatter.granularityInBytes);
+        }
+
+        public static Header create(ByteBuf buf) {
+            long buckets = buf.readLong();
+            int rf = buf.readInt();
+            int numberCapacity = buf.readInt();
+
+            return new Header(buckets, rf, NumberFormat.fromSize(numberCapacity));
+        }
     }
 
     public static enum NumberFormat {

@@ -110,40 +110,56 @@ public class TopologyCoderTest {
     @Test
     public void binaryCoderDecoderRfOne() throws Exception {
         REST.Mapping original = RestUtils.packMapping(prepareMapping(100000, 1));
-
         Mappings.Encoder encoder = new Mappings.Encoder(original);
         byte[] encoded = encoder.encode();
 
-        Mappings.Decoder decoder = new Mappings.Decoder(encoded);
-        REST.Mapping decoded = decoder.decode();
-
+        REST.Mapping decoded = new Mappings.Decoder(encoded).decode();
         assertMappingsEquality(original, decoded);
     }
 
     @Test
     public void binaryCoderDecoderRfThree() throws Exception {
         REST.Mapping original = RestUtils.packMapping(prepareMapping(100000, 3));
-
         Mappings.Encoder encoder = new Mappings.Encoder(original);
         byte[] encoded = encoder.encode();
 
-        Mappings.Decoder decoder = new Mappings.Decoder(encoded);
-        REST.Mapping decoded = decoder.decode();
-
+        REST.Mapping decoded = new Mappings.Decoder(encoded).decode();
         assertMappingsEquality(original, decoded);
     }
 
     @Test
     public void binaryCoderDecoderLarge() throws Exception {
         REST.Mapping original = RestUtils.packMapping(prepareMapping(1000000, 3));
-
         Mappings.Encoder encoder = new Mappings.Encoder(original);
         byte[] encoded = encoder.encode();
 
-        Mappings.Decoder decoder = new Mappings.Decoder(encoded);
-        REST.Mapping decoded = decoder.decode();
-
+        REST.Mapping decoded = new Mappings.Decoder(encoded).decode();
         assertMappingsEquality(original, decoded);
+    }
+
+    @Test
+    public void binaryCoderDecoderEmpty() throws Exception {
+        REST.Mapping original = new REST.Mapping();
+
+        Mappings.Encoder encoder = new Mappings.Encoder(original);
+        byte[] encoded = encoder.encode();
+        Assert.assertEquals(0, encoded.length);
+
+        REST.Mapping decoded = new Mappings.Decoder(encoded).decode();
+        Assert.assertTrue(decoded.isEmpty());
+        assertMappingsEquality(original, decoded);
+    }
+
+    @Test
+    public void testName() throws Exception {
+        Topology topology = createTopology();
+        REST.Mapping mapping = RestUtils.packMapping(prepareMapping(topology, 100000, 3));
+        REST.TopologySnapshot original = new REST.TopologySnapshot(RestUtils.packTopology(topology), mapping);
+        byte[] snapshotEncoded = REST.TopologySnapshot.CODEC.encode(original);
+
+        REST.TopologySnapshot decoded = REST.TopologySnapshot.CODEC.decode(snapshotEncoded, REST.TopologySnapshot.class);
+        assertMappingsEquality(original.getMapping(), decoded.getMapping());
+        // TODO: compare topologies
     }
 
     private void assertMappingsEquality(REST.Mapping m1, REST.Mapping m2) {
@@ -163,7 +179,11 @@ public class TopologyCoderTest {
     }
 
     private DataMapping prepareMapping(int buckets, int rf) {
-        Topology topology = createTopology();
+        return prepareMapping(createTopology(), buckets, rf);
+    }
+
+    private DataMapping prepareMapping(Topology topology, int buckets, int rf) {
+
         Partitioner partitioner = Partitioner.Type.CRUSH.builder.build();
         List<Long> bucketsArray = TopologyUtils.prepareBucketsArray(buckets);
         Map<Long, Topology.ReplicaSet> map = ((CrushAdapter) partitioner.algorithm()).computeMapping(bucketsArray, rf, topology);

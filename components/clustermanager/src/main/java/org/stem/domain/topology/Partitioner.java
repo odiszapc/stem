@@ -39,14 +39,18 @@ public abstract class Partitioner {
         @JsonCreator
         public static Type byName(String name) {
             if (null == name)
-                throw new IllegalStateException("Partition name is empty");
+                throw new IllegalStateException(String.format("Partition name is empty. Available partitioners: %s", availablePartitionersHuman()));
 
             Type type = values.get(name);
             if (null == type)
                 throw new IllegalStateException(String.format("Invalid partitioner name: %s. Available partitioners: %s",
-                        name, StringUtils.join(values.keySet(), ", ")));
+                        name, availablePartitionersHuman()));
 
             return type;
+        }
+
+        private static String availablePartitionersHuman() {
+            return StringUtils.join(values.keySet(), ", ");
         }
 
         @JsonValue

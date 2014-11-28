@@ -16,9 +16,15 @@
 
 package org.stem.coordination;
 
-public interface ZNode {
+public interface ZNode { // TODO: Merge with ZNodeAbstract
 
     String name();
 
     byte[] encode();
+
+    public interface Codec {
+
+        byte[] encode(Object obj);
+        <T extends ZNode> T decode(byte[] raw, Class<T> clazz);
+    }
 }

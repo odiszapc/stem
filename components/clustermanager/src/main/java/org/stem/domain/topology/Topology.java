@@ -281,6 +281,7 @@ public class Topology extends ZNodeAbstract {
         public StorageNode(InetSocketAddress address) {
             super();
             this.address = address;
+            this.hostname = address.getHostName();
         }
 
         public void addDisk(Disk disk) {

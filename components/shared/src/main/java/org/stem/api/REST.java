@@ -20,9 +20,15 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.google.common.collect.Lists;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import lombok.*;
+import org.stem.coordination.ZNode;
 import org.stem.coordination.ZNodeAbstract;
 import org.stem.coordination.ZookeeperPaths;
+import org.stem.utils.BBUtils;
+import org.stem.utils.JsonUtils;
+import org.stem.utils.Mappings;
 import org.stem.utils.Utils;
 
 import java.net.InetSocketAddress;
@@ -174,6 +180,25 @@ public abstract class REST {
     @RequiredArgsConstructor
     public static class Mapping extends ZNodeAbstract {
 
+        public static final ZNode.Codec CODEC = new ZNode.Codec() {
+
+            @Override
+            public byte[] encode(Object obj) {
+                return new Mappings.Encoder((Mapping) obj).encode();
+            }
+
+            @Override
+            public <T extends ZNode> T decode(byte[] raw, Class<T> clazz) {
+                return (T) new Mappings.Decoder(raw).decode();
+            }
+        };
+
+        @JsonIgnore
+        @Override
+        protected ZNode.Codec codec() {
+            return CODEC;
+        }
+
         @JsonIgnore
         private String name;
 
@@ -219,12 +244,51 @@ public abstract class REST {
                 result.addAll(set.getReplicas());
             return result;
         }
+
+        @JsonIgnore
+        public boolean isEmpty() {
+            return map.isEmpty();
+        }
     }
 
     @EqualsAndHashCode(callSuper = false)
     @Data
     @RequiredArgsConstructor
     public static class TopologySnapshot extends ZNodeAbstract {
+
+        public static final ZNode.Codec CODEC = new ZNode.Codec() {
+
+            @Override
+            public byte[] encode(Object obj) {
+                String topologyPacked = JsonUtils.encode(((TopologySnapshot)obj).topology);
+                byte[] mappingPacked = new Mappings.Encoder(((TopologySnapshot) obj).mapping).encode();
+
+                ByteBuf buffer = Unpooled.buffer();
+                BBUtils.writeString(topologyPacked, buffer);
+                BBUtils.writeBytes(mappingPacked, buffer);
+
+                byte[] result = new byte[buffer.readableBytes()];
+                buffer.readBytes(result);
+                return result;
+            }
+
+            @Override
+            public <T extends ZNode> T decode(byte[] raw, Class<T> clazz) {
+                ByteBuf buf = Unpooled.wrappedBuffer(raw);
+                String topologyPacked = BBUtils.readString(buf);
+                Topology topology = JsonUtils.decode(topologyPacked, Topology.class);
+
+                byte[] mappingRaw = new byte[buf.readableBytes()];
+                buf.readBytes(mappingRaw);
+                Mapping mapping = new Mappings.Decoder(mappingRaw).decode();
+                return (T) new TopologySnapshot(topology, mapping);
+            }
+        };
+
+        @Override
+        protected Codec codec() {
+            return CODEC;
+        }
 
         private final Topology topology;
         private final Mapping mapping;

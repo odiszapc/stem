@@ -35,7 +35,6 @@ import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stem.utils.JsonUtils;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
@@ -200,9 +199,12 @@ public class ZookeeperClient {
         }
     }
 
-    public void createNodeIfNotExists(String parent, ZNode znode) throws Exception {
-        if (!nodeExists(parent, znode))
+    public boolean createNodeIfNotExists(String parent, ZNode znode) throws Exception {
+        if (!nodeExists(parent, znode)) {
             createNode(parent, znode);
+            return true;
+        }
+        return false;
     }
 
     public boolean nodeExists(String parent, ZNode znode) throws Exception {
@@ -227,12 +229,17 @@ public class ZookeeperClient {
     }
 
     public <T extends ZNode> T readZNodeData(String path, Class<T> clazz) throws Exception {
+        return readZNodeData(path, clazz, ZNodeAbstract.JSON_CODEC);
+    }
+
+    public <T extends ZNode> T readZNodeData(String path, Class<T> clazz, ZNode.Codec codec) throws Exception {
         try {
             byte[] data = client.getData().forPath(path);
             if (0 == data.length) {
                 return null;
             }
-            return JsonUtils.decode(data, clazz); // TODO: handle JSON decode error
+
+            return codec.decode(data, clazz); // TODO: handle JSON decode error
         } catch (KeeperException.NoNodeException e) {
             return null;
         }
@@ -248,6 +255,13 @@ public class ZookeeperClient {
         if (isRunning()) {
             client.setData().forPath(path, data);
         }
+    }
+
+    public void saveNode(String path, ZNode node) throws Exception {
+        if (createNodeIfNotExists(path, node))
+            return;
+
+        updateNode(path, node);
     }
 
     public void removeNode(String path) throws Exception {

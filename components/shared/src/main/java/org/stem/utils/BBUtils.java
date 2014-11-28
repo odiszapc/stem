@@ -103,4 +103,8 @@ public class BBUtils {
         buf.putInt(value);
         return buf;
     }
+
+    public static void writeBytes(byte[] bytes, ByteBuf buf) {
+        buf.writeBytes(bytes);
+    }
 }
