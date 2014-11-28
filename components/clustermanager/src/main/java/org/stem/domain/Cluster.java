@@ -375,8 +375,6 @@ public class Cluster {
         private void saveMapping(String kind, DataMapping entity) throws Exception { // TODO: string kind to enum type
             REST.Mapping raw = RestUtils.packMapping(entity); // TODO: 22 MB is too large. Let's try to pack into binary format
             raw.setName(kind);
-
-            //getZookeeperClient().createNodeIfNotExists(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, raw);
             getZookeeperClient().saveNode(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, raw);
         }
 
@@ -440,7 +438,6 @@ public class Cluster {
 
             DataMapping.Difference difference = distributionManager.computeMappingDifference();
             REST.TopologySnapshot snapshot = RestUtils.packTopologySnapshot(topology2, current);
-            //getZookeeperClient().createNodeIfNotExists(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, snapshot);
             getZookeeperClient().saveNode(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, snapshot);
 
 
