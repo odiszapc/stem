@@ -208,6 +208,10 @@ public abstract class REST {
             return null != name ? name : ZookeeperPaths.MAPPING;
         }
 
+        public long size() {
+            return map.size();
+        }
+
         @JsonIgnore
         public Set<Disk> getDisks() {
             Set<Disk> result = new HashSet<>();
@@ -240,6 +244,10 @@ public abstract class REST {
 
         public void addDisk(Disk disk) {
             replicas.add(disk);
+        }
+
+        public void addDisks(Set<Disk> disks) {
+            replicas.addAll(disks);
         }
     }
 }

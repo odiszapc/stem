@@ -25,14 +25,14 @@ import org.stem.RestUtils;
 import org.stem.api.REST;
 import org.stem.utils.BBUtils;
 import org.stem.utils.JsonUtils;
-import org.stem.utils.MappingUtils;
+import org.stem.utils.Mappings;
 import org.stem.utils.TopologyUtils;
 
 import java.net.InetSocketAddress;
 import java.util.*;
 
-import static org.stem.utils.MappingUtils.Encoder.prepareFormat;
-import static org.stem.utils.MappingUtils.NumberFormat.*;
+import static org.stem.utils.Mappings.Encoder.prepareFormat;
+import static org.stem.utils.Mappings.NumberFormat.*;
 
 public class TopologyCoderTest {
 
@@ -110,15 +110,34 @@ public class TopologyCoderTest {
     @Test
     public void binaryCoderDecoderRfOne() throws Exception {
         DataMapping source = prepareMapping(100000, 1);
-        MappingUtils.Encoder encoder = new MappingUtils.Encoder(RestUtils.packMapping(source));
+        Mappings.Encoder encoder = new Mappings.Encoder(RestUtils.packMapping(source));
         byte[] encoded = encoder.encode();
     }
 
     @Test
     public void binaryCoderDecoderRfThree() throws Exception {
-        DataMapping source = prepareMapping(100000, 3);
-        MappingUtils.Encoder encoder = new MappingUtils.Encoder(RestUtils.packMapping(source));
+        REST.Mapping original = RestUtils.packMapping(prepareMapping(100000, 3));
+
+
+        Mappings.Encoder encoder = new Mappings.Encoder(original);
         byte[] encoded = encoder.encode();
+
+        Mappings.Decoder decoder = new Mappings.Decoder(encoded);
+        REST.Mapping decoded = decoder.decode();
+
+        assertMappingsEquality(original, decoded);
+    }
+
+    private void assertMappingsEquality(REST.Mapping m1, REST.Mapping m2) {
+        Assert.assertEquals(m1.size(), m2.size());
+
+        for (Long b : m1.getBuckets()) {
+            Assert.assertEquals(m2.getReplicaSet(b), m1.getReplicaSet(b));
+        }
+
+        for (Long b : m2.getBuckets()) {
+            Assert.assertEquals(m1.getReplicaSet(b), m2.getReplicaSet(b));
+        }
     }
 
     private void validateReplicasEquality(REST.ReplicaSet original, REST.ReplicaSet decoded) {

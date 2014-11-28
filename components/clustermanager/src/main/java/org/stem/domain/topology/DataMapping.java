@@ -39,6 +39,10 @@ public class DataMapping {
 
     }
 
+    public long size() {
+        return map.size();
+    }
+
     public Map<Long, Topology.ReplicaSet> getMap() {
         return map;
     }

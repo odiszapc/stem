@@ -23,7 +23,7 @@ import org.stem.api.REST;
 
 import java.util.*;
 
-public class MappingUtils {
+public class Mappings {
 
     public static final int UUID_PACKED_SIZE = 16;
 
@@ -105,6 +105,7 @@ public class MappingUtils {
             List<Long> indexes = Lists.newArrayList(diskMap.keySet());
             Collections.sort(indexes);
 
+            buf.writeLong((long) indexes.size());
             for (Long ident : indexes) {
                 formatter.codec.write(ident, buf);
                 BBUtils.writeUuid(diskMap.get(ident), buf);
@@ -127,14 +128,21 @@ public class MappingUtils {
         }
     }
 
+//    public static class Binary {
+//        final Header header;
+//        final Map<Long, UUID> diskIndex;
+//        final byte[] replicas;
+//
+//    }
+
     private static class Header {
 
-        private final int buckets;
+        private final long buckets;
         private int rf;
         private final NumberFormat formatter;
         private static final int PACKED_SIZE = 16;
 
-        public Header(int buckets, int rf, NumberFormat formatter) {
+        public Header(long buckets, int rf, NumberFormat formatter) {
             this.buckets = buckets;
             this.rf = rf;
             this.formatter = formatter;
@@ -144,6 +152,14 @@ public class MappingUtils {
             buf.writeLong(buckets);
             buf.writeInt(rf);
             buf.writeInt(formatter.granularityInBytes);
+        }
+
+        public static Header create(ByteBuf buf) {
+            long buckets = buf.readLong();
+            int rf = buf.readInt();
+            int numberCapacity = buf.readInt();
+
+            return new Header(buckets, rf, NumberFormat.fromSize(numberCapacity));
         }
     }
 
@@ -156,8 +172,87 @@ public class MappingUtils {
         }
 
         public REST.Mapping decode() {
-            // TODO:
+            // TODO: add validation
+            Header header = readHeader(buf);
+            Map<Long, UUID> diskMap = readDiskMap(header, buf);
+
+            return buildMapping(header, diskMap, buf);
         }
+
+        private static REST.Mapping buildMapping(Header header, Map<Long, UUID> diskMap, ByteBuf buf) {
+            List<REST.Disk> diskCache = new ArrayList<>();
+            List<REST.ReplicaSet> replicaSetCache = new ArrayList<>();
+
+            REST.Mapping result = new REST.Mapping();
+            Map<Long, REST.ReplicaSet> dataMap = result.getMap();
+            for (long bucket = 0; bucket < header.buckets; bucket++) {
+                Set<REST.Disk> disks = new HashSet<>(header.rf);
+                for (int j = 0; j < header.rf; j++) {
+                    Long index = header.formatter.codec.read(buf);
+                    UUID ident = diskMap.get(index);
+                    REST.Disk disk = createMaybeCache(ident, diskCache);
+                    disks.add(disk);
+                }
+
+                REST.ReplicaSet replicaSet = createMaybeCache(disks, replicaSetCache);
+                dataMap.put(bucket, replicaSet);
+            }
+
+            return result;
+        }
+
+        private static REST.ReplicaSet createMaybeCache(Set<REST.Disk> disks, List<REST.ReplicaSet> cache) {
+            REST.ReplicaSet packed = new REST.ReplicaSet();
+            packed.addDisks(disks);
+
+            if (!cache.contains(packed))
+                cache.add(packed);
+            else {
+                int index = cache.indexOf(packed);
+                packed = cache.get(index);
+            }
+            return packed;
+        }
+
+        private static REST.Disk createMaybeCache(UUID ident, List<REST.Disk> diskCache) {
+            REST.Disk packed = new REST.Disk(ident, "", -1, -1);
+            if (!diskCache.contains(packed)) {
+                diskCache.add(packed);
+            } else {
+                int index = diskCache.indexOf(packed);
+                packed = diskCache.get(index);
+            }
+            return packed;
+
+        }
+
+//        private void writeBuckets(ByteBuf buf) {
+//            for (long bucket : buckets) {
+//                for (REST.Disk disk : mapping.getReplicas(bucket)) {
+//                    long ident = invertedDiskMap.get(disk.getId());
+//                    formatter.codec.write(ident, buf);
+//                }
+//            }
+//        }
+
+        private Map<Long, UUID> readDiskMap(Header header, ByteBuf buf) {
+
+            long size = buf.readLong();
+            Map<Long, UUID> map = new HashMap<>((int) size);
+            for (int i = 0; i < size; i++) {
+                Long index = header.formatter.codec.read(buf);
+                UUID ident = BBUtils.readUuid(buf);
+                map.put(index, ident);
+            }
+
+            return map;
+        }
+
+        private Header readHeader(ByteBuf buf) {
+            return Header.create(buf);
+        }
+
+
     }
 
     public static enum NumberFormat {
