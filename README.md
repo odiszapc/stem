@@ -1,6 +1,6 @@
 # STEM Object Storage
 
-STEM is a distributed storage cluster for immutable binary objects of arbitary sizes. STEM is based on top of Netty, Grizzly and Zookeeper. STEM has its own data storage format.
+STEM is a distributed storage cluster of immutable binary objects. STEM is based on top of Netty, Grizzly and Zookeeper. STEM has its own data storage format consist of pre-allocated blob containers of the same size.
 
 STEM is designed as a cheap solution for cloud hosting providers and can easily be deployed on commodity hardware. STEM does not need any vendor specific staff like RAID or SAN, it uses plain formatted disks to store binary data.
 
