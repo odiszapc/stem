@@ -290,9 +290,12 @@ public class Cluster {
             };
         }
 
-        private void saveTopology() throws Exception {
-            client.updateNode(ZookeeperPaths.CLUSTER, RestUtils.packTopology(topology2));
+        void saveTopology() throws Exception {
+            saveTopology(topology2);
+        }
 
+        private void saveTopology(org.stem.domain.topology.Topology topology) throws Exception {
+            client.saveNode(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, RestUtils.packTopology(topology));
         }
 
         synchronized void newCluster(Descriptor newDescriptor) throws Exception {
@@ -372,8 +375,14 @@ public class Cluster {
             return RestUtils.extractMapping(raw);
         }
 
+        private void saveMappings() throws Exception {
+            saveMapping(CURRENT_MAPPING, mapping);
+            saveMapping(CURRENT_MAPPING, distributionManager.getPreviousMapping());
+        }
+
+
         private void saveMapping(String kind, DataMapping entity) throws Exception { // TODO: string kind to enum type
-            REST.Mapping raw = RestUtils.packMapping(entity); // TODO: 22 MB is too large. Let's try to pack into binary format
+            REST.Mapping raw = RestUtils.packMapping(entity);
             raw.setName(kind);
             getZookeeperClient().saveNode(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, raw);
         }
@@ -407,6 +416,10 @@ public class Cluster {
             ensureInitialized();
             tryStartZookeeperClient();
             client.createNode(ZookeeperPaths.CLUSTER, descriptor);
+
+            saveTopology();
+            saveMappings();
+            saveTopologySnapshot();
         }
 
         @Deprecated
@@ -438,13 +451,17 @@ public class Cluster {
 
             DataMapping.Difference difference = distributionManager.computeMappingDifference();
 
-            REST.TopologySnapshot snapshot = RestUtils.packTopologySnapshot(topology2, current);
-            getZookeeperClient().saveNode(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, snapshot);
+            saveTopologySnapshot();
 
 
             // TODO: check the difference make sense (is there actual delta between mapping);
             // TODO: compute streaming sessions !!!!!!!!!!!!!!!!!!!
             // TODO: distributionManager.computeStreamingSessions()
+        }
+
+        private void saveTopologySnapshot() throws Exception {
+            REST.TopologySnapshot snapshot = RestUtils.packTopologySnapshot(topology2, mapping);
+            getZookeeperClient().saveNode(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, snapshot);
         }
 
         private void ensureUninitialized() {

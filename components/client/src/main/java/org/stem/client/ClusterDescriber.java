@@ -17,6 +17,11 @@
 package org.stem.client;
 
 import com.google.common.base.Throwables;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.Uninterruptibles;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.stem.api.REST;
 import org.stem.coordination.ZNode;
 import org.stem.coordination.ZookeeperClient;
@@ -26,20 +31,23 @@ import org.stem.coordination.ZookeeperPaths;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class ClusterDescriber {
 
+    private static final Logger logger = LoggerFactory.getLogger(ClusterDescriber.class);
+
     final StemCluster.Manager cluster;
-    final Notifier notifier;
+    final StateNotifier notifier;
 
 
     private volatile boolean isShutdown;
 
-    private class Notifier {
+    private class StateNotifier {
 
         final ZookeeperEventListener<REST.TopologySnapshot> stateWatcher;
 
-        public Notifier() {
+        public StateNotifier() {
 
             stateWatcher = new ZookeeperEventListener<REST.TopologySnapshot>() {
                 @Override
@@ -54,6 +62,7 @@ public class ClusterDescriber {
 
                 @Override
                 protected void onNodeUpdated(REST.TopologySnapshot object) {
+                    logger.info("Updated topology response received");
                     onTopologyChanged(object);
                 }
             };
@@ -68,12 +77,13 @@ public class ClusterDescriber {
 
     public ClusterDescriber(StemCluster.Manager cluster) {
         this.cluster = cluster;
-        this.notifier = new Notifier();
+        this.notifier = new StateNotifier();
     }
 
     private void onTopologyChanged(REST.TopologySnapshot state) {
-        refreshNodeList(cluster, state.getTopology(), false);
-        updateMapping(state.getMapping());
+        refreshNodeList(cluster, state.getTopology());
+        //refreshNodeList(cluster, state.getTopology(), false);
+        //updateMapping(state.getMapping());
         // TODO: !!!!!!!!!!!
     }
 
@@ -87,7 +97,8 @@ public class ClusterDescriber {
 
         try {
             REST.Topology topology = tryReadTopology();
-            refreshNodeList(cluster, topology, true);
+            refreshNodeList(cluster, topology);
+            //refreshNodeList(cluster, topology, true);
             // TODO: refreshBucketMap(cluster, true);
 
             notifier.start();
@@ -96,6 +107,42 @@ public class ClusterDescriber {
         }
     }
 
+    private void refreshNodeList(StemCluster.Manager cluster, REST.Topology topology) {
+        List<InetSocketAddress> foundHosts = new ArrayList<InetSocketAddress>();
+
+        for (REST.StorageNode nodeInfo : topology.nodes()) {
+            InetSocketAddress addr = nodeInfo.getSocketAddress();
+            foundHosts.add(addr);
+        }
+
+
+        List<ListenableFuture<?>> futures = new ArrayList<>(foundHosts.size());
+
+        for (InetSocketAddress addr : foundHosts) {
+            Host host = cluster.metadata.getHost(addr);
+            boolean isNew = false;
+            if (null == host) {
+                host = cluster.metadata.add(addr);
+                isNew = true;
+            }
+
+            if (isNew)
+                futures.add(cluster.triggerOnAdd(host));
+        }
+
+        try {
+            ListenableFuture<List<Object>> f = Futures.allAsList(futures);
+
+            Uninterruptibles.getUninterruptibly(f);
+        } catch (ExecutionException e) {
+            logger.error("Some error while handling addition of new nodes. We continue anyway");
+        }
+
+
+
+    }
+
+    @Deprecated
     private void refreshNodeList(StemCluster.Manager cluster, REST.Topology topology, boolean isInitialAttempt) {
         List<InetSocketAddress> foundHosts = new ArrayList<InetSocketAddress>();
         List<String> dcs = new ArrayList<String>(); // TODO: implement extraction of dc name
@@ -115,7 +162,7 @@ public class ClusterDescriber {
             }
 
             if (isNew && !isInitialAttempt)
-                cluster.triggerOnAdd(host);
+                cluster.triggerOnAdd(host); // Create connection pools in non-blocking mode
 
             // TODO: remove hosts
         }

@@ -85,7 +85,7 @@ public abstract class REST {
         @JsonIgnore
         @Override
         public String name() {
-            return ZookeeperPaths.CLUSTER_TOPOLOGY;
+            return ZookeeperPaths.CURRENT_TOPOLOGY;
         }
 
         public Set<StorageNode> nodes() {
