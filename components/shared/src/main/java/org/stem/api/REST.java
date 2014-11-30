@@ -88,8 +88,8 @@ public abstract class REST {
             return ZookeeperPaths.CLUSTER_TOPOLOGY;
         }
 
-        public List<StorageNode> nodes() {
-            List<StorageNode> result = new ArrayList<>();
+        public Set<StorageNode> nodes() {
+            Set<StorageNode> result = new HashSet<>();
             for (Datacenter dataCenter : dataCenters) {
                 for (Rack rack : dataCenter.getRacks()) {
                     for (StorageNode node : rack.getNodes()) {
