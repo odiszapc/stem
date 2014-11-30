@@ -172,7 +172,7 @@ public class ClusterDescriber {
             // TODO: remove hosts
         }
 
-        // TODO: wait until all pools will be online
+        // TODO: wait until all pools will be ready
         cluster.metadata.setTopology(topology);
     }
 
