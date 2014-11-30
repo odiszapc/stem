@@ -20,10 +20,7 @@ import org.stem.api.REST;
 import org.stem.domain.ArrayBalancer;
 
 import java.net.InetSocketAddress;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -35,14 +32,11 @@ public class Metadata {
     private final AtomicReference<REST.Topology> topology = new AtomicReference<>();
     private ArrayBalancer hashTable;
 
-    private final AtomicReference<REST.Mapping> mapping = new AtomicReference<>();
+    private final AtomicReference<REST.Mapping> mapping = new AtomicReference<>(); // TODO: volatile
 
     private final ConcurrentMap<InetSocketAddress, Host> hosts = new ConcurrentHashMap<InetSocketAddress, Host>();
-    //private final ConcurrentMap<UUID, InetSocketAddress> diskHostAddresses = new ConcurrentHashMap<>();
-    private final AtomicReference<Map<UUID, InetSocketAddress>> diskHostAddresses = new AtomicReference<>();
 
-
-    //private final ConcurrentMap<REST.Disk, REST.StorageNode> disks = new ConcurrentHashMap<>();
+    private volatile RoutingMap routing = new RoutingMap();
 
 
     public Metadata(StemCluster.Manager cluster) {
@@ -80,23 +74,23 @@ public class Metadata {
     }
 
 
-    public void setMapping(REST.Mapping mapping) { // TODO: what if mapping will be received first
+//    public void setMapping(REST.Mapping mapping) { // TODO: what if mapping will be received first
+//
+//        REST.Topology topology = this.topology.get();
+//        if (null == topology) { // topology update has not been received yet
+//            this.mapping.getAndSet(mapping);
+//            return;
+//        }
+//
+//        updateDiskHostsAddressesMap(mapping, topology);
+//
+//        this.mapping.getAndSet(mapping);
+//    }
 
-        REST.Topology topology = this.topology.get();
-        if (null == topology) { // topology update has not been received yet
-            this.mapping.getAndSet(mapping);
-            return;
-        }
-
-        updateDiskHostsAddressesMap(mapping, topology);
-
-        this.mapping.getAndSet(mapping);
-    }
-
-    private void updateDiskHostsAddressesMap(REST.Mapping mapping, REST.Topology topology) {
-        Map<UUID, InetSocketAddress> cache = buildDiskHostsAddressesMap(topology);
-        this.diskHostAddresses.getAndSet(cache);
-    }
+//    private void updateDiskHostsAddressesMap(REST.Mapping mapping, REST.Topology topology) {
+//        Map<UUID, InetSocketAddress> cache = buildDiskHostsAddressesMap(topology);
+//        this.diskHostAddresses.getAndSet(cache);
+//    }
 
     private Map<UUID, InetSocketAddress> buildDiskHostsAddressesMap(REST.Topology topology) {
         Map<UUID, InetSocketAddress> result = new HashMap<>();
@@ -115,5 +109,37 @@ public class Metadata {
 
     public Host findHostForDisk(UUID disk) {
         return null;
+    }
+
+    void updateRouting(REST.Topology topology, REST.Mapping mapping) {
+
+        routing = new RoutingMap(buildDiskHostsAddressesMap(topology), simplifyMapping(mapping));
+    }
+
+    private Map<Long, Set<UUID>> simplifyMapping(REST.Mapping mapping) {
+        Map<Long, Set<UUID>> result = new HashMap<>(mapping.getMap().size());
+
+        List<Set<UUID>> cache = new ArrayList<>();
+        for (Map.Entry<Long, REST.ReplicaSet> entry : mapping.getMap().entrySet()) {
+            Long partition = entry.getKey();
+            Set<UUID> replicas = extractDiskIds(entry.getValue().getReplicas(), cache);
+            result.put(partition, replicas);
+        }
+
+        return result;
+    }
+
+    private Set<UUID> extractDiskIds(Set<REST.Disk> replicas, List<Set<UUID>> cache) {
+        Set<UUID> ids = new HashSet<>(replicas.size());
+        for (REST.Disk replica : replicas)
+            ids.add(replica.getId());
+
+        if (!cache.contains(ids)) {
+            cache.add(ids);
+        } else {
+            int index = cache.indexOf(ids);
+            ids = cache.get(index);
+        }
+        return ids;
     }
 }

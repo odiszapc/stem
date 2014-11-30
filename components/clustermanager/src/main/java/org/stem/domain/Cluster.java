@@ -352,7 +352,7 @@ public class Cluster {
             topology = new Topology(descriptor.name, descriptor.rf);
             partitioner = descriptor.partitioner.builder.build();
             distributionManager = new DataDistributionManager(Cluster.this, partitioner,
-                    loadMapping(ZookeeperPaths.mappingPath()), loadMapping(ZookeeperPaths.previousMappingPath()));
+                    loadMapping(ZookeeperPaths.currentMappingPath()), loadMapping(ZookeeperPaths.previousMappingPath()));
             mapping = distributionManager.getCurrentMappings();
 
             org.stem.domain.topology.Topology persistedTopo = readTopology();
@@ -442,6 +442,7 @@ public class Cluster {
             ensureInitialized();
 
             DataMapping current = distributionManager.computeMappingNonMutable();
+            mapping = current;
             saveMapping(CURRENT_MAPPING, current);
 
             DataMapping previous = distributionManager.getPreviousMapping();

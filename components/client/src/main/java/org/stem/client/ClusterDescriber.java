@@ -61,9 +61,14 @@ public class ClusterDescriber {
                 }
 
                 @Override
-                protected void onNodeUpdated(REST.TopologySnapshot object) {
+                protected synchronized void onNodeUpdated(REST.TopologySnapshot object) {
                     logger.info("Updated topology response received");
                     onTopologyChanged(object);
+                }
+
+                @Override
+                protected void onError(Throwable t) {
+                    super.onError(t);
                 }
             };
         }
@@ -81,23 +86,24 @@ public class ClusterDescriber {
     }
 
     private void onTopologyChanged(REST.TopologySnapshot state) {
-        refreshNodeList(cluster, state.getTopology());
+        refreshNodeList(cluster, state);
         //refreshNodeList(cluster, state.getTopology(), false);
         //updateMapping(state.getMapping());
         // TODO: !!!!!!!!!!!
     }
 
-    private void updateMapping(REST.Mapping mapping) {
-        cluster.metadata.setMapping(mapping);
-    }
+//    @Deprecated
+//    private void updateMapping(REST.Mapping mapping) {
+//        cluster.metadata.setMapping(mapping);
+//    }
 
     void start() {
         if (isShutdown)
             return;
 
         try {
-            REST.Topology topology = tryReadTopology();
-            refreshNodeList(cluster, topology);
+            REST.TopologySnapshot state = tryReadState();
+            refreshNodeList(cluster, state);
             //refreshNodeList(cluster, topology, true);
             // TODO: refreshBucketMap(cluster, true);
 
@@ -107,9 +113,9 @@ public class ClusterDescriber {
         }
     }
 
-    private void refreshNodeList(StemCluster.Manager cluster, REST.Topology topology) {
-        List<InetSocketAddress> foundHosts = new ArrayList<InetSocketAddress>();
-
+    private void refreshNodeList(StemCluster.Manager cluster, REST.TopologySnapshot state) {
+        List<InetSocketAddress> foundHosts = new ArrayList<>();
+        REST.Topology topology = state.getTopology();
         for (REST.StorageNode nodeInfo : topology.nodes()) {
             InetSocketAddress addr = nodeInfo.getSocketAddress();
             foundHosts.add(addr);
@@ -138,8 +144,7 @@ public class ClusterDescriber {
             logger.error("Some error while handling addition of new nodes. We continue anyway");
         }
 
-
-
+        cluster.metadata.updateRouting(state.getTopology(), state.getMapping()); // TODO: merge both parameters into single instance (REST.TopologySnapshot)
     }
 
     @Deprecated
@@ -175,13 +180,13 @@ public class ClusterDescriber {
         refreshNodeList(cluster, cluster.metadata.getTopology(), false);
     }
 
-    private REST.Topology tryReadTopology() {
-        return readTopology();
+    private REST.TopologySnapshot tryReadState() {
+        return readState();
     }
 
-    private REST.Topology readTopology() {
+    private REST.TopologySnapshot readState() {
         try {
-            return zookeeperClient().readZNodeData(ZookeeperPaths.topologyPath(), REST.Topology.class);
+            return zookeeperClient().readZNodeData(ZookeeperPaths.topologySnapshotPath(), REST.TopologySnapshot.class, REST.TopologySnapshot.CODEC);
 
         } catch (Exception e) {
             Throwables.propagate(e);

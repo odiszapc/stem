@@ -67,7 +67,7 @@ public class ZookeeperPaths {
         return CURRENT_TOPOLOGY_PATH;
     }
 
-    public static String mappingPath() {
+    public static String currentMappingPath() {
         return CURRENT_MAPPING_PATH;
     }
 
