@@ -46,12 +46,11 @@ public class RequestRouter {
     }
 
     private Host getHostForRoutingKey(Object routingKey) {
-        Metadata metadata = session.cluster.manager.metadata;
         if (routingKey instanceof UUID) {
             UUID disk = (UUID) routingKey;
-            Host host = metadata().findHostForDisk(disk);
+            return metadata().findHostForDisk(disk);
         }
 
-        return null;
+        return null; // TODO: another routing key?
     }
 }

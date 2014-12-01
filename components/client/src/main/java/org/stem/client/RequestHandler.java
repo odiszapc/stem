@@ -143,20 +143,21 @@ public class RequestHandler implements Connection.ResponseCallback {
 
     public void sendRequest() {
         try {
-
-
-            Host host = null; //TODO: get host!!!!
-            session.cluster.getMetadata();
+            Host host = session.router.getHost(request);
             if (query(host))
                 return;
 
-            setFinalException(null, new ClientException("No hosts available"));
+            setFinalException(null, new NoHostAvailableException("No hosts available"));
         } catch (Exception e) {
             setFinalException(null, new ClientInternalError("An unexpected error occurred while sending request", e));
         }
     }
 
     private boolean query(Host host) {
+        if (null == host)
+            return false;
+        logger.trace("Querying storage node {}", host);
+
         currentPool = session.pools.get(host);
         if (currentPool == null || currentPool.isClosed())
             return false;

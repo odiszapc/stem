@@ -108,7 +108,9 @@ public class Metadata {
     }
 
     public Host findHostForDisk(UUID disk) {
-        return null;
+        InetSocketAddress address = routing.getDiskAddress(disk);
+        Host host = hosts.get(address);
+        return host;
     }
 
     void updateRouting(REST.Topology topology, REST.Mapping mapping) {

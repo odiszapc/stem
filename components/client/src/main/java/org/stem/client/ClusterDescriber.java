@@ -92,11 +92,6 @@ public class ClusterDescriber {
         // TODO: !!!!!!!!!!!
     }
 
-//    @Deprecated
-//    private void updateMapping(REST.Mapping mapping) {
-//        cluster.metadata.setMapping(mapping);
-//    }
-
     void start() {
         if (isShutdown)
             return;
@@ -120,7 +115,6 @@ public class ClusterDescriber {
             InetSocketAddress addr = nodeInfo.getSocketAddress();
             foundHosts.add(addr);
         }
-
 
         List<ListenableFuture<?>> futures = new ArrayList<>(foundHosts.size());
 
