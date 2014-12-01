@@ -168,7 +168,9 @@ public class Connection {
                     } else {
                         e = new ClientTransportException(address, "Error writing", future.cause());
                     }
-                    handler.callback.onException(Connection.this, defunct(e), System.nanoTime() - handler.startedAt);
+
+                    // No retries yet
+                    handler.callback.onException(Connection.this, defunct(e), System.nanoTime() - handler.startTime);
                 } else {
                     logger.trace("{} request sent successfully", Connection.this);
                 }
@@ -426,7 +428,7 @@ public class Connection {
                 return;
             }
             handler.cancelTimeout();
-            handler.callback.onSet(Connection.this, response, System.nanoTime() - handler.startedAt);
+            handler.callback.onSet(Connection.this, response, System.nanoTime() - handler.startTime);
 
             if (isClosed())
                 terminate(false);
@@ -459,7 +461,7 @@ public class Connection {
             while (it.hasNext()) {
                 ResponseHandler handler = it.next();
                 handler.cancelTimeout();
-                handler.callback.onException(Connection.this, e, System.nanoTime() - handler.startedAt);
+                handler.callback.onException(Connection.this, e, System.nanoTime() - handler.startTime);
                 it.remove();
             }
         }
@@ -555,7 +557,7 @@ public class Connection {
         public final int streamId;
 
         private final Timeout timeout;
-        private final long startedAt;
+        private final long startTime;
 
         ResponseHandler(Connection connection, ResponseCallback callback) throws ConnectionBusyException {
             this.connection = connection;
@@ -563,9 +565,9 @@ public class Connection {
             this.streamId = connection.dispatcher.streamIdPool.borrow();
 
             long timeoutMs = connection.factory.getReadTimeoutMs();
-            this.timeout = connection.factory.timer.newTimeout(newTimeoutTask(), timeoutMs, TimeUnit.MILLISECONDS);
+            this.timeout = connection.factory.timer.newTimeout(onTimeoutTask(), timeoutMs, TimeUnit.MILLISECONDS);
 
-            this.startedAt = System.nanoTime();
+            this.startTime = System.nanoTime();
         }
 
         /**
@@ -582,11 +584,12 @@ public class Connection {
                 ((PooledConnection) connection).release();
         }
 
-        private TimerTask newTimeoutTask() {
+        private TimerTask onTimeoutTask() {
             return new TimerTask() {
                 @Override
                 public void run(Timeout timeout) throws Exception {
-
+                    callback.onTimeout(connection, System.nanoTime() - startTime);
+                    cancelHandler();
                 }
             };
         }

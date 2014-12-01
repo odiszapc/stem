@@ -26,7 +26,7 @@ class Requests {
     /**
      *
      */
-    public static class ReadBlob extends Message.Request implements DestinationSpecific {
+    public static class ReadBlob extends Message.Request implements DestinationMatching {
 
         public final UUID diskUuid;  // TODO: encode to bytes, not string
         public final Integer fatFileIndex;
@@ -65,7 +65,7 @@ class Requests {
     /**
      *
      */
-    public static class WriteBlob extends Message.Request implements DestinationSpecific {
+    public static class WriteBlob extends Message.Request implements DestinationMatching {
 
         public final UUID diskUuid;
         public final byte[] key;
@@ -103,7 +103,7 @@ class Requests {
     /**
      *
      */
-    public static class DeleteBlob extends Message.Request implements DestinationSpecific {
+    public static class DeleteBlob extends Message.Request implements DestinationMatching {
 
         public final UUID diskUuid;
         public final Integer fatFileIndex;
@@ -139,9 +139,9 @@ class Requests {
 
     /**
      * Define requests that are relevant to a specific Disk or Storage Node
-     * and only make sense when sent to this destination
+     * and only make sense when are sent to this host
      */
-    public interface DestinationSpecific {
+    public interface DestinationMatching {
         Object getRoutingKey();
     }
 }

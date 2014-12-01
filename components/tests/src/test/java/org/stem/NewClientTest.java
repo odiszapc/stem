@@ -16,7 +16,10 @@
 
 package org.stem;
 
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.binary.StringUtils;
 import org.junit.Test;
+import org.stem.client.Blob;
 import org.stem.client.Session;
 import org.stem.client.StemCluster;
 
@@ -30,6 +33,8 @@ public class NewClientTest //extends IntegrationTestBase
                 .build();
 
         Session session = cluster.connect();
+
+        session.put(Blob.create(Hex.decodeHex("01010101010101010101010101010101".toCharArray()), "binary data".getBytes()));
 
         Thread.sleep(1000000);
     }

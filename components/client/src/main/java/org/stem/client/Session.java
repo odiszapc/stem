@@ -24,6 +24,8 @@ import org.stem.exceptions.StemException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -90,38 +92,76 @@ public class Session extends AbstractSession implements StemSession {
         return Blob.create(key, new byte[]{});
     }
 
+    @Override
+    public void put(Blob object) {
+        List<Requests.WriteBlob> requests = prepareWriteRequests(object);
+        List<DefaultResultFuture> futures = prepareFutures(requests);
+
+        for (DefaultResultFuture future : futures) {
+            new RequestHandler(this, future, future.request()).sendRequest();
+        }
+
+        try {
+            List<Message.Response> responses = Uninterruptibles.getUninterruptibly(Futures.allAsList(futures));
+            int a = 1;
+        } catch (ExecutionException e) {
+            throw new StemException("Error while reading blob");
+        }
+    }
+
+    @Override
+    public void delete(byte[] key) {
+        List<Requests.DeleteBlob> requests = prepareDeleteRequests(key);
+        List<DefaultResultFuture> futures = prepareFutures(requests);
+    }
+
     private List<DefaultResultFuture> prepareFutures(List<? extends Message.Request> requests) {
         List<DefaultResultFuture> futures = new ArrayList<>();
-        for (Message.Request request : requests) {
+        for (Message.Request request : requests)
             futures.add(new DefaultResultFuture(this, request));
-        }
+
         return futures;
     }
 
     private List<Requests.ReadBlob> prepareReadRequests(byte[] key) {
         List<ExtendedBlobDescriptor> pointers = cluster.manager.metaStoreClient.readMeta(key);
         List<Requests.ReadBlob> requests = new ArrayList<>();
-        for (ExtendedBlobDescriptor pointer : pointers) {
-            requests.add(prepareRequest(pointer));
-        }
+        for (ExtendedBlobDescriptor pointer : pointers)
+            requests.add(prepareReadRequest(pointer));
+
         return requests;
     }
 
-    private Requests.ReadBlob prepareRequest(ExtendedBlobDescriptor pointer) {
-        Requests.ReadBlob request = new Requests.ReadBlob(pointer.getDisk(), pointer.getFFIndex(), pointer.getOffset(), pointer.getLength());
-        return request;
+    private List<Requests.DeleteBlob> prepareDeleteRequests(byte[] key) {
+        List<ExtendedBlobDescriptor> pointers = cluster.manager.metaStoreClient.readMeta(key);
+        List<Requests.DeleteBlob> requests = new ArrayList<>();
+        for (ExtendedBlobDescriptor pointer : pointers)
+            requests.add(prepareDeleteRequest(pointer));
+
+        return requests;
     }
 
-    @Override
-    public void put(Blob object) {
+    private List<Requests.WriteBlob> prepareWriteRequests(Blob obj) {
+        List<Requests.WriteBlob> requests = new ArrayList<>();
 
+        Set<UUID> locations = router.getLocationsForBlob(obj);
+        for (UUID loc : locations)
+            requests.add(new Requests.WriteBlob(loc, obj.key, obj.body));
+
+        return requests;
     }
 
-    @Override
-    public void delete(byte[] key) {
-
+    private Requests.ReadBlob prepareReadRequest(ExtendedBlobDescriptor pointer) {
+        return new Requests.ReadBlob(pointer.getDisk(), pointer.getFFIndex(), pointer.getOffset(), pointer.getLength());
     }
 
+    private Requests.DeleteBlob prepareDeleteRequest(ExtendedBlobDescriptor pointer) {
+        return new Requests.DeleteBlob(pointer.getDisk(), pointer.getFFIndex(), pointer.getOffset());
+    }
+
+    private Requests.WriteBlob prepareWriteRequest(UUID location, Blob obj) {
+        return new Requests.WriteBlob(location, obj.key, obj.body);
+    }
 
     @Override
     public DefaultResultFuture executeAsync(Message.Request request) {

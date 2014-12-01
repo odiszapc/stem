@@ -57,7 +57,8 @@ public class Server {
                 .channel(NioServerSocketChannel.class)
                 .option(ChannelOption.SO_BACKLOG, 100)
                 .childOption(ChannelOption.SO_KEEPALIVE, true)
-                .handler(new LoggingHandler(LogLevel.INFO))
+                .option(ChannelOption.TCP_NODELAY, true)
+                .handler(new LoggingHandler(LogLevel.TRACE))
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {

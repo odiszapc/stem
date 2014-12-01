@@ -50,7 +50,6 @@ public class TokenBalancer<T> {
     public T getToken(byte[] keyBytes) {
         BigInteger token = new BigInteger(new String(Hex.encodeHex(keyBytes)), 16);
 
-
         BigInteger delta = MD5_MAX_VALUE.divide(BigInteger.valueOf(keySet.size()));
         int keyIndex = Math.max(token.divide(delta).intValue() - 1, 0);
 

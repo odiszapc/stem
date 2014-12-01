@@ -136,6 +136,7 @@ public class RequestHandler implements Connection.ResponseCallback {
             ClientException timeoutException = new ClientException("Timed out waiting for server response");
             connection.defunct(timeoutException); // TODO: and what?
             logError(connection.address, timeoutException);
+            setFinalException(connection, timeoutException);
         } catch (Exception e) {
             setFinalException(null, new ClientInternalError("An unexpected error happened while handling timeout", e));
         }

@@ -450,7 +450,7 @@ public class Cluster {
                 saveMapping(PREVIOUS_MAPPING, previous);
             }
 
-            DataMapping.Difference difference = distributionManager.computeMappingDifference();
+            //DataMapping.Difference difference = distributionManager.computeMappingDifference();
 
             saveTopologySnapshot();
 

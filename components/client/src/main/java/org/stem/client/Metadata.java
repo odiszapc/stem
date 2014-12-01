@@ -17,7 +17,6 @@
 package org.stem.client;
 
 import org.stem.api.REST;
-import org.stem.domain.ArrayBalancer;
 
 import java.net.InetSocketAddress;
 import java.util.*;
@@ -30,14 +29,12 @@ public class Metadata {
     private StemCluster.Manager cluster;
     private REST.Cluster descriptor;
     private final AtomicReference<REST.Topology> topology = new AtomicReference<>();
-    private ArrayBalancer hashTable;
 
     private final AtomicReference<REST.Mapping> mapping = new AtomicReference<>(); // TODO: volatile
 
     private final ConcurrentMap<InetSocketAddress, Host> hosts = new ConcurrentHashMap<InetSocketAddress, Host>();
 
     private volatile RoutingMap routing = new RoutingMap();
-
 
     public Metadata(StemCluster.Manager cluster) {
         this.cluster = cluster;
@@ -72,25 +69,6 @@ public class Metadata {
     public void setTopology(REST.Topology topology) {
         REST.Topology previous = this.topology.getAndSet(topology);
     }
-
-
-//    public void setMapping(REST.Mapping mapping) { // TODO: what if mapping will be received first
-//
-//        REST.Topology topology = this.topology.get();
-//        if (null == topology) { // topology update has not been received yet
-//            this.mapping.getAndSet(mapping);
-//            return;
-//        }
-//
-//        updateDiskHostsAddressesMap(mapping, topology);
-//
-//        this.mapping.getAndSet(mapping);
-//    }
-
-//    private void updateDiskHostsAddressesMap(REST.Mapping mapping, REST.Topology topology) {
-//        Map<UUID, InetSocketAddress> cache = buildDiskHostsAddressesMap(topology);
-//        this.diskHostAddresses.getAndSet(cache);
-//    }
 
     private Map<UUID, InetSocketAddress> buildDiskHostsAddressesMap(REST.Topology topology) {
         Map<UUID, InetSocketAddress> result = new HashMap<>();
@@ -143,5 +121,25 @@ public class Metadata {
             ids = cache.get(index);
         }
         return ids;
+    }
+
+    public Set<Host> getHostsForBlob(Blob blob) {
+        Set<InetSocketAddress> endpoints = routing.getEndpoints(blob.key);
+
+        Set<Host> replicas = new HashSet<>(endpoints.size());
+        for (InetSocketAddress address : endpoints) {
+            Host host = getHost(address);
+            if (null != host)
+                replicas.add(host);
+        }
+
+        if (replicas.size() != endpoints.size())
+            throw new ClientInternalError(String.format("Inconsistent number of replicas, %s != %s", replicas.size(), endpoints.size()));
+
+        return replicas;
+    }
+
+    public Set<UUID> getLocationsForBlob(Blob blob) {
+        return routing.getLocations(blob.key);
     }
 }

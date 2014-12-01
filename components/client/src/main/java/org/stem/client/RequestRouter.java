@@ -16,6 +16,7 @@
 
 package org.stem.client;
 
+import java.util.Set;
 import java.util.UUID;
 
 public class RequestRouter {
@@ -27,14 +28,15 @@ public class RequestRouter {
     }
 
     Host getHost(Message.Request request) {
-        if (request instanceof Requests.DestinationSpecific) {
-            Object routingKey = ((Requests.DestinationSpecific) request).getRoutingKey();
+        if (request instanceof Requests.DestinationMatching) {
+            Object routingKey = ((Requests.DestinationMatching) request).getRoutingKey();
             if (null == routingKey)
                 throw new NoHostAvailableException(String.format("Routing key is null"));
 
             Host host = getHostForRoutingKey(routingKey);
             if (null == host)
-                throw new NoHostAvailableException(String.format("No host found for key %s", routingKey));
+                throw new NoHostAvailableException(String.format("No host found for routing key %s", routingKey));
+
             return host;
         } else {
             return null; // It's up to QueryPlan;
@@ -52,5 +54,13 @@ public class RequestRouter {
         }
 
         return null; // TODO: another routing key?
+    }
+
+    Set<Host> getEndpointsForBlob(Blob blob) {
+        return metadata().getHostsForBlob(blob);
+    }
+
+    Set<UUID> getLocationsForBlob(Blob blob) {
+        return metadata().getLocationsForBlob(blob);
     }
 }

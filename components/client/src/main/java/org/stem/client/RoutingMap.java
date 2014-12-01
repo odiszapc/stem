@@ -16,6 +16,8 @@
 
 package org.stem.client;
 
+import org.stem.domain.ArrayBalancer;
+
 import java.net.InetSocketAddress;
 import java.util.*;
 
@@ -23,10 +25,12 @@ public class RoutingMap {
 
     private Map<UUID, InetSocketAddress> diskAddresses = new HashMap<>();
     private Map<Long, Set<UUID>> partitionsMap = new HashMap<>();
+    private ArrayBalancer consistentHasher = new ArrayBalancer(1);
 
     public RoutingMap(Map<UUID, InetSocketAddress> disks, Map<Long, Set<UUID>> partitions) {
         this.diskAddresses = disks;
         this.partitionsMap = partitions;
+        this.consistentHasher = new ArrayBalancer(partitions.size());
     }
 
     public RoutingMap() {
@@ -42,5 +46,15 @@ public class RoutingMap {
         for (UUID disk : disks)
             addresses.add(diskAddresses.get(disk));
         return addresses;
+    }
+
+    public Set<InetSocketAddress> getEndpoints(byte[] key) {
+        Long partition = (long) consistentHasher.getToken(key);
+        return getEndpoints(partition);
+    }
+
+    public Set<UUID> getLocations(byte[] key) {
+        Long partition = (long) consistentHasher.getToken(key);
+        return partitionsMap.get(partition);
     }
 }
