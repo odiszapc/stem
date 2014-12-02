@@ -70,7 +70,7 @@ public class BBUtils {
     }
 
     public static int sizeOfString(String str) {
-        return 4 + str.getBytes(CharsetUtil.UTF_8).length;
+        return 2 + str.getBytes(CharsetUtil.UTF_8).length;
     }
 
     public static void writeUuid(UUID value, ByteBuf dest) {

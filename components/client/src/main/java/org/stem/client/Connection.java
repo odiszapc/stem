@@ -330,6 +330,9 @@ public class Connection {
             bootstrap
                     .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, opt.getConnectTimeoutMs());
 
+            bootstrap.option(ChannelOption.SO_KEEPALIVE, true); // TODO: remove (for tests only)
+            bootstrap.option(ChannelOption.TCP_NODELAY, true); // TODO: remove (for tests only)
+
             Boolean keepAlive = opt.getKeepAlive();
             if (null != keepAlive)
                 bootstrap.option(ChannelOption.SO_KEEPALIVE, keepAlive);
