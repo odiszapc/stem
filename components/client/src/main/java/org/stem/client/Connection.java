@@ -149,7 +149,7 @@ public class Connection {
 
         logger.trace("{} writing request {}", this, request);
         writeCounter.incrementAndGet();
-        channel.write(request).addListener(writeHandler(request, responseHandler));
+        channel.writeAndFlush(request).addListener(writeHandler(request, responseHandler));
         return responseHandler;
     }
 
