@@ -22,6 +22,10 @@ import org.junit.Test;
 import org.stem.client.Blob;
 import org.stem.client.Session;
 import org.stem.client.StemCluster;
+import org.stem.client.old.StorageNodeClient;
+import org.stem.transport.ops.WriteBlobMessage;
+
+import java.util.UUID;
 
 
 public class NewClientTest //extends IntegrationTestBase
@@ -36,6 +40,16 @@ public class NewClientTest //extends IntegrationTestBase
 
         session.put(Blob.create(Hex.decodeHex("01010101010101010101010101010101".toCharArray()), "binary data".getBytes()));
 
+
+
         Thread.sleep(1000000);
+    }
+
+    @Test
+    public void testName() throws Exception {
+        StorageNodeClient client = new StorageNodeClient("127.0.0.1", 9998);
+        client.start();
+        client.writeBlob(new WriteBlobMessage(UUID.randomUUID(), Hex.decodeHex("01010101010101010101010101010101".toCharArray()), "binary data".getBytes()));
+
     }
 }

@@ -105,7 +105,7 @@ public class Session extends AbstractSession implements StemSession {
             List<Message.Response> responses = Uninterruptibles.getUninterruptibly(Futures.allAsList(futures));
             int a = 1;
         } catch (ExecutionException e) {
-            throw new StemException("Error while reading blob");
+            throw new StemException("Error while writing blob");
         }
     }
 
