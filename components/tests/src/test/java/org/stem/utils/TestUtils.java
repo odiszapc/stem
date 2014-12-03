@@ -22,13 +22,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class TestUtil {
+public class TestUtils {
 
     public static final String TMP_DATA_DIR_NAME = "tmp-io";
     public static final String TMP_DATA_DIR;
 
     static {
-        String resourceRoot = TestUtil.class.getResource("/").getPath();
+        String resourceRoot = TestUtils.class.getResource("/").getPath();
         TMP_DATA_DIR = resourceRoot + TMP_DATA_DIR_NAME;
     }
 

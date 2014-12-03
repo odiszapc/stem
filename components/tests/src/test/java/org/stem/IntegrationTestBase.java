@@ -38,7 +38,7 @@ import org.stem.db.StorageService;
 import org.stem.domain.topology.Partitioner;
 import org.stem.service.StorageNodeDaemon;
 import org.stem.transport.ops.WriteBlobMessage;
-import org.stem.utils.TestUtil;
+import org.stem.utils.TestUtils;
 import org.stem.utils.YamlConfigurator;
 
 import java.io.BufferedReader;
@@ -59,8 +59,8 @@ public class IntegrationTestBase {
 
     @Before
     public void setUp() throws IOException {
-        TestUtil.cleanupTempDir();
-        TestUtil.createTempDir();
+        TestUtils.cleanupTempDir();
+        TestUtils.createTempDir();
 
         setupEnvironment();
         cleanupDataDirectories();
@@ -253,7 +253,7 @@ public class IntegrationTestBase {
     private void cleanupDataDirectories() throws IOException {
         String[] paths = StorageNodeDescriptor.getBlobMountPoints();
         for (String path : paths) {
-            TestUtil.emptyDir(path);
+            TestUtils.emptyDir(path);
         }
 
         //TestUtil.emptyDir(path);
@@ -274,7 +274,7 @@ public class IntegrationTestBase {
 
     @AfterClass
     public static void afterClass() throws IOException {
-        TestUtil.cleanupTempDir();
+        TestUtils.cleanupTempDir();
     }
 
     protected static UUID getFirstDiskUUID() {
@@ -290,7 +290,7 @@ public class IntegrationTestBase {
     }
 
     protected WriteBlobMessage getRandomWriteMessage() {
-        byte[] blob = TestUtil.generateRandomBlob(65536);
+        byte[] blob = TestUtils.generateRandomBlob(65536);
         byte[] key = DigestUtils.md5(blob);
         UUID disk = getFirstDiskUUID();
 
@@ -305,7 +305,7 @@ public class IntegrationTestBase {
     protected List<byte[]> generateRandomLoad(int blobsNum) {
         List<byte[]> generatedKeys = new ArrayList<byte[]>(blobsNum);
         for (int i = 0; i < blobsNum; i++) {
-            byte[] data = TestUtil.generateRandomBlob(65536);
+            byte[] data = TestUtils.generateRandomBlob(65536);
             byte[] key = DigestUtils.md5(data);
 
             client.put(key, data);
@@ -319,7 +319,7 @@ public class IntegrationTestBase {
     protected List<byte[]> generateStaticLoad(int blobsNum) {
         List<byte[]> generatedKeys = new ArrayList<byte[]>(blobsNum);
         for (int i = 0; i < blobsNum; i++) {
-            byte[] data = TestUtil.generateZeroBlob(65536);
+            byte[] data = TestUtils.generateZeroBlob(65536);
             data[i] = 1;
             byte[] key = DigestUtils.md5(data);
 
@@ -332,8 +332,8 @@ public class IntegrationTestBase {
     }
 
     protected String getStorageNodeConfigPath() {
-        String tmpDir = TestUtil.getDirInTmp("storagenode");
-        String tmpDataDir = TestUtil.getDirInTmp("storagenode/data");
+        String tmpDir = TestUtils.getDirInTmp("storagenode");
+        String tmpDataDir = TestUtils.getDirInTmp("storagenode/data");
         YamlConfigurator yamlConfigurator = YamlConfigurator.open(getStorageNodeConfigName());
 
         yamlConfigurator

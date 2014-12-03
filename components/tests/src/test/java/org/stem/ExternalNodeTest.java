@@ -18,7 +18,7 @@ package org.stem;
 
 import org.junit.Test;
 import org.stem.utils.ExternalStorageNode;
-import org.stem.utils.TestUtil;
+import org.stem.utils.TestUtils;
 import org.stem.utils.YamlConfigurator;
 
 import java.io.File;
@@ -29,7 +29,7 @@ public class ExternalNodeTest {
     public void testName() throws Exception {
         YamlConfigurator configurator = YamlConfigurator.open("stem.yaml");
 
-        File nodeDir = new File(TestUtil.temporize("storagenode"));
+        File nodeDir = new File(TestUtils.temporize("storagenode"));
         ExternalStorageNode external = ExternalStorageNode.create(nodeDir, configurator);
 
         external.start();

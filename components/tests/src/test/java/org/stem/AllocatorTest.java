@@ -22,7 +22,7 @@ import org.stem.db.FatFileAllocator;
 
 import java.io.File;
 
-import static org.stem.utils.TestUtil.temporize;
+import static org.stem.utils.TestUtils.temporize;
 
 public class AllocatorTest extends IntegrationTestBase {
 

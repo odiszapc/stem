@@ -21,13 +21,13 @@ import org.junit.Test;
 import org.stem.db.DataTracker;
 import org.stem.db.FatFile;
 import org.stem.db.FatFileAllocator;
-import org.stem.utils.TestUtil;
+import org.stem.utils.TestUtils;
 
 public class BlobWriteTest extends IntegrationTestBase {
 
     @Test
     public void testWriteSingleBlob() throws Exception {
-        String path = TestUtil.temporize("stem-ff-000001.db");
+        String path = TestUtils.temporize("stem-ff-000001.db");
         FatFileAllocator.allocateFile(path, 4);
 
         FatFile fatFile = FatFile.open(path, new DataTracker(10));

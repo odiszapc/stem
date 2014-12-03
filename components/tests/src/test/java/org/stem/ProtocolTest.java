@@ -31,7 +31,7 @@ import org.stem.domain.BlobDescriptor;
 import org.stem.transport.Message;
 import org.stem.transport.ops.DeleteBlobMessage;
 import org.stem.transport.ops.WriteBlobMessage;
-import org.stem.utils.TestUtil;
+import org.stem.utils.TestUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -107,7 +107,7 @@ public class ProtocolTest extends IntegrationTestBase {
         StemClient client = new StemClient();
         client.start();
 
-        byte[] in = TestUtil.generateRandomBlob(65536);
+        byte[] in = TestUtils.generateRandomBlob(65536);
         byte[] key = DigestUtils.md5(in);
 
         client.put(key, in);
@@ -128,7 +128,7 @@ public class ProtocolTest extends IntegrationTestBase {
         StorageNodeClient client = new StorageNodeClient(host, port);
         client.start();
 
-        byte[] blob = TestUtil.generateRandomBlob(65536);
+        byte[] blob = TestUtils.generateRandomBlob(65536);
         byte[] key = DigestUtils.md5(blob);
         UUID disk = Layout.getInstance().getMountPoints().keySet().iterator().next();
         WriteBlobMessage op = new WriteBlobMessage();
@@ -163,7 +163,7 @@ public class ProtocolTest extends IntegrationTestBase {
         StemClient client = new StemClient();
         client.start();
 
-        byte[] blob = TestUtil.generateRandomBlob(65536);
+        byte[] blob = TestUtils.generateRandomBlob(65536);
         byte[] key = DigestUtils.md5(blob);
 
         long start, duration;
@@ -191,7 +191,7 @@ public class ProtocolTest extends IntegrationTestBase {
         StemClient client = new StemClient();
         client.start();
 
-        byte[] in = TestUtil.generateRandomBlob(65536);
+        byte[] in = TestUtils.generateRandomBlob(65536);
         byte[] key = DigestUtils.md5(in);
 
         client.put(key, in);
@@ -216,7 +216,7 @@ public class ProtocolTest extends IntegrationTestBase {
         StorageNodeClient client = new StorageNodeClient(host, port);
         client.start();
 
-        byte[] blob = TestUtil.generateRandomBlob(65536);
+        byte[] blob = TestUtils.generateRandomBlob(65536);
         byte[] key = DigestUtils.md5(blob);
         Set<UUID> disks = Layout.getInstance().getMountPoints().keySet();
 
@@ -305,7 +305,7 @@ public class ProtocolTest extends IntegrationTestBase {
 
         public class Writer implements Runnable {
 
-            byte[] in = TestUtil.generateRandomBlob(65536);
+            byte[] in = TestUtils.generateRandomBlob(65536);
 
             @Override
             public void run() {
@@ -314,7 +314,7 @@ public class ProtocolTest extends IntegrationTestBase {
 
                 while (true) {
 
-                    byte[] key = TestUtil.generateRandomBlob(16);
+                    byte[] key = TestUtils.generateRandomBlob(16);
 
                     try {
                         client.put(key, in);

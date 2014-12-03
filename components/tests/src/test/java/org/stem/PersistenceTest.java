@@ -22,7 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.stem.api.ClusterManagerClient;
 import org.stem.api.response.ClusterResponse;
-import org.stem.utils.TestUtil;
+import org.stem.utils.TestUtils;
 
 import java.io.IOException;
 
@@ -31,8 +31,8 @@ public class PersistenceTest extends IntegrationTestBase {
     @Override
     @Before
     public void setUp() throws IOException {
-        TestUtil.cleanupTempDir();
-        TestUtil.createTempDir();
+        TestUtils.cleanupTempDir();
+        TestUtils.createTempDir();
         startZookeeperEmbedded();
         startClusterManagerEmbedded();
         waitForClusterManager();
