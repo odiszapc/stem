@@ -71,7 +71,8 @@ public class CodecTest {
         Assert.assertArrayEquals(original.blob, decoded.blob);
     }
 
-    <IN extends org.stem.client.Message.Request, OUT extends org.stem.transport.Message.Request> OUT emulatePipeline(IN message) {
+    <IN extends org.stem.client.Message.Request,
+            OUT extends org.stem.transport.Message.Request> OUT emulatePipeline(IN message) {
         return decodeMessage(encodeMessage(message));
     }
 
