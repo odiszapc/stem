@@ -17,44 +17,54 @@
 package org.stem.client;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
+import org.junit.Assert;
 import org.junit.Test;
+import org.stem.transport.MessageDecoder;
 import org.stem.transport.PacketDecoder;
+import org.stem.transport.ops.ReadBlobMessage;
 
 import java.util.UUID;
 
 public class CodecTest {
 
     @Test
-    public void testName() throws Exception {
-
-        Requests.ReadBlob req = new Requests.ReadBlob(UUID.randomUUID(), 123, 456, 789);
-        //ByteBuf buf = Unpooled.buffer(Requests.ReadBlob.coder.encodedSize(req));
-        //Requests.ReadBlob.coder.encode(req, buf);
-
-        //Frame frame = Frame.create(buf);
-
-        //PacketDecoder decoder = new PacketDecoder();
-        //decoder.
-
-        EmbeddedChannel channel = clientChannel();
-        //channel.writeInbound(req);
-        channel.writeAndFlush(req);
-
-        Object i = channel.readInbound();
-        Object o = channel.readOutbound();
-        Object o2 = channel.readOutbound();
-
-
-
-
-
+    public void readBlobEncoding() throws Exception {
+        Requests.ReadBlob original = new Requests.ReadBlob(UUID.randomUUID(), 123, 456, 789);
+        ReadBlobMessage decoded = emulatePipeline(original);
+        compare(original, decoded);
     }
 
-    private EmbeddedChannel clientChannel() {
-        return new EmbeddedChannel(new Message.ProtocolEncoder(), new Frame.Encoder());
+    private void compare(Requests.ReadBlob original, ReadBlobMessage decoded) {
+        Assert.assertEquals(original.diskUuid, decoded.disk);
+        Assert.assertEquals(original.fatFileIndex, decoded.fatFileIndex);
+        Assert.assertEquals(original.offset, decoded.offset);
+        Assert.assertEquals(original.length, decoded.length);
+    }
+
+    <IN extends org.stem.client.Message.Request, OUT extends org.stem.transport.Message.Request> OUT emulatePipeline(IN message) {
+        return decodeMessage(encodeMessage(message));
     }
 
 
+    <T extends org.stem.client.Message.Request> ByteBuf encodeMessage(T req) {
+        EmbeddedChannel ch1 = messageEncodingCh();
+        ch1.writeOutbound(req);
+        return (ByteBuf) ch1.readOutbound();
+    }
+
+    <T extends org.stem.transport.Message.Request> T decodeMessage(ByteBuf bytes) {
+        EmbeddedChannel ch1 = decodingCh();
+        ch1.writeInbound(bytes);
+
+        return (T) ch1.readInbound();
+    }
+
+    private EmbeddedChannel messageEncodingCh() {
+        return new EmbeddedChannel(new Frame.Encoder(), new Message.ProtocolEncoder());
+    }
+
+    private EmbeddedChannel decodingCh() {
+        return new EmbeddedChannel(new PacketDecoder(), new MessageDecoder());
+    }
 }
