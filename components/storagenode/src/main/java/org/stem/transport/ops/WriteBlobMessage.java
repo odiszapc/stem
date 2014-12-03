@@ -21,6 +21,7 @@ import io.netty.buffer.Unpooled;
 import org.stem.db.StorageService;
 import org.stem.domain.BlobDescriptor;
 import org.stem.transport.Message;
+import org.stem.utils.BBUtils;
 
 import java.util.UUID;
 
@@ -35,7 +36,7 @@ public class WriteBlobMessage extends Message.Request {
         @Override
         public ByteBuf encode(WriteBlobMessage op) {
             ByteBuf buf = Unpooled.buffer();
-            buf.writeBytes(op.disk.toString().getBytes());
+            BBUtils.writeString(op.disk.toString(), buf);
             buf.writeBytes(op.key);
             buf.writeInt(op.blob.length);
             buf.writeBytes(op.blob);
@@ -45,15 +46,11 @@ public class WriteBlobMessage extends Message.Request {
         @Override
         public WriteBlobMessage decode(ByteBuf buf) {
             WriteBlobMessage op = new WriteBlobMessage();
-            byte[] diskBytes = new byte[36];
-            buf.readBytes(diskBytes);
-            op.disk = UUID.fromString(new String(diskBytes));
 
+            op.disk = UUID.fromString(BBUtils.readString(buf));
             op.key = new byte[16];
             buf.readBytes(op.key);
-
             int length = buf.readInt();
-
             op.blob = new byte[length];
             buf.readBytes(op.blob);
 
