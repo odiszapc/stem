@@ -14,9 +14,9 @@ With STEM each machine in cluster can store up to 100-200TB of data.
 - Low cost — store up to 200TB of data on storage node
 - Stray forward compaction with no overhead (it takes few hours to free up space after deletion of data on a 3TB disk)
 - Automated cluster re-balancing logic — put into rack and power on
-- Data repairing process has no overhead while calculating deltas of data
-- Tolerance to disk fragmentation (pre-allocation of disk space)
-- True sequential writes
+- Process of data recover calculates dataset differencese without overhead
+- Tolerate disk fragmentation by pre-allocating of disk space
+- True sequential writes reache maximum disk performance
 - Adjustable consistency on reads
 - Coordination and monitoring of data movement with Zookeeper
 - Uses Cassandra 2.0 as meta-data registry
