@@ -17,7 +17,7 @@ With STEM each machine in cluster can store up to 100-200TB of data.
 - Process of data recover calculates dataset differencese without overhead
 - Tolerate disk fragmentation by pre-allocating of disk space
 - True sequential writes reache maximum disk performance
-- Adjustable consistency on reads
+- Tunable consistency on reads
 - Coordination and monitoring of data movement with Zookeeper
 - Uses Cassandra 2.0 as meta-data registry
 - Cluster management user interface
