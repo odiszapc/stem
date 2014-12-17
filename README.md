@@ -19,7 +19,7 @@ With STEM each machine in cluster can store up to 100-200TB of data.
 - Automated cluster re-balancing logic — put into rack and power on
 - Process of data recover calculates dataset differences without overhead
 - Tolerate disk fragmentation by pre-allocating of disk space
-- True sequential writes reach maximum disk performance
+- True sequential write helps to reach the maximum capabilities of spindle disks
 - Tunable consistency on reads
 - Coordination and monitoring of data movement with Zookeeper
 - Uses Cassandra 2.0 as meta-data registry
