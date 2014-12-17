@@ -30,7 +30,7 @@ With STEM each machine in cluster can store up to 100-200TB of data.
 
 #### Use cases
 Linear scalability, high availability with zer-overhead compaction and repair make STEM perfect platform for the following production cases:
-- File storage backend
+- File storage backend, i.e. video hosting
 - Storage for a large amount of small blocks of data
 - Core engine for image hosting
 - Video hosting back-end
