@@ -18,19 +18,28 @@ package org.stem.client;
 
 public class QueryOpts {
 
-    public static final Consistency DEFAULT_CONSISTENCY = Consistency.QUORUM;
+    public static final Consistency.Level DEFAULT_CONSISTENCY = Consistency.Level.QUORUM;
 
-    private volatile Consistency consistency = DEFAULT_CONSISTENCY;
+    private volatile Consistency.Level consistency = DEFAULT_CONSISTENCY;
+    private volatile Consistency.Merge mergeMethod = Consistency.Merge.RANDOM;
 
     public QueryOpts() {
     }
 
-    public QueryOpts setConsistency(Consistency consistencyLevel) {
+    public QueryOpts setConsistency(Consistency.Level consistencyLevel) {
         this.consistency = consistencyLevel;
         return this;
     }
 
-    public Consistency getConsistency() {
+    public Consistency.Level getConsistency() {
         return consistency;
+    }
+
+    public Consistency.Merge getMergeMethod() {
+        return mergeMethod;
+    }
+
+    public void setMergeMethod(Consistency.Merge mergeMethod) {
+        this.mergeMethod = mergeMethod;
     }
 }

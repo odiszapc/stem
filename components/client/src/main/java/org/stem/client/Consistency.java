@@ -16,6 +16,13 @@
 
 package org.stem.client;
 
-public enum Consistency {
-    ONE, TWO, THREE, QUORUM, ALL
+public class Consistency {
+
+    public static enum Level {
+        ONE, TWO, THREE, QUORUM, ALL
+    }
+
+    public static enum Merge {
+        RANDOM, LATEST, FASTEST
+    }
 }

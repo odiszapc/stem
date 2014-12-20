@@ -95,8 +95,17 @@ public class Session extends AbstractSession implements StemSession {
     @Override
     public void put(Blob object) {
         List<Requests.WriteBlob> requests = prepareWriteRequests(object);
-        List<DefaultResultFuture> futures = prepareFutures(requests);
+        sendAndReceive(requests);
+    }
 
+    @Override
+    public void delete(byte[] key) {
+        List<Requests.DeleteBlob> requests = prepareDeleteRequests(key);
+        sendAndReceive(requests);
+    }
+
+    private Message.Response sendAndReceive(List<? extends Message.Request> requests) {
+        List<DefaultResultFuture> futures = prepareFutures(requests);
         ConsistentResponseHandler responseHandler = new ConsistentResponseHandler(this, futures, configuration().getQueryOpts().getConsistency());
 
         for (DefaultResultFuture future : futures) {
@@ -104,17 +113,11 @@ public class Session extends AbstractSession implements StemSession {
         }
 
         try {
-            List<Message.Response> responses = responseHandler.getResults();
-            int a = 1;
+            return responseHandler.getResult();
         } catch (Exception e) {
-            throw new StemException("Error while writing blob", e);
+            logger.error("Error while executing request", e);
+            throw new StemException(String.format("Error while sending request %s", e.getMessage()));
         }
-    }
-
-    @Override
-    public void delete(byte[] key) {
-        List<Requests.DeleteBlob> requests = prepareDeleteRequests(key);
-        List<DefaultResultFuture> futures = prepareFutures(requests);
     }
 
     private List<DefaultResultFuture> prepareFutures(List<? extends Message.Request> requests) {

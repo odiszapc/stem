@@ -22,6 +22,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.stem.utils.Utils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +36,7 @@ public class ConsistentResponseHandler {
     private static final Logger logger = LoggerFactory.getLogger(ConsistentResponseHandler.class);
 
     Session session;
-    final Consistency consistency;
+    final Consistency.Level consistency;
 
     Map<Host, ReplicaResponseHandler> handlers = new HashMap<>();
     List<ReplicaResponseHandler> completedHandlers = new CopyOnWriteArrayList<>();
@@ -45,7 +46,7 @@ public class ConsistentResponseHandler {
     private final CountDownLatch counter;
     private final AtomicInteger successfulRequests = new AtomicInteger();
 
-    public ConsistentResponseHandler(Session session, List<DefaultResultFuture> futures, Consistency consistency) {
+    public ConsistentResponseHandler(Session session, List<DefaultResultFuture> futures, Consistency.Level consistency) {
         this.session = session;
         this.consistency = consistency;
         consistencyCondition = consistencyCondition(futures.size());
@@ -125,5 +126,19 @@ public class ConsistentResponseHandler {
                         return input != null;
                     }
                 }));
+    }
+
+    public Message.Response getResult() {
+        List<Message.Response> results = getResults();
+        return results.get(index(results.size()));
+    }
+
+    private int index(int results) {
+        switch (session.configuration().getQueryOpts().getMergeMethod()) {
+            case RANDOM:
+                return Utils.randInt(1, results);
+            default:
+                return 1; // TODO: handle other methods
+        }
     }
 }
