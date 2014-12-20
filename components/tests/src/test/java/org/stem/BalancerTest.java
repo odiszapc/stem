@@ -24,7 +24,7 @@ import org.stem.domain.ArrayBalancer;
 public class BalancerTest {
 
     @Test
-    public void testArrayBalancer() throws Exception {
+    public void arrayBalancer() throws Exception {
         ArrayBalancer balancer = new ArrayBalancer(100000);
         String hash = "abababababababababababababababab";
         hash = "ffffffffffffffffffffffffffffffff";
