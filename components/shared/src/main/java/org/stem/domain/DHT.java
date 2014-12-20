@@ -20,44 +20,49 @@ import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
 import java.math.BigInteger;
-import java.util.List;
 
-@Deprecated
-public class TokenBalancer<T> {
+public class DHT {
 
     private static BigInteger MD5_MAX_VALUE = new BigInteger("2", 10).pow(128);
 
-    protected List<T> keySet;
+    private final BigInteger capacity;
+    private final int sections;
 
-    public TokenBalancer() {
+    public DHT(int sections) {
+        this(MD5_MAX_VALUE, sections);
     }
 
-    public TokenBalancer(List<T> keySet) {
-        this.keySet = keySet;
+    public DHT(BigInteger capacity, int sections) {
+
+        this.capacity = capacity;
+        this.sections = sections;
     }
 
-    public int size() {
-        return keySet.size();
-    }
-
-    public T getToken(String key) {
+    public int getSection(String key) {
         try {
-            return getToken(Hex.decodeHex(key.toCharArray()));
+            return getSection(Hex.decodeHex(key.toCharArray()));
         } catch (DecoderException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public T getToken(byte[] keyBytes) {
+    public int getSection(byte[] keyBytes) {
         BigInteger token = new BigInteger(new String(Hex.encodeHex(keyBytes)), 16);
+        BigInteger sectionSize = capacity.divide(BigInteger.valueOf(sections));
 
-        BigInteger delta = MD5_MAX_VALUE.divide(BigInteger.valueOf(keySet.size()));
-        int keyIndex = Math.max(token.divide(delta).intValue() - 1, 0);
+        int quotient = token.divide(sectionSize).intValue();
+        BigInteger mod = token.mod(sectionSize);
+        int index;
+        if (quotient == 0)
+            index = 0;
+        else if (mod.equals(BigInteger.ZERO))
+            index = Math.max(quotient - 1, 0);
+        else index = Math.max(quotient, 0);
 
-        if (keyIndex >= keySet.size()) {
-            throw new RuntimeException("Token " + keyBytes + " is out of range");
+        if (index >= sections) {
+            return sections - 1;
         }
 
-        return keySet.get(keyIndex);
+        return index;
     }
 }

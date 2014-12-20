@@ -19,6 +19,7 @@ package org.stem.domain;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class ArrayBalancer extends TokenBalancer<Integer> {
 
     public ArrayBalancer(int arraySize) {

@@ -19,6 +19,7 @@ package org.stem;
 import org.junit.Assert;
 import org.junit.Test;
 import org.stem.domain.ArrayBalancer;
+import org.stem.domain.DHT;
 
 
 public class BalancerTest {
@@ -35,4 +36,30 @@ public class BalancerTest {
         token = balancer.getToken(hash);
         Assert.assertEquals(1, token.longValue());
     }
+
+    @Test
+    public void dhtSmall() throws Exception {
+        DHT dht = new DHT(2);
+
+        Assert.assertEquals(0, dht.getSection("01010101010101010101010101010101"));
+        Assert.assertEquals(0, dht.getSection("7fffffffffffffffffffffffffffffff")); // (2^128) / 2 - 1
+        Assert.assertEquals(0, dht.getSection("80000000000000000000000000000000")); // (2^128) / 2
+        Assert.assertEquals(1, dht.getSection("80000000000000000000000000000001")); // (2^128) / 2 + 1
+        Assert.assertEquals(1, dht.getSection("80000000000000000000000000000002")); // (2^128) / 2 + 2
+        Assert.assertEquals(0, dht.getSection("00000000000000000000000000000000")); // 0
+        Assert.assertEquals(0, dht.getSection("00000000000000000000000000000001")); // 0
+        Assert.assertEquals(1, dht.getSection("ffffffffffffffffffffffffffffffff")); // (2^128) - 1
+    }
+
+    @Test
+    public void dht() throws Exception {
+        DHT balancer = new DHT(100000);
+        String hash = "abababababababababababababababab";
+        Integer token = balancer.getSection("ffffffffffffffffffffffffffffffff");
+
+        Assert.assertEquals(99999, token.longValue());
+        token = balancer.getSection("00000000000000000000000000000001");
+        Assert.assertEquals(0, token.longValue());
+    }
+
 }
