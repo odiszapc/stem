@@ -97,14 +97,16 @@ public class Session extends AbstractSession implements StemSession {
         List<Requests.WriteBlob> requests = prepareWriteRequests(object);
         List<DefaultResultFuture> futures = prepareFutures(requests);
 
+        ConsistentResponseHandler responseHandler = new ConsistentResponseHandler(this, futures, configuration().getQueryOpts().getConsistency());
+
         for (DefaultResultFuture future : futures) {
             new RequestHandler(this, future, future.request()).sendRequest();
         }
 
         try {
-            List<Message.Response> responses = Uninterruptibles.getUninterruptibly(Futures.allAsList(futures));
+            List<Message.Response> responses = responseHandler.getResults();
             int a = 1;
-        } catch (ExecutionException e) {
+        } catch (Exception e) {
             throw new StemException("Error while writing blob", e);
         }
     }

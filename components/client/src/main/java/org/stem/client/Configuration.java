@@ -16,6 +16,7 @@
 
 package org.stem.client;
 
+
 public class Configuration {
 
     private final Policies policies;
@@ -23,16 +24,18 @@ public class Configuration {
     private final SocketOpts socketOpts;
     private final ProtocolOpts protocolOpts;
     private final PoolingOpts poolingOpts;
+    private QueryOpts queryOpts;
 
     public Configuration() {
-        this(new Policies(), new SocketOpts(), new ProtocolOpts(), new PoolingOpts());
+        this(new Policies(), new SocketOpts(), new ProtocolOpts(), new PoolingOpts(), new QueryOpts());
     }
 
-    public Configuration(Policies policies, SocketOpts socketOpts, ProtocolOpts protocolOpts, PoolingOpts poolingOpts) {
+    public Configuration(Policies policies, SocketOpts socketOpts, ProtocolOpts protocolOpts, PoolingOpts poolingOpts, QueryOpts queryOpts) {
         this.policies = policies;
         this.socketOpts = socketOpts;
         this.protocolOpts = protocolOpts;
         this.poolingOpts = poolingOpts;
+        this.queryOpts = queryOpts;
     }
 
     public Policies getPolicies() {
@@ -49,5 +52,9 @@ public class Configuration {
 
     public PoolingOpts getPoolingOpts() {
         return poolingOpts;
+    }
+
+    public QueryOpts getQueryOpts() {
+        return queryOpts;
     }
 }

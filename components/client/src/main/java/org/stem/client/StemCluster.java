@@ -424,7 +424,7 @@ public class StemCluster {
             for (Session s : sessions)
                 s.onDown(host);
 
-// TODO:
+//            TODO:
 //            if (wasUp) {
 //                for (Host.StateListener listener : listeners)
 //                    listener.onDown(host);
@@ -548,6 +548,7 @@ public class StemCluster {
         private String clusterManagerUrl;
         private ReconnectionPolicy reconnectionPolicy;
         private SocketOpts socketOpts;
+        private QueryOpts queryOpts;
 
         @Override
         public String getClusterManagerUrl() {
@@ -560,11 +561,11 @@ public class StemCluster {
                     null == reconnectionPolicy ? Policies.defaultReconnectionPolicy() : reconnectionPolicy
             );
 
-
             return new Configuration(policies,
                     null == socketOpts ? new SocketOpts() : socketOpts,
                     new ProtocolOpts(),
-                    new PoolingOpts()
+                    new PoolingOpts(),
+                    null == queryOpts ? new QueryOpts() : queryOpts
             );
         }
 
@@ -580,6 +581,11 @@ public class StemCluster {
 
         public Builder withSocketOpts(SocketOpts opts) {
             this.socketOpts = opts;
+            return this;
+        }
+
+        public Builder withQueryOpts(QueryOpts opts) {
+            this.queryOpts = opts;
             return this;
         }
 

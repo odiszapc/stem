@@ -16,24 +16,6 @@
 
 package org.stem.client;
 
-import com.google.common.util.concurrent.Uninterruptibles;
-
-import java.util.concurrent.ExecutionException;
-
-public class ResponseHandler {
-    final DefaultResultFuture future;
-
-    public ResponseHandler(DefaultResultFuture future) {
-        this.future = future;
-    }
-
-    public Message.Response get() {
-        try {
-            Message.Response response = Uninterruptibles.getUninterruptibly(future);
-            return response;
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
+public enum Consistency {
+    ONE, TWO, THREE, QUORUM, ALL
 }
