@@ -146,7 +146,7 @@ public class Session extends AbstractSession implements StemSession {
     }
 
     private Requests.ReadBlob prepareReadRequest(ExtendedBlobDescriptor pointer) {
-        return new Requests.ReadBlob(pointer.getDisk(), pointer.getFFIndex(), pointer.getOffset(), pointer.getLength());
+        return new Requests.ReadBlob(pointer.getDisk(), pointer.getFFIndex(), pointer.getBodyOffset(), pointer.getLength());
     }
 
     private Requests.DeleteBlob prepareDeleteRequest(ExtendedBlobDescriptor pointer) {

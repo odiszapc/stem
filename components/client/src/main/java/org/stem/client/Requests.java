@@ -30,7 +30,7 @@ class Requests {
 
         public final UUID diskUuid;  // TODO: encode to bytes, not string
         public final Integer fatFileIndex;
-        public final Integer offset;
+        public final Integer offset; // Blob body offset
         public final Integer length;
 
         public static final Message.Coder<ReadBlob> coder = new Coder<ReadBlob>() {

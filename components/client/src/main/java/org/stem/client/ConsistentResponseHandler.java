@@ -67,7 +67,7 @@ public class ConsistentResponseHandler {
 
             if (!isConsistent()) {
                 throw new ClientException(
-                        String.format("Response is not consistent: %s of %s requests are successful",
+                        String.format("Response is not consistent: %s / %s successful",
                                 successfulRequests, consistencyCondition));
             }
         } catch (InterruptedException e) {
@@ -136,7 +136,7 @@ public class ConsistentResponseHandler {
     private int index(int results) {
         switch (session.configuration().getQueryOpts().getMergeMethod()) {
             case RANDOM:
-                return Utils.randInt(1, results);
+                return Utils.randInt(0, results - 1);
             default:
                 return 1; // TODO: handle other methods
         }

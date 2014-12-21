@@ -23,6 +23,7 @@ import com.datastax.driver.core.policies.RoundRobinPolicy;
 import com.google.common.collect.Lists;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import org.apache.commons.lang3.Validate;
 import org.stem.domain.ExtendedBlobDescriptor;
 import org.stem.domain.Schema;
 
@@ -187,10 +188,13 @@ public class MetaStoreClient {
         keyBuf.get(key, 0, key.length);
 
         UUID disk = row.getUUID("disk");
-        ByteBuffer buf = row.getBytes("data");
-        int fatFileIndex = buf.getInt();
-        int offset = buf.getInt();
-        int length = buf.getInt();
+        ByteBuffer data = row.getBytes("data");
+        Validate.notNull(data);
+
+        ByteBuf buf = Unpooled.wrappedBuffer(data);
+        int fatFileIndex = buf.readInt();
+        int offset = buf.readInt();
+        int length = buf.readInt();
 
         return new ExtendedBlobDescriptor(key, length, disk, fatFileIndex, -1, offset);
     }

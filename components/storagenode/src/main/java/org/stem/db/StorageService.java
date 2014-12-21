@@ -20,6 +20,8 @@ import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.domain.BlobDescriptor;
+import org.stem.domain.ExtendedBlobDescriptor;
+import org.stem.service.ClusterService;
 import org.stem.transport.ops.DeleteBlobMessage;
 import org.stem.transport.ops.ReadBlobMessage;
 import org.stem.transport.ops.WriteBlobMessage;
@@ -42,15 +44,31 @@ public class StorageService {
         return wControllers.get(disk).getWriteCandidates();
     }
 
-    public BlobDescriptor write(WriteBlobMessage message) {
+    public ExtendedBlobDescriptor write(WriteBlobMessage message) {
+        ExtendedBlobDescriptor descriptor = writeOnDisk(message);
+        updateRemoteIndex(descriptor);
+        return descriptor;
+    }
+
+    private void updateRemoteIndex(ExtendedBlobDescriptor descriptor) {
+        try {
+            StorageNodeDescriptor.getMetaStoreClient().updateMeta(descriptor);
+        } catch (Exception e) {
+            throw new RuntimeException("Error writing index to meta store");
+        }
+    }
+
+    private ExtendedBlobDescriptor writeOnDisk(WriteBlobMessage message) {
         try {
             WriteController wc = wControllers.get(message.disk);
             if (null == wc)
                 throw new RuntimeException(String.format("Mount point %s can not be found", message.disk));
 
-            return wc.write(message);
+            BlobDescriptor descriptor = wc.write(message);
+            ExtendedBlobDescriptor extDescriptor = new ExtendedBlobDescriptor(message.key, message.getBlobSize(), message.disk, descriptor);
+            return extDescriptor;
         } catch (Exception e) {
-            logger.error("Error writing blob", e);
+            logger.error("Error writing blob on disk", e);
             throw new RuntimeException(e);
         }
     }

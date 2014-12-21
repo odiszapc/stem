@@ -78,14 +78,17 @@ public class RequestHandler implements Connection.ResponseCallback {
             switch (response.type) {
                 case RESULT:
                     setFinalResult(connection, response);
+                    break;
                 case ERROR:
                     Responses.Error err = (Responses.Error) response;
                     switch (err.code) {
                         case SERVER_ERROR:
                             logger.warn("{} replied with server error ({}), trying next host.", connection.address, err.message);
-                            ClientException exception = new ClientException("Host replied with server error: " + err.message);
+                            ClientException exception = new ClientException(
+                                    String.format("Host %s replied with server error: %s", connection.address, err.message));
                             logError(connection.address, exception);
                             connection.defunct(exception);
+                            setFinalException(connection, exception);
                             return;
                         default:
                             break;

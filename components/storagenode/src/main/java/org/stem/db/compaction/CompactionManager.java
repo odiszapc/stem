@@ -66,6 +66,7 @@ public class CompactionManager {
 
     // TODO: update DataTracker
     private void performSinglePassCompaction(MountPoint mp) throws IOException {
+        // TODO: lock?
         if (!exceedThreshold(mp))
             return;
 
@@ -153,13 +154,10 @@ public class CompactionManager {
                 Blob blob = scanner.next();
                 WriteBlobMessage message = new WriteBlobMessage(mp.uuid, blob.key(), blob.data());// TODO: direct access to fields?
                 mp.getDataTracker().remove(blob.key(), blob.size());
-                BlobDescriptor descriptor = StorageService.instance.write(message);
 
                 // TODO: too heterogeneous. Should be Blob.Descriptor or something like that
-                ExtendedBlobDescriptor extDescriptor = new ExtendedBlobDescriptor(blob.key(), blob.size(), mp.uuid, descriptor);
+                StorageService.instance.write(message);
                 logger.info("key 0x{} moved", Hex.encodeHexString(blob.key()));
-
-                client.updateMeta(extDescriptor);
             }
             temporaryFF.close();
             FileUtils.forceDelete(new File(temporaryFF.getPath())); // remove file

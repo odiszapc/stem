@@ -17,7 +17,7 @@
 package org.stem;
 
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.codec.binary.StringUtils;
+import org.junit.Assert;
 import org.junit.Test;
 import org.stem.client.Blob;
 import org.stem.client.Session;
@@ -30,19 +30,22 @@ import java.util.UUID;
 
 public class NewClientTest //extends IntegrationTestBase
 {
+
     @Test
-    public void testConnect() throws Exception {
+    public void writeThenRead() throws Exception {
         StemCluster cluster = new StemCluster.Builder()
                 .withClusterManagerUrl("http://127.0.0.1:9997")
                 .build();
 
         Session session = cluster.connect();
 
-        session.put(Blob.create(Hex.decodeHex("01010101010101010101010101010101".toCharArray()), "binary data".getBytes()));
+        Blob original = Blob.create(Hex.decodeHex("01010101010101010101010101010101".toCharArray()), "binary data".getBytes());
+        session.put(original);
 
+        Blob stored = session.get(Hex.decodeHex("01010101010101010101010101010101".toCharArray()));
 
-
-        Thread.sleep(1000000);
+        Assert.assertArrayEquals(original.key, stored.key);
+        Assert.assertArrayEquals(original.body, stored.body);
     }
 
     @Test
@@ -50,6 +53,5 @@ public class NewClientTest //extends IntegrationTestBase
         StorageNodeClient client = new StorageNodeClient("127.0.0.1", 9998);
         client.start();
         client.writeBlob(new WriteBlobMessage(UUID.randomUUID(), Hex.decodeHex("01010101010101010101010101010101".toCharArray()), "binary data".getBytes()));
-
     }
 }

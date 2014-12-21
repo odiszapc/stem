@@ -20,6 +20,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.stem.db.StorageService;
 import org.stem.domain.BlobDescriptor;
+import org.stem.domain.ExtendedBlobDescriptor;
 import org.stem.transport.Message;
 import org.stem.utils.BBUtils;
 
@@ -82,9 +83,7 @@ public class WriteBlobMessage extends Message.Request {
     @Override
     public Response execute() {
         try {
-            //Thread.sleep(2000);
-
-            BlobDescriptor desc = StorageService.instance.write(this);
+            ExtendedBlobDescriptor desc = StorageService.instance.write(this);
 
             return new ResultMessage.WriteBlob(
                     desc.getFFIndex(),
