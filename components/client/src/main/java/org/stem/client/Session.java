@@ -75,21 +75,8 @@ public class Session extends AbstractSession implements StemSession {
     @Override
     public Blob get(byte[] key) {
         List<Requests.ReadBlob> requests = prepareReadRequests(key);
-        List<DefaultResultFuture> futures = prepareFutures(requests);
-        for (DefaultResultFuture future : futures) {
-            // TODO: determine host to send request to
-            // TODO: ((Requests.ReadBlob) future.request()).diskUuid;
-            new RequestHandler(this, future, future.request()).sendRequest();
-        }
-
-        try {
-            List<Message.Response> responses = Uninterruptibles.getUninterruptibly(Futures.allAsList(futures));
-
-        } catch (ExecutionException e) {
-            throw new StemException("Error while reading blob");
-        }
-
-        return Blob.create(key, new byte[]{});
+        Responses.Result.ReadBlob readBlob = (Responses.Result.ReadBlob) sendAndReceive(requests);
+        return Blob.create(key, readBlob.data);
     }
 
     @Override
@@ -130,6 +117,8 @@ public class Session extends AbstractSession implements StemSession {
 
     private List<Requests.ReadBlob> prepareReadRequests(byte[] key) {
         List<ExtendedBlobDescriptor> pointers = cluster.manager.metaStoreClient.readMeta(key);
+        // TODO: if no responses ?
+
         List<Requests.ReadBlob> requests = new ArrayList<>();
         for (ExtendedBlobDescriptor pointer : pointers)
             requests.add(prepareReadRequest(pointer));
