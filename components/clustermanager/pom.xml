@@ -73,5 +73,130 @@
       <artifactId>guava</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+    </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>2.2</version>
+        <executions>
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <includeScope>runtime</includeScope>
+              <outputDirectory>${project.build.directory}/${lib}</outputDirectory>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>false</overWriteSnapshots>
+              <overWriteIfNewer>true</overWriteIfNewer>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- jar build parameters-->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.5</version>
+        <configuration>
+          <finalName>${project.artifactId}-${project.version}</finalName>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <classpathPrefix>${lib}/</classpathPrefix>
+              <mainClass>${mainClass}</mainClass>
+            </manifest>
+            <manifestEntries>
+              <Implementation-Version>${project.version}</Implementation-Version>
+              <!-- TODO: add .${buildNumber} -->
+              <Built-By>${author.name} (${author.email})</Built-By>
+            </manifestEntries>
+            <addMavenDescriptor>false</addMavenDescriptor>
+          </archive>
+          <excludes>
+          </excludes>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.1</version>
+        <executions>
+          <execution>
+            <id>remove-builtin-resources</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <tasks>
+                <delete>
+                  <fileset dir="${project.build.outputDirectory}" includes="*.yaml *.properties"/>
+                </delete>
+              </tasks>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>create-distribution-package</id>
+            <phase>package</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <tasks>
+                <echo>Create deployment package</echo>
+                <mkdir dir="${releaseDirectory}"/>
+                <copydir src="${project.build.directory}/${lib}" dest="${releaseDirectory}/${lib}"/>
+                <copy file="${project.build.directory}/${project.artifactId}-${project.version}.jar"
+                      todir="${releaseDirectory}/${lib}"/>
+                <mkdir dir="${releaseDirectory}/bin"/>
+                <mkdir dir="${releaseDirectory}/logs"/>
+                <copydir src="${project.basedir}/conf" dest="${releaseDirectory}/conf"/>
+                <copydir src="${project.basedir}/bin" dest="${releaseDirectory}/bin"/>
+              </tasks>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.4</version>
+        <configuration>
+          <finalName>${project.name}-${project.version}</finalName>
+          <descriptors>
+            <descriptor>assembly.xml</descriptor>
+          </descriptors>
+          <appendAssemblyId>false</appendAssemblyId>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <properties>
+    <releaseDirectory>${project.build.directory}/release</releaseDirectory>
+    <lib>lib</lib>
+    <mainClass>org.stem.ClusterManagerDaemon</mainClass>
+  </properties>
 </project>

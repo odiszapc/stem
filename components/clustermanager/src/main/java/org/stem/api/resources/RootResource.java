@@ -30,7 +30,6 @@ import javax.ws.rs.core.Response;
 public class RootResource {
 
     @GET
-    @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response root() {
         return RestUtils.ok();

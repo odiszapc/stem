@@ -62,7 +62,6 @@ public class ClusterResource {
      * @return
      */
     @GET
-    @Path(RESTConstants.Api.Cluster.Get.BASE)
     public Response get() {
         Cluster cluster = Cluster.instance().ensureInitialized();
 
@@ -100,7 +99,7 @@ public class ClusterResource {
     // TODO: save/load subscriptions
     @GET
     @Path(RESTConstants.Api.Cluster.Unauthorized.BASE)
-    public Response unauthorized(ListUnauthorizedNodesRequest request) throws Exception {
+    public Response unauthorized() throws Exception {
         Cluster cluster = Cluster.instance().ensureInitialized();
         List<Topology.StorageNode> list = cluster.unauthorized().list();
         ListNodesResponse resp = RestUtils.buildUnauthorizedListResponse(list);

@@ -40,8 +40,8 @@
   <developers>
     <developer>
       <id>odiszapc</id>
-      <name>Alexey Plotnik</name>
-      <email>odiszapc@gmail.com</email>
+      <name>${author.name}</name>
+      <email>${author.email}</email>
       <url>http://github.com/odiszapc</url>
     </developer>
     <developer>
@@ -106,6 +106,12 @@
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok</artifactId>
         <version>${lombok.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>${logback.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -204,6 +210,9 @@
   </build>
 
   <properties>
+    <author.name>Alexey Plotnik</author.name>
+    <author.email>odiszapc@gmail.com</author.email>
+
     <junit.version>4.11</junit.version>
     <fest.version>2.0M10</fest.version>
     <guava.version>16.0.1</guava.version>
@@ -217,6 +226,7 @@
     <commons-codec.version>1.9</commons-codec.version>
     <commons-exec.version>1.2</commons-exec.version>
     <slf4j.version>1.7.7</slf4j.version>
+    <logback.version>1.1.2</logback.version>
     <achilles.version>3.0.2</achilles.version>
     <datastax-driver.version>2.0.1</datastax-driver.version>
     <cassandra.version>2.0.7</cassandra.version>

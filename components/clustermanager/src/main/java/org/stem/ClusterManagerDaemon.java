@@ -151,6 +151,8 @@ public class ClusterManagerDaemon {
     private void startWebServer() throws IOException {
         server.start();
         server.getListener("grizzly").getFileCache().setEnabled(false);
+
+        // Monkey patching to rewrite URL without nginx
         server.getListener("grizzly").getFilterChain().add(2, new HttpBaseFilter() // TODO: indexOfType
         {
             @Override
@@ -246,8 +248,11 @@ public class ClusterManagerDaemon {
 
     public HttpHandler getStaticHandler() {
         if (null != System.getProperty("development")) {
+            // User can update static content on-fly in development mode
+            logger.warn("Initialize static resources in development mode");
             return new StaticHttpHandler("src/main/resources/static/");
         } else {
+            logger.info("Initialize static resources in production mode");
             CLStaticByPassHttpHandler handler = new CLStaticByPassHttpHandler(this.getClass().getClassLoader(), "static/");
             handler.setFileCacheEnabled(false);
             return handler;

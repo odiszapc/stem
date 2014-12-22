@@ -34,8 +34,7 @@ import javax.ws.rs.core.Response;
 public class TopologyResource {
 
     @GET
-    @Path(RESTConstants.Api.Topology.Get.BASE)
-    public Response get(ClusterManagerRequest request)
+    public Response get()
     {
         Cluster cluster = Cluster.instance().ensureInitialized();
         cluster.topology();
