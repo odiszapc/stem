@@ -161,7 +161,7 @@ public class ClusterManagerDaemon {
                 HttpRequestPacket httpHeader = (HttpRequestPacket) message.getHttpHeader();
                 String uri = httpHeader.getRequestURI();
                 if (uri.equals("/")) {
-                    uri = "/admin";
+                    uri = "/admin/index.html";
                     httpHeader.getRequestURIRef().init(uri.getBytes(), 0, uri.getBytes().length);
                 }
 
