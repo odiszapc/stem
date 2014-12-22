@@ -22,7 +22,6 @@ import org.stem.domain.topology.Topology;
 import org.stem.exceptions.TopologyException;
 import org.stem.utils.TopologyUtils;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;

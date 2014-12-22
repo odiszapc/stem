@@ -19,7 +19,10 @@ package org.stem.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.api.REST;
-import org.stem.coordination.*;
+import org.stem.coordination.ZooException;
+import org.stem.coordination.ZookeeperClient;
+import org.stem.coordination.ZookeeperClientFactory;
+import org.stem.coordination.ZookeeperPaths;
 import org.stem.db.Layout;
 import org.stem.db.MountPoint;
 import org.stem.db.StorageNodeDescriptor;
@@ -27,9 +30,7 @@ import org.stem.utils.Utils;
 
 import java.util.Collection;
 
-import static org.stem.db.StorageNodeDescriptor.getNodeListenAddress;
-import static org.stem.db.StorageNodeDescriptor.getNodeListenPort;
-import static org.stem.db.StorageNodeDescriptor.id;
+import static org.stem.db.StorageNodeDescriptor.*;
 
 public class DataClusterNotificator implements Runnable {
 

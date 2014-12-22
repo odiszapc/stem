@@ -26,14 +26,11 @@ import org.stem.domain.Cluster;
 import org.stem.domain.topology.DataMapping;
 import org.stem.domain.topology.Topology;
 import org.stem.utils.Utils;
-import sun.plugin.dom.exception.InvalidStateException;
 
 import javax.ws.rs.core.Response;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class RestUtils {
 
@@ -161,7 +158,7 @@ public class RestUtils {
         for (Long bucket : mapping.getBuckets()) {
             Topology.ReplicaSet replicas = mapping.getReplicas(bucket);
             if (null == replicas)
-                throw new InvalidStateException("replica set is null");
+                throw new IllegalStateException("replica set is null");
 
             REST.ReplicaSet packed = packReplicaSet(replicas, diskCache);
             if (!cache.contains(packed))

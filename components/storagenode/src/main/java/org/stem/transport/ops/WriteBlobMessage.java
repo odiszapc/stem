@@ -19,7 +19,6 @@ package org.stem.transport.ops;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.stem.db.StorageService;
-import org.stem.domain.BlobDescriptor;
 import org.stem.domain.ExtendedBlobDescriptor;
 import org.stem.transport.Message;
 import org.stem.utils.BBUtils;

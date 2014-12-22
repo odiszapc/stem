@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.domain.BlobDescriptor;
 import org.stem.domain.ExtendedBlobDescriptor;
-import org.stem.service.ClusterService;
 import org.stem.transport.ops.DeleteBlobMessage;
 import org.stem.transport.ops.ReadBlobMessage;
 import org.stem.transport.ops.WriteBlobMessage;
