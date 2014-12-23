@@ -165,6 +165,9 @@
                 <mkdir dir="${releaseDirectory}/logs"/>
                 <copydir src="${project.basedir}/conf" dest="${releaseDirectory}/conf"/>
                 <copydir src="${project.basedir}/bin" dest="${releaseDirectory}/bin"/>
+
+                <copy file="${project.parent.basedir}/LICENSE.txt"
+                      todir="${releaseDirectory}"/>
               </tasks>
             </configuration>
           </execution>
@@ -177,6 +180,7 @@
         <version>2.4</version>
         <configuration>
           <finalName>${project.name}-${project.version}</finalName>
+          <outputDirectory>${project.parent.basedir}/release</outputDirectory>
           <descriptors>
             <descriptor>assembly.xml</descriptor>
           </descriptors>

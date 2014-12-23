@@ -233,5 +233,10 @@
     <grizzly.version>2.3.11</grizzly.version>
     <jersey.version>2.7</jersey.version>
     <lombok.version>1.14.8</lombok.version>
+
+    <clustermanager.artifactId>stem-clustermanager</clustermanager.artifactId>
+    <clustermanager.version>0.0.1-SNAPSHOT</clustermanager.version>
+    <storagenode.artifactId>stem-storagenode</storagenode.artifactId>
+    <storagnode.version>0.0.1-SNAPSHOT</storagnode.version>
   </properties>
 </project>

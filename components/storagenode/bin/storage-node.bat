@@ -35,7 +35,8 @@ set JAVA_OPTS=-ea^
   -XX:MaxTenuringThreshold=1^
   -XX:CMSInitiatingOccupancyFraction=75^
   -XX:+UseCMSInitiatingOccupancyOnly^
-  -Dlogback.configurationFile=logback.xml
+  -Dlogback.configurationFile=logback.xml^
+  -Dstem.node.id="%STEM_NODE_HOME%\conf/id"
 
 for %%i in ("%STEM_NODE_HOME%\lib\*.jar") do call :append "%%i"
 goto runDaemon

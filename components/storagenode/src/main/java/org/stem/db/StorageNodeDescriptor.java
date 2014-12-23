@@ -89,7 +89,7 @@ public class StorageNodeDescriptor {
     }
 
     static URL getConfigUrl() {
-        String configPath = loadSystemProperty(STEM_CONFIG_PROPERTY);
+        String configPath = System.getProperty(STEM_CONFIG_PROPERTY);
         if (null == configPath)
             configPath = DEFAULT_CONFIG;
 

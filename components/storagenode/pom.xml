@@ -61,6 +61,15 @@
       <version>1.1.2</version>
     </dependency>
 
+    <!-- Tricks to remove old netty used by curator -> zookeeper 3.4.5 because it clashes with 3.9.0 from datastax-java-driver -->
+    <!-- This must be fixed correctly -->
+    <dependency>
+      <groupId>org.jboss.netty</groupId>
+      <artifactId>netty</artifactId>
+      <version>3.2.2.Final</version>
+      <scope>provided</scope>
+    </dependency>
+
     <!--<dependency>-->
     <!--<groupId>org.javassist</groupId>-->
     <!--<artifactId>javassist</artifactId>-->
@@ -87,6 +96,7 @@
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>
+              <excludeScope>provided</excludeScope>
             </configuration>
           </execution>
         </executions>
@@ -153,6 +163,9 @@
                 <mkdir dir="${releaseDirectory}/logs"/>
                 <copydir src="${project.basedir}/conf" dest="${releaseDirectory}/conf"/>
                 <copydir src="${project.basedir}/bin" dest="${releaseDirectory}/bin"/>
+
+                <copy file="${project.parent.basedir}/LICENSE.txt"
+                      todir="${releaseDirectory}"/>
               </tasks>
             </configuration>
           </execution>
@@ -165,6 +178,7 @@
         <version>2.4</version>
         <configuration>
           <finalName>${project.name}-${project.version}</finalName>
+          <outputDirectory>${project.parent.basedir}/release</outputDirectory>
           <descriptors>
             <descriptor>assembly.xml</descriptor>
           </descriptors>
