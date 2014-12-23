@@ -38,6 +38,7 @@ public class StorageNodeDescriptor {
 
     private static Config config;
     private static final String STEM_CONFIG_PROPERTY = "stem.config";
+    private static final String DEFAULT_CONFIG = "stem.yaml";
     private static final String STEM_ID_PROPERTY = "stem.node.id";
     private static REST.Cluster cluster; // This should be some of Topology or Cluster globals class, not from Response*
     private static MetaStoreClient metaStoreClient;
@@ -89,6 +90,8 @@ public class StorageNodeDescriptor {
 
     static URL getConfigUrl() {
         String configPath = loadSystemProperty(STEM_CONFIG_PROPERTY);
+        if (null == configPath)
+            configPath = DEFAULT_CONFIG;
 
         URL url;
 
@@ -97,7 +100,10 @@ public class StorageNodeDescriptor {
             url = file.toURI().toURL();
             url.openStream().close();
         } catch (Exception e) {
-            throw new RuntimeException("Cannot load " + configPath);
+            ClassLoader loader = StorageNodeDescriptor.class.getClassLoader();
+            url = loader.getResource(configPath);
+            if (null == url)
+                throw new RuntimeException("Cannot load " + configPath + ". Ensure \"" + STEM_CONFIG_PROPERTY + "\" system property is set correctly.");
         }
         return url;
     }

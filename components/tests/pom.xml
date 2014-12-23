@@ -55,7 +55,7 @@
       <groupId>org.apache.curator</groupId>
       <artifactId>curator-test</artifactId>
       <version>${curator.version}</version>
-      <!--<scope>test</scope>-->
+      <scope>test</scope>
       <exclusions>
         <exclusion>
           <groupId>org.jboss.netty</groupId>
@@ -68,7 +68,7 @@
       <groupId>info.archinnov</groupId>
       <artifactId>achilles-junit</artifactId>
       <version>${achilles.version}</version>
-      <!--<scope>test</scope>-->
+      <scope>test</scope>
       <exclusions>
         <exclusion>
           <groupId>org.apache.cassandra</groupId>
@@ -81,6 +81,7 @@
       <groupId>org.apache.cassandra</groupId>
       <artifactId>cassandra-all</artifactId>
       <version>${cassandra.version}</version>
+      <scope>test</scope>
       <exclusions>
         <exclusion>
           <groupId>com.google.guava</groupId>
