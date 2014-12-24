@@ -61,7 +61,7 @@
       <version>1.1.2</version>
     </dependency>
 
-    <!-- Tricks to remove old netty used by curator -> zookeeper 3.4.5 because it clashes with 3.9.0 from datastax-java-driver -->
+    <!-- Tricks to remove old netty dependence used by curator (zookeeper 3.4.5) because it clashes with 3.9.0 one from datastax-java-driver -->
     <!-- This must be fixed correctly -->
     <dependency>
       <groupId>org.jboss.netty</groupId>
