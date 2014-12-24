@@ -14,17 +14,25 @@
  * limitations under the License.
  */
 
-package org.stem.config;
+package org.stem.utils;
 
-public class Config {
+import java.io.File;
+import java.io.IOException;
 
-    public String cluster_manager_endpoint;
-    public Boolean auto_allocate = false;
-    public String[] blob_mount_points;
-    public String node_listen = "0.0.0.0";
-    public Integer node_port = 9998;
-    public Integer fat_file_size_in_mb = 256;
-    public Boolean mark_on_allocate = true; // TODO: should not be configurable
-    public Integer max_space_allocation_in_mb = 0;
-    public Float compaction_threshold = 0.3f;
+public class FileUtils {
+
+    public static void createDirectory(String directory)
+    {
+        createDirectory(new File(directory));
+    }
+
+    public static void createDirectory(File directory)
+    {
+        if (!directory.exists())
+        {
+            if (!directory.mkdirs())
+                throw new RuntimeException(new IOException("Failed to mkdirs " + directory));
+        }
+    }
+
 }

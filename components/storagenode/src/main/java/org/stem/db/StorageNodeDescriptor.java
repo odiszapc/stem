@@ -22,6 +22,7 @@ import org.stem.api.REST;
 import org.stem.client.MetaStoreClient;
 import org.stem.config.Config;
 import org.stem.service.ClusterService;
+import org.stem.utils.FileUtils;
 import org.stem.utils.Utils;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -50,6 +51,7 @@ public class StorageNodeDescriptor {
 
     static {
         loadConfig();
+        applyConfig();
         loadOrCreateMeta();
     }
 
@@ -86,6 +88,25 @@ public class StorageNodeDescriptor {
         Constructor constructor = new Constructor(Config.class);
         Yaml yaml = new Yaml(constructor);
         config = (Config) yaml.load(stream);
+    }
+
+    private static void applyConfig() {
+        if (null == config.blob_mount_points) {
+            String defaultDataDir = System.getProperty("stem.storagedir");
+            if (null == defaultDataDir)
+                throw new RuntimeException("blob_mount_points is missing and -Dstem.storagedir is not set");
+            config.blob_mount_points = new String[]{defaultDataDir};
+        }
+
+        if (0 == config.blob_mount_points.length)
+            throw new RuntimeException("At least one data directory must be specified");
+
+        for (String dataDir : config.blob_mount_points)
+            logger.info("Data directory location: " + dataDir);
+
+        logger.info("Cluster manager address: " + config.cluster_manager_endpoint);
+        logger.info(String.format("Storage node listen on %s:%s", config.node_listen, config.node_port));
+        logger.info(String.format("Fat file size: %sMB", config.fat_file_size_in_mb));
     }
 
     static URL getConfigUrl() {
@@ -158,9 +179,22 @@ public class StorageNodeDescriptor {
     }
 
     public static void loadLayout() throws IOException {
+        createDataDirectories();
         String[] mountPoints = getBlobMountPoints();
         int vBuckets = StorageNodeDescriptor.cluster().getVBucketsNum(); // Hard binding: Layout -> cluster()
         Layout.getInstance().load(mountPoints, vBuckets);
+    }
+
+    private static void createDataDirectories() {
+        try {
+            for (String dataDirectory : getBlobMountPoints()) {
+                FileUtils.createDirectory(dataDirectory);
+            }
+        } catch (Exception e) {
+            logger.error("Fatal error: {}", e.getMessage());
+            System.err.println(e.getCause().getMessage() + "; unable to start server");
+            System.exit(1);
+        }
     }
 
     public static void describeCluster() {

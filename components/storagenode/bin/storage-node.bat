@@ -21,6 +21,7 @@ popd
 
 if NOT DEFINED STEM_NODE_MAIN set STEM_NODE_MAIN=org.stem.service.StorageNodeDaemon
 if NOT DEFINED JAVA_HOME goto :err
+if NOT DEFINED STEM_NODE_STORAGEDIR set STEM_NODE_STORAGEDIR=%STEM_NODE_HOME%/data
 
 set CLASSPATH="%STEM_NODE_HOME%\conf"
 
@@ -35,8 +36,11 @@ set JAVA_OPTS=-ea^
   -XX:MaxTenuringThreshold=1^
   -XX:CMSInitiatingOccupancyFraction=75^
   -XX:+UseCMSInitiatingOccupancyOnly^
-  -Dlogback.configurationFile=logback.xml^
-  -Dstem.node.id="%STEM_NODE_HOME%\conf/id"
+  -Dlogback.configurationFile=logback.xml
+
+set STEM_OPTS=-Dstem.node.id="%STEM_NODE_HOME%\conf/id"^
+  -Dstem.storagedir="%STEM_NODE_HOME%\data"
+
 
 for %%i in ("%STEM_NODE_HOME%\lib\*.jar") do call :append "%%i"
 goto runDaemon
@@ -46,7 +50,7 @@ set CLASSPATH=%CLASSPATH%;%1
 goto :eof
 
 :runDaemon
-"%JAVA_HOME%\bin\java" %JAVA_OPTS% -cp %CLASSPATH% "%STEM_NODE_MAIN%"
+"%JAVA_HOME%\bin\java" %JAVA_OPTS% %STEM_OPTS% -cp %CLASSPATH% "%STEM_NODE_MAIN%"
 goto finally
 
 :err

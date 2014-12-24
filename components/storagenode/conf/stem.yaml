@@ -27,11 +27,9 @@ node_port: 9999
 # are created, RW operations are performed simultaneously.
 # Mount points must be attached to separate physical devices
 # to accomplish advantage of parallel I/O operations.
-blob_mount_points:
-  - D:\stem\test\data
-#  - E:\stem\test\data
-#  - G:\stem\test\data
-#  - H:\stem\test\data
+# If unset the default drectory is ${STEM_NODE_HOME}/data
+#blob_mount_points:
+#  - /var/lib/stem/data
 
 # The size of each fat file be allocated on disk.
 # Default: 256MB

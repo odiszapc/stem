@@ -46,7 +46,7 @@ import java.util.zip.CRC32;
  * | Marker |
  * +--------+
  */
-public class FatFile {
+public class FatFile { // TODO: Rename (BlobContainer, ObjContainer, ObjectContainer)
 
     private static final Logger logger = LoggerFactory.getLogger(FatFile.class);
     private DataTracker tracker;
