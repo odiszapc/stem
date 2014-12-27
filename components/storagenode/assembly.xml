@@ -27,10 +27,7 @@
         <fileSet>
             <directory>${project.build.directory}/release</directory>
             <outputDirectory>/</outputDirectory>
-            <lineEnding>unix</lineEnding>
-            <!--<fileMode>755</fileMode>-->
-
+            <lineEnding>keep</lineEnding>
         </fileSet>
-
     </fileSets>
 </assembly>
