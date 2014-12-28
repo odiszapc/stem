@@ -106,6 +106,12 @@ public class ClusterResource {
         return RestUtils.ok(resp);
     }
 
+    /**
+     * Admin approve pending node that wants join cluster, STEP 2
+     * @param req
+     * @return
+     * @throws Exception
+     */
     @POST
     @Path(RESTConstants.Api.Cluster.Approve.BASE)
     public Response approveUnauthorized(AuthorizeNodeRequest req) throws Exception {
