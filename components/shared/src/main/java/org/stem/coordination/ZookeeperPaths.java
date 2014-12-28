@@ -72,8 +72,8 @@ public class ZookeeperPaths {
     }
 
     public static String previousMappingPath() {
-            return PREVIOUS_MAPPING_PATH;
-        }
+        return PREVIOUS_MAPPING_PATH;
+    }
 
     public static String topologySnapshotPath() {
         return TOPOLOGY_SNAPSHOT_PATH;
@@ -83,6 +83,21 @@ public class ZookeeperPaths {
 
     // TODO: recursive creation of znodes
     public static String[] containerNodes() { // will be created on startup
-        return new String[]{ASYNC_REQUESTS, CLUSTER, topologyPath()};
+        return new String[]{ASYNC_REQUESTS, CLUSTER, CLUSTER_TOPOLOGY_PATH, topologyPath()};
+    }
+
+    public static class Containers {
+
+        public static String cluster() {
+            return CLUSTER;
+        }
+
+        public static String asyncRequests() {
+            return ASYNC_REQUESTS;
+        }
+
+        public static String topology() {
+            return CLUSTER_TOPOLOGY_PATH;
+        }
     }
 }

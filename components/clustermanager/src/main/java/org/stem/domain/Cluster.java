@@ -282,7 +282,7 @@ public class Cluster {
                 @Override
                 public void onTopologyUpdated(org.stem.domain.topology.Topology.Node node) {
                     try {
-                        saveTopology();
+                        saveTopology(); // TODO: Should be invoked one when node added
                     } catch (Exception e) {
                         logger.error("Failed to save topology to Zookeeper");
                     }
@@ -291,6 +291,7 @@ public class Cluster {
         }
 
         void saveTopology() throws Exception {
+            logger.info("Saving topology");
             saveTopology(topology2);
         }
 
@@ -395,7 +396,7 @@ public class Cluster {
         // TODO: persist and restore nodes and disks states (Topology.NodeState, Topology.DiskState enums)
         // TODO: turn off listeners until we load topology ???
         private org.stem.domain.topology.Topology readTopology() throws Exception {
-            REST.Topology topologyTransient = client.readZNodeData(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, REST.Topology.class);
+            REST.Topology topologyTransient = client.readZNodeData(ZookeeperPaths.topologyPath(), REST.Topology.class);
             if (null == topologyTransient)
                 return null;
 

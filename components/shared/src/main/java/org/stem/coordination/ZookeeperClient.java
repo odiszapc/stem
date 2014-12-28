@@ -257,6 +257,8 @@ public class ZookeeperClient {
         }
     }
 
+    // TODO: this must be redesigned. We save node concatenate parent node path with one from {@link ZNode#name()};
+    // We should do that directly to node
     public void saveNode(String path, ZNode node) throws Exception {
         if (createNodeIfNotExists(path, node))
             return;
