@@ -368,7 +368,7 @@ public class Cluster {
         }
 
         private DataMapping loadMapping(String path) throws Exception {
-            REST.Mapping raw = getZookeeperClient().readZNodeData(path, REST.Mapping.class, REST.Mapping.CODEC);
+            REST.Mapping raw = zookeeper().readZNodeData(path, REST.Mapping.class, REST.Mapping.CODEC);
             if (null == raw)
                 return DataMapping.EMPTY;
 
@@ -384,7 +384,7 @@ public class Cluster {
         private void saveMapping(String kind, DataMapping entity) throws Exception { // TODO: string kind to enum type
             REST.Mapping raw = RestUtils.packMapping(entity);
             raw.setName(kind);
-            getZookeeperClient().saveNode(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, raw);
+            zookeeper().saveNode(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, raw);
         }
 
         private void register(org.stem.domain.topology.Topology persistedTopo) {
@@ -462,7 +462,7 @@ public class Cluster {
 
         private void saveTopologySnapshot() throws Exception {
             REST.TopologySnapshot snapshot = RestUtils.packTopologySnapshot(topology2, mapping);
-            getZookeeperClient().saveNode(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, snapshot);
+            zookeeper().saveNode(ZookeeperPaths.CLUSTER_TOPOLOGY_PATH, snapshot);
         }
 
         private void ensureUninitialized() {
@@ -524,7 +524,7 @@ public class Cluster {
                 throw new StemException("Replication factor must be greater than zero");
         }
 
-        public ZookeeperClient getZookeeperClient() {
+        public ZookeeperClient zookeeper() {
             return client;
         }
 
