@@ -50,7 +50,7 @@ public class ClusterManagerClient extends BaseHttpClient {
             JoinResponse response = send(new HttpPost(uri), message, JoinResponse.class);
 
             assert null != response.requestId;
-            logger.info("Waiting for join response from cluster manager...");
+            logger.info("Waiting for join approval from cluster manager...");
             Event.Join joinResult = (Event.Join) Event.Listener.waitFor(response.requestId, Event.Type.JOIN, client);
 
             // TODO: What if node has to go down until user approve it?
