@@ -18,7 +18,6 @@ package org.stem.api.resources;
 
 import org.stem.RestUtils;
 import org.stem.api.RESTConstants;
-import org.stem.api.request.ClusterManagerRequest;
 import org.stem.api.response.TopologyResponse;
 import org.stem.domain.Cluster;
 

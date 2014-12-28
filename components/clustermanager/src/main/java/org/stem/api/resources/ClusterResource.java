@@ -21,7 +21,6 @@ import org.stem.api.RESTConstants;
 import org.stem.api.request.AuthorizeNodeRequest;
 import org.stem.api.request.CreateClusterRequest;
 import org.stem.api.request.JoinRequest;
-import org.stem.api.request.ListUnauthorizedNodesRequest;
 import org.stem.api.response.ClusterResponse;
 import org.stem.api.response.JoinResponse;
 import org.stem.api.response.ListNodesResponse;
