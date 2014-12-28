@@ -161,7 +161,7 @@
                       todir="${releaseDirectory}/${lib}"/>
                 <mkdir dir="${releaseDirectory}/bin"/>
                 <mkdir dir="${releaseDirectory}/logs"/>
-                <copydir src="${project.basedir}/conf" dest="${releaseDirectory}/conf"/>
+                <copydir src="${project.basedir}/conf" dest="${releaseDirectory}/conf" excludes="id"/>
                 <copydir src="${project.basedir}/bin" dest="${releaseDirectory}/bin"/>
 
                 <copy file="${project.parent.basedir}/LICENSE.txt"
