@@ -1,0 +1,9 @@
+{
+  "name": "StemCluster",
+  "vBuckets": 100000,
+  "rf": 1,
+  "partitioner": "crush",
+  "meta": {
+    "contactPoints": ["localhost"]
+  }
+}

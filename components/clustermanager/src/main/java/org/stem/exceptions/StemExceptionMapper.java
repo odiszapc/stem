@@ -16,6 +16,8 @@
 
 package org.stem.exceptions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.stem.api.response.ErrorResponse;
 
 import javax.ws.rs.core.Response;
@@ -26,8 +28,12 @@ import javax.ws.rs.ext.Provider;
 // TODO: handle any other exceptions
 public class StemExceptionMapper implements ExceptionMapper<StemException> {
 
+    private static final Logger logger = LoggerFactory.getLogger(StemExceptionMapper.class);
+
     @Override
     public Response toResponse(StemException e) {
+        logger.error("Error while execution request", e);
+
         ErrorResponse resp = new ErrorResponse();
         resp.setError(String.format("Application error: %s", e.getMessage())); // TODO: concatenate all StemException
         resp.setErrorCode(100);
