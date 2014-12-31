@@ -38,7 +38,7 @@ set JAVA_OPTS=-ea^
   -XX:+UseCMSInitiatingOccupancyOnly^
   -Dlogback.configurationFile=logback.xml
 
-set STEM_OPTS=-Dstem.node.id="%STEM_NODE_HOME%\conf/id"^
+set STEM_OPTS=-Dstem.node.id="%STEM_NODE_HOME%\conf\id"^
   -Dstem.storagedir="%STEM_NODE_HOME%\data"
 
 
