@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-pushd ./..
-[ -z $STEM_MANAGER_HOME ] && STEM_MANAGER_HOME=`pwd`
-popd
+if [ "x$STEM_MANAGER_HOME" = "x" ]; then
+    STEM_MANAGER_HOME="`dirname "$0"`/.."
+fi
 
-[ -z $STEM_MANAGER_MAIN ] && STEM_MANAGER_MAIN=org.stem.ClusterManagerDaemon
+STEM_MANAGER_MAIN=org.stem.ClusterManagerDaemon
 
 if [ -n "$JAVA_HOME" ]; then
     JAVA="$JAVA_HOME/bin/java"
