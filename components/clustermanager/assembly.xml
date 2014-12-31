@@ -25,6 +25,15 @@
     <includeBaseDirectory>false</includeBaseDirectory>
     <fileSets>
         <fileSet>
+            <directory>${project.build.directory}/release/bin</directory>
+            <outputDirectory>/bin</outputDirectory>
+            <lineEnding>unix</lineEnding>
+            <fileMode>755</fileMode>
+            <includes>
+                <include>*.sh</include>
+            </includes>
+        </fileSet>
+        <fileSet>
             <directory>${project.build.directory}/release</directory>
             <outputDirectory>/</outputDirectory>
             <lineEnding>keep</lineEnding>
