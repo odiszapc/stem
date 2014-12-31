@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -x
-
 pushd ./..
 [ -z $STEM_MANAGER_HOME ] && STEM_MANAGER_HOME=`pwd`
 popd
