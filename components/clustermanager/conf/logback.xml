@@ -21,7 +21,7 @@
         <file>${STEM_MANAGER_HOME}/logs/manager.log</file>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>plugin.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>${STEM_MANAGER_HOME}/logs/manager.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>7</maxHistory>
         </rollingPolicy>
 
