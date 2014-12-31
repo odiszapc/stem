@@ -14,23 +14,12 @@
  * limitations under the License.
  */
 
-package org.stem.api.response;
+package org.stem.api;
 
-public class StemResponse {
-    private String message; // can be null
+public class UserMessages {
 
-    public StemResponse() {
-    }
+    public static final String CLUSTER_CREATED = "Cluster successfully created";
+    public static final String NODE_WAITING = "Node is waiting for approval";
+    public static final String NODE_JOINED = "Storage Node has successfully joined the cluster";
 
-    public StemResponse(String message) {
-        this.message = message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public String getMessage() {
-        return message;
-    }
 }

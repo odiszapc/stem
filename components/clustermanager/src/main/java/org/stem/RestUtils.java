@@ -35,8 +35,16 @@ import java.util.List;
 public class RestUtils {
 
     public static Response ok() {
-
         return ok(new StemResponse());
+    }
+
+    public static Response ok(String message) {
+        return ok(new StemResponse(message));
+    }
+
+    public static Response ok(StemResponse response, String message) {
+        response.setMessage(message);
+        return ok(response);
     }
 
     public static Response ok(StemResponse response) {

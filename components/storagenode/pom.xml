@@ -157,6 +157,10 @@
 
                 <copy file="${project.parent.basedir}/LICENSE.txt"
                       todir="${releaseDirectory}"/>
+
+                <!-- Copy to root for debug purposes-->
+                <copydir src="${releaseDirectory}"
+                         dest="${project.parent.basedir}/release/${project.artifactId}-${project.version}"/>
               </tasks>
             </configuration>
           </execution>
@@ -184,6 +188,22 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>2.6.1</version>
+          <configuration>
+            <filesets>
+              <fileset>
+                <directory>${project.parent.basedir}/release</directory>
+                <includes>
+                  <include>${project.artifactId}-${project.version}*/**</include>
+                </includes>
+                <followSymlinks>false</followSymlinks>
+              </fileset>
+            </filesets>
+          </configuration>
+        </plugin>
     </plugins>
   </build>
 

@@ -18,6 +18,7 @@ package org.stem.api.resources;
 
 import org.stem.RestUtils;
 import org.stem.api.RESTConstants;
+import org.stem.api.UserMessages;
 import org.stem.api.request.AuthorizeNodeRequest;
 import org.stem.api.request.CreateClusterRequest;
 import org.stem.api.request.JoinRequest;
@@ -55,7 +56,7 @@ public class ClusterResource {
         Cluster.instance.initialize(req.getName(), req.getvBuckets(), req.getRf(), req.getPartitioner(),
                 req.getMetaStoreConfiguration());
 
-        return RestUtils.ok();
+        return RestUtils.ok(UserMessages.CLUSTER_CREATED);
     }
 
     /**
@@ -94,7 +95,7 @@ public class ClusterResource {
             cluster.approve(future.eventId(), node.getId());
         }
 
-        return RestUtils.ok(new JoinResponse(future.eventId()));
+        return RestUtils.ok(new JoinResponse(future.eventId()), UserMessages.NODE_WAITING);
     }
 
     // TODO: save/load unauthorized nodes
@@ -124,7 +125,7 @@ public class ClusterResource {
         String rack = req.getRack();
 
         Event.Join response = cluster.approve(req.getNodeId(), datacenter, rack);
-        return RestUtils.ok(response); // TODO: return an empty result on success as we usual do?
+        return RestUtils.ok(response, UserMessages.NODE_JOINED); // TODO: return an empty result on success as we usual do?
     }
 
     @POST
