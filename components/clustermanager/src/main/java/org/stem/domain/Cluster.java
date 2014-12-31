@@ -491,11 +491,6 @@ public class Cluster {
             if (null == client) {
                 client = ZookeeperClientFactory.newClient(endpoint);
             }
-
-            if (!client.isUninitialized()) {
-                client.close();
-                client = ZookeeperClientFactory.newClient(endpoint);
-            }
         }
 
         private void initZookeeperPaths() throws Exception {

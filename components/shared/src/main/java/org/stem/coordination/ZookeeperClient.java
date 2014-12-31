@@ -49,20 +49,10 @@ public class ZookeeperClient {
 
     private CuratorFramework client;
 
-    private static final String HOST_DEFAULT = "localhost";
-    private static final int PORT_DEFAULT = 2181;
+    public static final String HOST_DEFAULT = "localhost";
+    public static final int PORT_DEFAULT = 2181;
 
     private static final int DEFAULT_CONNECTION_TIMEOUT_SEC = 5;
-
-
-    /**
-     * @throws ZooException
-     * @deprecated use ZookeeperClient(host, port)
-     */
-    @Deprecated
-    public ZookeeperClient() throws ZooException {
-        this(HOST_DEFAULT, PORT_DEFAULT);
-    }
 
     public ZookeeperClient(String host, int port) throws ZooException {
         this.host = host;
@@ -82,11 +72,6 @@ public class ZookeeperClient {
 
     private CuratorFramework createClient(String endpoint) {
         return CuratorFrameworkFactory.newClient(endpoint, new ExponentialBackoffRetry(1000, 3));
-    }
-
-    @Deprecated
-    public synchronized void start() {
-
     }
 
     private void waitForConnectionEstablished(CuratorFramework client, int timeout, TimeUnit unit) throws ZooException {
@@ -116,6 +101,7 @@ public class ZookeeperClient {
     }
 
     public void close() {
+        logger.info("Close zookeeper client");
         client.close();
     }
 

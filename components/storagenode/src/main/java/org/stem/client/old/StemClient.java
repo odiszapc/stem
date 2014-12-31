@@ -46,16 +46,15 @@ public class StemClient implements TopoMapSubscriber {
         mappingListener.listen(this);
         metaClient = new MetaStoreClient();
         try {
-            zooClient = ZookeeperClientFactory.newClient();
+            zooClient = ZookeeperClientFactory.newClient(ZookeeperClient.HOST_DEFAULT, ZookeeperClient.PORT_DEFAULT);
         } catch (ZooException e) {
-            throw new RuntimeException("Error while initializeng STEM client", e);
+            throw new RuntimeException("Error while initializing STEM client", e);
         }
     }
 
     public void start() {
         try {
             metaClient.start();
-            zooClient.start();
             // TODO: get mappings directly
             mapping = zooClient.readZNodeData(ZookeeperPaths.MAPPING, TopoMapping.class);
             mappingChanged(mapping);

@@ -79,6 +79,16 @@
       </dependency>
 
       <dependency>
+        <groupId>org.jboss.netty</groupId>
+        <artifactId>netty</artifactId>
+        <version>3.2.2.Final</version>
+
+        <!-- Tricks to remove old netty dependence used by curator (zookeeper 3.4.5) because it clashes with 3.9.0 one from datastax-java-driver -->
+        <!-- This must be fixed correctly -->
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
         <groupId>com.datastax.cassandra</groupId>
         <artifactId>cassandra-driver-core</artifactId>
         <version>${datastax-driver.version}</version>

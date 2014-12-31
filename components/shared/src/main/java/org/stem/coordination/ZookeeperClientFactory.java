@@ -27,13 +27,6 @@ public class ZookeeperClientFactory {
     private static Map<String, ZookeeperClient> registry = new ConcurrentHashMap<>();
     private static AtomicInteger counter = new AtomicInteger(0);
 
-    @Deprecated
-    public static ZookeeperClient newClient() throws ZooException {
-        ZookeeperClient client = new ZookeeperClient();
-        saveToRegistry(computeName(), client);
-        return client;
-    }
-
     public static ZookeeperClient newClient(String host, int port) throws ZooException {
         ZookeeperClient client = new ZookeeperClient(host, port);
         saveToRegistry(computeName(), client);
