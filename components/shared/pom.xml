@@ -51,9 +51,15 @@
       <version>${datastax-driver.version}</version>
     </dependency>
 
+    <!--<dependency>-->
+      <!--<groupId>org.apache.cassandra</groupId>-->
+      <!--<artifactId>cassandra-all</artifactId>-->
+    <!--</dependency>-->
+
     <dependency>
-      <groupId>org.apache.cassandra</groupId>
-      <artifactId>cassandra-all</artifactId>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>3.3.2</version>
     </dependency>
 
     <dependency>
