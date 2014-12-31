@@ -42,7 +42,8 @@ JAVA_OPTS="-ea\
   -XX:MaxTenuringThreshold=1\
   -XX:CMSInitiatingOccupancyFraction=75\
   -XX:+UseCMSInitiatingOccupancyOnly\
-  -Dlogback.configurationFile=logback.xml"
+  -Dlogback.configurationFile=logback.xml\
+  -DSTEM_MANAGER_HOME=$STEM_MANAGER_HOME"
 
 for file in $(find $STEM_MANAGER_HOME/lib -maxdepth 1 -name '*.jar');
 do
