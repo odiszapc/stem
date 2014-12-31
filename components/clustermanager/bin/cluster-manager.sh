@@ -18,7 +18,16 @@ pushd ./..
 popd
 
 [ -z $STEM_MANAGER_MAIN ] && STEM_MANAGER_MAIN=org.stem.ClusterManagerDaemon
-[ -z $JAVA_HOME ] && echo "JAVA_HOME environment variable must be set!" && exit 1;
+
+if [ -n "$JAVA_HOME" ]; then
+    JAVA="$JAVA_HOME/bin/java"
+else
+    JAVA=java
+fi
+
+if [ ! -f `which $JAVA` ]; then
+  echo "Java runtime can not be found!" && exit 1;
+fi
 
 CLASSPATH="$STEM_MANAGER_HOME/conf"
 
@@ -41,5 +50,3 @@ do
 done
 
 nohup $JAVA_HOME/bin/java $JAVA_OPTS -cp $CLASSPATH $STEM_MANAGER_MAIN &
-
-set +x
