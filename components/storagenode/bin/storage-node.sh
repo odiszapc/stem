@@ -13,14 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -x
+if [ "x$STEM_NODE_HOME" = "x" ]; then
+    STEM_NODE_HOME="`dirname "$0"`/.."
+fi
 
-pushd ./..
-[ -z $STEM_NODE_HOME ] && STEM_NODE_HOME=`pwd`
-popd
+STEM_NODE_MAIN=org.stem.service.StorageNodeDaemon
 
-[ -z $STEM_NODE_MAIN ] && STEM_NODE_MAIN=org.stem.service.StorageNodeDaemon
-[ -z $JAVA_HOME ] && echo "JAVA_HOME environment variable must be set!" && exit 1;
+if [ -n "$JAVA_HOME" ]; then
+    JAVA="$JAVA_HOME/bin/java"
+else
+    JAVA=java
+fi
+
+if [ ! -f `which $JAVA` ]; then
+  echo "Java runtime can not be found!" && exit 1;
+fi
+
 [ -z $STEM_NODE_STORAGEDIR ] && STEM_NODE_STORAGEDIR="$STEM_NODE_HOME/data"
 
 CLASSPATH="$STEM_NODE_HOME/conf"
@@ -36,8 +44,8 @@ JAVA_OPTS="-ea\
   -XX:MaxTenuringThreshold=1\
   -XX:CMSInitiatingOccupancyFraction=75\
   -XX:+UseCMSInitiatingOccupancyOnly\
-  -Dlogback.configurationFile=logback.xml"
-
+  -Dlogback.configurationFile=logback.xml\
+  -DSTEM_NODE_HOME=$STEM_NODE_HOME"
 
 STEM_OPTS="-Dstem.node.id=$STEM_NODE_HOME/conf/id \
     -Dstem.storagedir=$STEM_NODE_HOME/data"
@@ -47,6 +55,4 @@ do
     CLASSPATH="$CLASSPATH:$file"
 done
 
-nohup $JAVA_HOME/bin/java $JAVA_OPTS $STEM_OPTS -cp $CLASSPATH $STEM_NODE_MAIN &
-
-set +x
+exec $JAVA_HOME/bin/java $JAVA_OPTS $STEM_OPTS -cp $CLASSPATH $STEM_NODE_MAIN <&- &
