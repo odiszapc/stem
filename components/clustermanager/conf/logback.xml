@@ -16,39 +16,39 @@
 
 <configuration scan="true" scanPeriod="60 seconds">
 
-    <appender name="FILE"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${STEM_MANAGER_HOME}/logs/manager.log</file>
+  <appender name="FILE"
+            class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${STEM_MANAGER_HOME}/logs/manager.log</file>
 
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${STEM_MANAGER_HOME}/logs/manager.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>7</maxHistory>
-        </rollingPolicy>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>${STEM_MANAGER_HOME}/logs/manager.%d{yyyy-MM-dd}.log</fileNamePattern>
+      <maxHistory>7</maxHistory>
+    </rollingPolicy>
 
-        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <charset>UTF-8</charset>
-            <pattern>%d [%thread]%X{x-forwarded-for}%X{authUuid} %file (line %line\) %-5level %logger{10} - %msg%n
-            </pattern>
-        </encoder>
-    </appender>
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <charset>UTF-8</charset>
+      <pattern>%d [%thread]%X{x-forwarded-for}%X{authUuid} %file (line %line\) %-5level %logger{10} - %msg%n
+      </pattern>
+    </encoder>
+  </appender>
 
-    <appender name="STDOUT"
-              class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>
-                %d %-5level %logger{10} - %msg%n
-            </pattern>
-        </encoder>
+  <appender name="STDOUT"
+            class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>
+        %d %-5level %logger{10} - %msg%n
+      </pattern>
+    </encoder>
 
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>INFO</level>
-        </filter>
-    </appender>
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>INFO</level>
+    </filter>
+  </appender>
 
 
-    <root level="INFO">
-        <appender-ref ref="STDOUT"/>
-        <appender-ref ref="FILE"/>
-    </root>
+  <root level="INFO">
+    <appender-ref ref="STDOUT"/>
+    <appender-ref ref="FILE"/>
+  </root>
 
 </configuration>
