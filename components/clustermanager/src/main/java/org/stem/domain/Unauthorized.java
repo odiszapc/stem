@@ -24,6 +24,8 @@ import org.stem.coordination.EventManager;
 import org.stem.coordination.ZNodeAbstract;
 import org.stem.domain.topology.Topology;
 import org.stem.exceptions.StemException;
+import org.stem.policies.AutoPlacementPolicy;
+import org.stem.policies.Node2RackAssigner;
 
 import java.util.*;
 
@@ -33,9 +35,16 @@ public class Unauthorized {
 
     private final Cluster cluster;
     final Map<UUID, NodeInsertMeta> registry = new HashMap<>();
+    private final AutoPlacementPolicy placementPolicy;
 
     public Unauthorized(Cluster cluster) {
         this.cluster = cluster;
+        this.placementPolicy = new Node2RackAssigner("DC1");
+        this.placementPolicy.init(cluster);
+    }
+
+    public AutoPlacementPolicy getPlacementPolicy() {
+        return placementPolicy;
     }
 
     public void add(Topology.StorageNode node, EventFuture future) {

@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import lombok.*;
+import org.stem.api.request.ClusterConfiguration;
 import org.stem.coordination.ZNode;
 import org.stem.coordination.ZNodeAbstract;
 import org.stem.coordination.ZookeeperPaths;
@@ -49,6 +50,7 @@ public abstract class REST {
         String partitioner;
         String zookeeperEndpoint;
         String[] metaStoreContactPoints;
+        ClusterConfiguration configuration;
         long usedBytes;
         long totalBytes;
 
@@ -71,6 +73,7 @@ public abstract class REST {
                     ", partitioner='" + partitioner + '\'' +
                     ", zookeeperEndpoint='" + zookeeperEndpoint + '\'' +
                     ", metaStoreContactPoints=" + Arrays.toString(metaStoreContactPoints) +
+                    ", configuration=" + configuration.toString() +
                     '}';
         }
     }

@@ -65,6 +65,7 @@ public class RestUtils {
         rest.setRf(descriptor.getRf());
         rest.setZookeeperEndpoint(descriptor.getZookeeperEndpoint());
         rest.setMetaStoreContactPoints(descriptor.getMetaStoreContactPoints());
+        rest.setConfiguration(descriptor.getConfiguration());
         rest.setUsedBytes(cluster.getUsedBytes());
         rest.setTotalBytes(cluster.getTotalBytes());
 

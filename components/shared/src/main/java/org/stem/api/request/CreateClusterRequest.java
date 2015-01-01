@@ -28,6 +28,9 @@ public class CreateClusterRequest extends ClusterManagerRequest {
     @JsonProperty(value = "meta")
     MetaStoreConfiguration metaStoreConfiguration = new MetaStoreConfiguration();
 
+    @JsonProperty(value = "configuration")
+    ClusterConfiguration configuration = new ClusterConfiguration();
+
     public String getName() {
         return name;
     }
@@ -46,6 +49,10 @@ public class CreateClusterRequest extends ClusterManagerRequest {
 
     public MetaStoreConfiguration getMetaStoreConfiguration() {
         return metaStoreConfiguration;
+    }
+
+    public ClusterConfiguration getConfiguration() {
+        return configuration;
     }
 
     public CreateClusterRequest() {

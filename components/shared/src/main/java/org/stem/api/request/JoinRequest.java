@@ -22,9 +22,28 @@ public class JoinRequest extends ClusterManagerRequest { // TODO: apply @lombok 
 
     REST.StorageNode node = new REST.StorageNode();
 
+    //String datacenter; /** Is used when {@link org.stem.api.request.ClusterConfiguration#isAutoApproval()} */
+    //String rack;       /** is used when {@link org.stem.api.request.ClusterConfiguration#isAutoApproval()} */
+
     public REST.StorageNode getNode() {
         return node;
     }
+
+//    public String getDatacenter() {
+//        return datacenter;
+//    }
+//
+//    public void setDatacenter(String datacenter) {
+//        this.datacenter = datacenter;
+//    }
+//
+//    public String getRack() {
+//        return rack;
+//    }
+//
+//    public void setRack(String rack) {
+//        this.rack = rack;
+//    }
 
     public JoinRequest() {
     }

@@ -83,7 +83,7 @@ public class ZookeeperPaths {
 
     // TODO: recursive creation of znodes
     public static String[] containerNodes() { // will be created on startup
-        return new String[]{ASYNC_REQUESTS, CLUSTER, CLUSTER_TOPOLOGY_PATH, topologyPath()};
+        return new String[]{ASYNC_REQUESTS, CLUSTER, STAT, OUT_SESSIONS, IN_SESSIONS, CLUSTER_TOPOLOGY_PATH, topologyPath()};
     }
 
     public static class Containers {

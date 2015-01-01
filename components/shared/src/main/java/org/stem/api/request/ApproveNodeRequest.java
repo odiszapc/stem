@@ -18,7 +18,7 @@ package org.stem.api.request;
 
 import java.util.UUID;
 
-public class AuthorizeNodeRequest extends ClusterManagerRequest {
+public class ApproveNodeRequest extends ClusterManagerRequest {
 
     UUID nodeId;
     String datacenter;
@@ -48,10 +48,10 @@ public class AuthorizeNodeRequest extends ClusterManagerRequest {
         this.rack = rack;
     }
 
-    public AuthorizeNodeRequest() {
+    public ApproveNodeRequest() {
     }
 
-    public AuthorizeNodeRequest(UUID nodeId) {
+    public ApproveNodeRequest(UUID nodeId) {
         this.nodeId = nodeId;
     }
 }

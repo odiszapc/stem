@@ -23,6 +23,7 @@ import org.stem.ClusterManagerDaemon;
 import org.stem.MetaStoreInitializer;
 import org.stem.RestUtils;
 import org.stem.api.REST;
+import org.stem.api.request.ClusterConfiguration;
 import org.stem.api.request.MetaStoreConfiguration;
 import org.stem.coordination.*;
 import org.stem.domain.topology.DataMapping;
@@ -31,6 +32,7 @@ import org.stem.domain.topology.TopologyChangesListener;
 import org.stem.domain.topology.TopologyEventListener;
 import org.stem.exceptions.StemException;
 import org.stem.exceptions.TopologyException;
+import org.stem.policies.AutoPlacementPolicy;
 import org.stem.streaming.StreamSession;
 import org.stem.utils.TopologyUtils;
 
@@ -51,14 +53,43 @@ public class Cluster {
     // TODO: 2. Handle the situation when storage is new but its disks are already attached to another storage
     // TODO:    (maybe disk was moved)
     public void approve(UUID eventId, UUID nodeId) {
-        freshNodes.approveExisting(eventId);
+        ensureInitialized();
+
+        freshNodesPool.approveExisting(eventId);
         manager.createStateListener(nodeId);
     }
 
     public Event.Join approve(UUID nodeId, String datacenter, String rack) {
-        Event.Join result = freshNodes.approveNew(nodeId, datacenter, rack);
+        ensureInitialized();
+
+        Event.Join result = freshNodesPool.approveNew(nodeId, datacenter, rack);
         manager.createStateListener(nodeId);
         return result;
+    }
+
+    public EventFuture tryJoinAsync(org.stem.domain.topology.Topology.StorageNode node) throws Exception {
+        EventFuture future = EventManager.instance.createSubscription(Event.Type.JOIN);
+
+        org.stem.domain.topology.Topology.StorageNode existing = topology().findStorageNode(node.getId());
+
+        // If node is in cluster auto approve it
+        if (null != existing) {
+            // TODO: check node status
+            approve(future.eventId(), node.getId());
+
+        // If autApproval is turned on add and approve immediately
+        } else if (configuration().isAutoApproval()) {
+            logger.info("Auto approve node {}", node);
+            freshNodesPool.add(node, future);
+            AutoPlacementPolicy policy = freshNodesPool.getPlacementPolicy();
+            approve(node.getId(), policy.getDatacenterNode(node), policy.getRackForNode(node));
+
+        // If node is really new - add it to the queue for manual approval
+        } else {
+            logger.info("Add node {} to the queue for manual approval", node);
+            freshNodesPool.add(node, future);
+        }
+        return future;
     }
 
     public static enum State {
@@ -79,7 +110,7 @@ public class Cluster {
     private DataMapping mapping = DataMapping.EMPTY;
     private DataDistributionManager distributionManager;
 
-    private Unauthorized freshNodes = new Unauthorized(this);
+    private Unauthorized freshNodesPool = new Unauthorized(this);
 
     private Cluster() {
         try {
@@ -120,8 +151,8 @@ public class Cluster {
 
     }
 
-    public Unauthorized unauthorized() {
-        return freshNodes;
+    public Unauthorized unauthorizedPool() {
+        return freshNodesPool;
     }
 
     public static Cluster instance() {
@@ -148,19 +179,32 @@ public class Cluster {
         return true;
     }
 
-    public void initialize(String name, int vBuckets, int rf, String partitioner, MetaStoreConfiguration metaStoreConfiguration) {
+    public void initialize(String name, int vBuckets, int rf, String partitioner,
+                           MetaStoreConfiguration meta, ClusterConfiguration configuration) {
+
+        // TODO: validate(configuration);
+        //this.configuration = configuration;
+
+        // TODO: validate(meta);
+        this.metaStoreConfiguration = meta;
+
         try {
-            this.metaStoreConfiguration = metaStoreConfiguration;
             manager.ensureUninitialized(); // TODO: seal into the manager instance
             Descriptor desc = new Descriptor(name, vBuckets, rf, manager.endpoint,
                     Partitioner.Type.byName(partitioner),
-                    metaStoreConfiguration.getContactPoints());
+                    this.metaStoreConfiguration.getContactPoints(),
+                    configuration);
             manager.newCluster(desc);
             save();
         } catch (Exception e) {
             state.compareAndSet(State.INITIALIZING, State.UNINITIALIZED);
             throw new StemException(String.format("Error while initializing a new cluster: %s", e.getMessage()), e);
         }
+    }
+
+    public ClusterConfiguration configuration() {
+        manager.ensureInitialized();
+        return descriptor().configuration;
     }
 
     public void save() {
@@ -549,6 +593,8 @@ public class Cluster {
         logger.info("Partitioner: {}, number of partitions: {}", d.getPartitioner(), d.getvBuckets());
         logger.info("Zookeeper endpoint: {}", d.getZookeeperEndpoint());
         logger.info("Meta store cluster address: {}", d.getMetaStoreContactPoints());
+
+        logger.info("New nodes auto approval: {}", d.getConfiguration().isAutoApproval());
     }
 
     /**
@@ -562,6 +608,7 @@ public class Cluster {
         Partitioner.Type partitioner = Partitioner.Type.CRUSH;
         String zookeeperEndpoint;
         String[] metaStoreContactPoints;
+        private ClusterConfiguration configuration;
 
         public Descriptor() {
         }
@@ -590,13 +637,19 @@ public class Cluster {
             return metaStoreContactPoints;
         }
 
-        public Descriptor(String name, int vBuckets, int rf, String zookeeperEndpoint, Partitioner.Type partitioner, String[] contactPoints) {
+        public ClusterConfiguration getConfiguration() {
+            return configuration;
+        }
+
+        public Descriptor(String name, int vBuckets, int rf, String zookeeperEndpoint, Partitioner.Type partitioner,
+                          String[] contactPoints, ClusterConfiguration configuration) {
             this.name = name;
             this.vBuckets = vBuckets;
             this.rf = rf;
             this.zookeeperEndpoint = zookeeperEndpoint;
             this.partitioner = partitioner;
             this.metaStoreContactPoints = contactPoints;
+            this.configuration = configuration;
         }
 
         @Override
