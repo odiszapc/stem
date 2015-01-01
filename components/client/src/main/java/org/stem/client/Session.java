@@ -74,6 +74,7 @@ public class Session extends AbstractSession implements StemSession {
 
     @Override
     public Blob get(byte[] key) {
+        init();
         List<Requests.ReadBlob> requests = prepareReadRequests(key);
         Responses.Result.ReadBlob readBlob = (Responses.Result.ReadBlob) sendAndReceive(requests);
         return Blob.create(key, readBlob.data);
@@ -81,12 +82,14 @@ public class Session extends AbstractSession implements StemSession {
 
     @Override
     public Responses.Result.WriteBlob put(Blob object) {
+        init();
         List<Requests.WriteBlob> requests = prepareWriteRequests(object);
         return (Responses.Result.WriteBlob) sendAndReceive(requests);
     }
 
     @Override
     public void delete(byte[] key) {
+        init();
         List<Requests.DeleteBlob> requests = prepareDeleteRequests(key);
         sendAndReceive(requests);
     }

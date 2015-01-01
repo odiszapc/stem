@@ -20,12 +20,12 @@
             class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
       <pattern>
-        %d %-5level %logger{10} - %msg%n
+        %-4level [%thread] %d %file (line %line\) %message%n
       </pattern>
     </encoder>
   </appender>
 
-  <logger name="org.stem.client"
+  <logger name="org.stem"
           level="debug" additivity="false">
     <appender-ref ref="STDOUT"/>
   </logger>

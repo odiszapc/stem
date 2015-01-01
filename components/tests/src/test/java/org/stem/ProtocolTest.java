@@ -62,54 +62,36 @@ public class ProtocolTest extends IntegrationTestBase {
 
     @Test
     public void testReadWrite() throws Exception {
-        Session sess = client.newSession();
         org.stem.client.Blob writeOp = getRandomWriteMessage2();
         final int BLOB_SIZE = writeOp.getBlobSize();
 
-
-        Responses.Result.WriteBlob resp = sess.put(writeOp);
+        Responses.Result.WriteBlob resp = session.put(writeOp);
         Assert.assertEquals(resp.getFatFileIndex(), 0);
         Assert.assertEquals(resp.getOffset(), 1 + Blob.Header.SIZE);
 
+        org.stem.client.Blob readBlob = session.get(writeOp.key);
+        Assert.assertArrayEquals(readBlob.body, writeOp.body);
 
-//        StorageNodeClient client = new StorageNodeClient(host, port);
-//        client.start();
-//
-//        WriteBlobMessage writeOp = getRandomWriteMessage();
-//        final int BLOB_SIZE = writeOp.getBlobSize();
-//
-//        // Write
-//        BlobDescriptor resp = client.writeBlob(writeOp);
-//        Assert.assertEquals(resp.getFFIndex(), 0);
-//        Assert.assertEquals(resp.getBodyOffset(), 1 + Blob.Header.SIZE);
-//
-//        // Read
-//        byte[] readBlob = client.readBlob(writeOp.disk,
-//                resp.getFFIndex(),
-//                resp.getBodyOffset(),
-//                writeOp.getBlobSize());
-//        Assert.assertArrayEquals(readBlob, writeOp.blob);
-//
-//        // Write
-//        BlobDescriptor resp2 = client.writeBlob(writeOp);
-//        Assert.assertEquals(resp2.getFFIndex(), 0);
-//        Assert.assertEquals(resp2.getBodyOffset(), resp.getBodyOffset() + Blob.Header.SIZE + BLOB_SIZE);
+        Responses.Result.WriteBlob resp2 = session.put(writeOp);
+        Assert.assertEquals(resp2.getFatFileIndex(), 0);
+        Assert.assertEquals(resp2.getOffset(), resp.getOffset() + Blob.Header.SIZE + BLOB_SIZE);
     }
 
 
     @Test
     public void testStorageNodeDelete() throws Exception {
-        StorageNodeClient client = new StorageNodeClient(host, port);
-        client.start();
-        WriteBlobMessage writeOp = getRandomWriteMessage();
 
-        BlobDescriptor resp = client.writeBlob(writeOp);
-        Assert.assertEquals(resp.getFFIndex(), 0);
-        Assert.assertEquals(resp.getBodyOffset(), 1 + Blob.Header.SIZE);
-
-        DeleteBlobMessage deleteOp = new DeleteBlobMessage(writeOp.disk, resp.getFFIndex(), resp.getBodyOffset());
-        client.deleteBlob(deleteOp);
-        client.deleteBlob(deleteOp);
+//        StorageNodeClient client = new StorageNodeClient(host, port);
+//        client.start();
+//        WriteBlobMessage writeOp = getRandomWriteMessage();
+//
+//        BlobDescriptor resp = client.writeBlob(writeOp);
+//        Assert.assertEquals(resp.getFFIndex(), 0);
+//        Assert.assertEquals(resp.getBodyOffset(), 1 + Blob.Header.SIZE);
+//
+//        DeleteBlobMessage deleteOp = new DeleteBlobMessage(writeOp.disk, resp.getFFIndex(), resp.getBodyOffset());
+//        client.deleteBlob(deleteOp);
+//        client.deleteBlob(deleteOp);
     }
 
     @Test
