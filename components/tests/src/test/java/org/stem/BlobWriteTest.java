@@ -17,13 +17,26 @@
 package org.stem;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.stem.db.DataTracker;
 import org.stem.db.FatFile;
 import org.stem.db.FatFileAllocator;
 import org.stem.utils.TestUtils;
 
-public class BlobWriteTest extends IntegrationTestBase {
+public class BlobWriteTest {
+
+    @Before
+    public void setUp() throws Exception {
+        TestUtils.cleanupTempDir();
+        TestUtils.createTempDir();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        TestUtils.cleanupTempDir();
+    }
 
     @Test
     public void testWriteSingleBlob() throws Exception {

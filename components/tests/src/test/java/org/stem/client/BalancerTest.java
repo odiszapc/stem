@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.stem;
+package org.stem.client;
 
 import org.junit.Assert;
 import org.junit.Test;

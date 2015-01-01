@@ -35,7 +35,6 @@ public class AllocatorTest {
         TestUtils.createTempDir();
     }
 
-
     @After
     public void tearDown() throws Exception {
         TestUtils.cleanupTempDir();
