@@ -22,6 +22,7 @@ import org.stem.coordination.ZookeeperEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class TopoMapListener extends ZookeeperEventListener<TopoMapping> {
 
     List<TopoMapSubscriber> subscribers = new ArrayList<TopoMapSubscriber>();

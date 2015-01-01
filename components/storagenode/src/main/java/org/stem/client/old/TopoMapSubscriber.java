@@ -18,6 +18,7 @@ package org.stem.client.old;
 
 import org.stem.coordination.TopoMapping;
 
+@Deprecated
 public interface TopoMapSubscriber {
 
     void mappingChanged(TopoMapping mapping);

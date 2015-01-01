@@ -61,6 +61,10 @@ public class RequestRouter {
     }
 
     Set<UUID> getLocationsForBlob(Blob blob) {
-        return metadata().getLocationsForBlob(blob);
+        Set<UUID> locations = metadata().getLocationsForBlob(blob);
+
+        if (null == locations)
+            throw new NoHostAvailableException(blob.toString());
+        return locations;
     }
 }

@@ -21,7 +21,7 @@ import org.stem.utils.BBUtils;
 
 import java.net.InetSocketAddress;
 
-class Responses {
+public class Responses {
 
     /**
      *
@@ -179,6 +179,14 @@ class Responses {
                 super(Kind.WRITE_BLOB);
                 this.fatFileIndex = fatFileIndex;
                 this.offset = offset;
+            }
+
+            public int getFatFileIndex() {
+                return fatFileIndex;
+            }
+
+            public int getOffset() {
+                return offset;
             }
 
             @Override

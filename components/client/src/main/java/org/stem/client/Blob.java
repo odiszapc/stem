@@ -16,6 +16,8 @@
 
 package org.stem.client;
 
+import org.apache.commons.codec.binary.Hex;
+
 public class Blob {
     public final byte[] key;
     public final byte[] body;
@@ -27,5 +29,15 @@ public class Blob {
     private Blob(byte[] key, byte[] body) {
         this.key = key;
         this.body = body;
+    }
+
+    public int getBlobSize() {
+        return body.length;
+    }
+
+    @Override
+    public String toString() {
+
+        return String.format("Blob{key = %s, length = %s}", new String(Hex.encodeHex(key)), getBlobSize());
     }
 }

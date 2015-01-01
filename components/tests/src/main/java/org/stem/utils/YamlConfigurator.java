@@ -160,7 +160,7 @@ public class YamlConfigurator {
         }
     }
 
-    private static URL convertPathToURL(String configPath) {
+    public static URL convertPathToURL(String configPath) {
         try {
             URL url = Thread.currentThread().getContextClassLoader().getResource(configPath);
             if (null == url)

@@ -29,6 +29,7 @@ import org.stem.transport.ops.ErrorMessage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+@Deprecated
 public class RequestFuture extends AbstractFuture<Message.Response> {
 
     final ResponseCallback callback;

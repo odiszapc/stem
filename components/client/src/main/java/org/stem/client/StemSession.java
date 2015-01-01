@@ -19,6 +19,6 @@ package org.stem.client;
 public interface StemSession {
 
     Blob get(byte[] key);
-    void put(Blob object);
+    Responses.Result.WriteBlob put(Blob object);
     void delete(byte[] key);
 }

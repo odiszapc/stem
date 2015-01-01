@@ -28,7 +28,7 @@ import org.stem.transport.ops.WriteBlobMessage;
 import java.util.UUID;
 
 
-public class NewClientTest //extends IntegrationTestBase
+public class NewClientTest extends IntegrationTestBase
 {
 
     @Test
@@ -46,12 +46,5 @@ public class NewClientTest //extends IntegrationTestBase
 
         Assert.assertArrayEquals(original.key, stored.key);
         Assert.assertArrayEquals(original.body, stored.body);
-    }
-
-    @Test
-    public void testName() throws Exception {
-        StorageNodeClient client = new StorageNodeClient("127.0.0.1", 9998);
-        client.start();
-        client.writeBlob(new WriteBlobMessage(UUID.randomUUID(), Hex.decodeHex("01010101010101010101010101010101".toCharArray()), "binary data".getBytes()));
     }
 }

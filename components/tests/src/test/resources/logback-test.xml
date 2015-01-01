@@ -16,22 +16,30 @@
 
 <configuration scan="true" scanPeriod="30 seconds">
 
-    <appender name="STDOUT"
-              class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>
-                %d %-5level %logger{10} - %msg%n
-            </pattern>
-        </encoder>
-    </appender>
+  <appender name="STDOUT"
+            class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>
+        %d %-5level %logger{10} - %msg%n
+      </pattern>
+    </encoder>
+  </appender>
 
-    <logger name="org.stem.client"
-            level="trace" additivity="false">
-        <appender-ref ref="STDOUT"/>
-    </logger>
+  <logger name="org.stem.client"
+          level="debug" additivity="false">
+    <appender-ref ref="STDOUT"/>
+  </logger>
 
-    <root level="ERROR">
-        <appender-ref ref="STDOUT"/>
-    </root>
+  <logger name="org.apache.cassandra"
+          level="off" additivity="false">
+  </logger>
+
+  <logger name="org.apache.zookeeper"
+          level="off" additivity="false">
+  </logger>
+
+  <root level="debug">
+    <appender-ref ref="STDOUT"/>
+  </root>
 
 </configuration>

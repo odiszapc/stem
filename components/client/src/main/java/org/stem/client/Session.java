@@ -80,9 +80,9 @@ public class Session extends AbstractSession implements StemSession {
     }
 
     @Override
-    public void put(Blob object) {
+    public Responses.Result.WriteBlob put(Blob object) {
         List<Requests.WriteBlob> requests = prepareWriteRequests(object);
-        sendAndReceive(requests);
+        return (Responses.Result.WriteBlob) sendAndReceive(requests);
     }
 
     @Override
@@ -266,8 +266,7 @@ public class Session extends AbstractSession implements StemSession {
                 newPool.closeAsync();
 
             return true;
-        }
-        finally {
+        } finally {
             l.unlock();
         }
     }

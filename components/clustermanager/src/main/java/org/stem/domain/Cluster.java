@@ -49,6 +49,38 @@ public class Cluster {
     private static final String CURRENT_MAPPING = ZookeeperPaths.CURRENT_MAPPING;
     private static final String PREVIOUS_MAPPING = ZookeeperPaths.PREVIOUS_MAPPING;
 
+    public static enum State {
+        UNINITIALIZED, INITIALIZING, INITIALIZED
+    }
+
+    private AtomicReference<State> state = new AtomicReference<>(State.UNINITIALIZED);
+
+    public static final Cluster instance = new Cluster();
+
+    final Manager manager;
+    Descriptor descriptor;
+    private MetaStoreConfiguration metaStoreConfiguration;
+
+    @Deprecated
+    Topology topology; // TODO: get rid of entirely
+
+    org.stem.domain.topology.Topology topology2;    // TODO: load topology from Zookeeper
+    Partitioner partitioner;
+    private DataMapping mapping = DataMapping.EMPTY;
+    private DataDistributionManager distributionManager;
+
+    private Unauthorized freshNodesPool = new Unauthorized(this);
+
+    private Cluster() {
+        try {
+            String zookeeperEndpoint = ClusterManagerDaemon.zookeeperEndpoint();
+            this.manager = new Manager(zookeeperEndpoint);
+            this.topology2 = org.stem.domain.topology.Topology.Factory.create(this);
+        } catch (ZooException e) {
+            throw new StemException("Can't initialize Cluster.Manager instance", e);
+        }
+    }
+
     // TODO: 1. Handle the situation when storage already exists but new disk were added
     // TODO: 2. Handle the situation when storage is new but its disks are already attached to another storage
     // TODO:    (maybe disk was moved)
@@ -92,36 +124,6 @@ public class Cluster {
         return future;
     }
 
-    public static enum State {
-        UNINITIALIZED, INITIALIZING, INITIALIZED
-    }
-
-    public static final Cluster instance = new Cluster();
-
-    final Manager manager;
-    Descriptor descriptor;
-    private MetaStoreConfiguration metaStoreConfiguration;
-
-    @Deprecated
-    Topology topology; // TODO: get rid of entirely
-
-    org.stem.domain.topology.Topology topology2;    // TODO: load topology from Zookeeper
-    Partitioner partitioner;
-    private DataMapping mapping = DataMapping.EMPTY;
-    private DataDistributionManager distributionManager;
-
-    private Unauthorized freshNodesPool = new Unauthorized(this);
-
-    private Cluster() {
-        try {
-            String zookeeperEndpoint = ClusterManagerDaemon.zookeeperEndpoint();
-            this.manager = new Manager(zookeeperEndpoint);
-            this.topology2 = org.stem.domain.topology.Topology.Factory.create(this);
-        } catch (ZooException e) {
-            throw new StemException("Can't initialize Cluster.Manager instance", e);
-        }
-    }
-
     void addStorageNode(org.stem.domain.topology.Topology.StorageNode node, String dcName, String rackName) {
         if (null != topology2.findStorageNode(node.id))
             throw new TopologyException(String.format("Node with id=%s already exist in cluster", node.id));
@@ -158,8 +160,6 @@ public class Cluster {
     public static Cluster instance() {
         return instance;
     }
-
-    private AtomicReference<State> state = new AtomicReference<>(State.UNINITIALIZED);
 
     /**
      * Initialize cluster by loading it's configuration from Zookeeper database
@@ -216,13 +216,14 @@ public class Cluster {
     }
 
     public void destroy() {
-        // TODO: implement
-        /**
-         if (null != cluster.get()) {
-         client.close();
-         cluster.set(null);
-         }
-         */
+        ensureInitialized();
+        //manager.zookeeper().close();
+        this.descriptor = null;
+        this.topology = null;
+        this.topology2 = null;
+        partitioner = null;
+        mapping = null;
+        state.set(State.UNINITIALIZED);
     }
 
     public boolean initialized() {

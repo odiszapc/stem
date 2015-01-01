@@ -62,11 +62,13 @@ public class CreateClusterRequest extends ClusterManagerRequest {
                                 int vBuckets,
                                 int rf,
                                 String partitioner,
-                                MetaStoreConfiguration metaStoreConfiguration) {
+                                MetaStoreConfiguration metaStoreConfiguration,
+                                ClusterConfiguration configuration) {
         this.name = name;
         this.vBuckets = vBuckets;
         this.rf = rf;
         this.partitioner = partitioner;
         this.metaStoreConfiguration = metaStoreConfiguration;
+        this.configuration = configuration;
     }
 }

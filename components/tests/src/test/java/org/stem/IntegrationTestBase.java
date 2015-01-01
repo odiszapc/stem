@@ -29,7 +29,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.stem.api.ClusterManagerClient;
 import org.stem.api.response.StemResponse;
-import org.stem.client.old.StemClient;
+import org.stem.client.Blob;
+import org.stem.client.StemCluster;
 import org.stem.coordination.ZookeeperFactoryCached;
 import org.stem.db.Layout;
 import org.stem.db.MountPoint;
@@ -41,10 +42,9 @@ import org.stem.transport.ops.WriteBlobMessage;
 import org.stem.utils.TestUtils;
 import org.stem.utils.YamlConfigurator;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -55,10 +55,16 @@ public class IntegrationTestBase {
     private TestingServer zookeeperInstance;
     protected ClusterManagerClient clusterManagerClient;
     protected Session cassandraTestSession;
-    protected StemClient client = new StemClient();
+
+    StemCluster client;
+    org.stem.client.Session session;
+
+    protected String clusterManagerAddress() {
+        return "http://127.0.0.1:9997";
+    }
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws Exception {
         TestUtils.cleanupTempDir();
         TestUtils.createTempDir();
 
@@ -72,10 +78,16 @@ public class IntegrationTestBase {
         startClusterManagerEmbedded();
         waitForClusterManager();
         clusterManagerClient = ClusterManagerClient
-                .create("http://localhost:9997");
+                .create(clusterManagerAddress());
         initCluster();
 
         startStorageNodeEmbedded();
+
+        client = new StemCluster.Builder()
+                .withClusterManagerUrl(clusterManagerAddress())
+                .build();
+
+        session = client.newSession();
     }
 
 
@@ -88,6 +100,7 @@ public class IntegrationTestBase {
         //stopCassandraEmbedded();
         shoutDownZookeeperClients();
         stopZookeeperEmbedded();
+        session.close();
     }
 
     @VisibleForTesting
@@ -147,7 +160,7 @@ public class IntegrationTestBase {
     }
 
     protected void initCluster() {
-        clusterManagerClient.initCluster(getClusterName(), getvBucketsNum(), getRF(), getPartitioner());
+        clusterManagerClient.initCluster(getClusterName(), getvBucketsNum(), getRF(), getPartitioner(), true);
     }
 
     private String getPartitioner() {
@@ -268,8 +281,15 @@ public class IntegrationTestBase {
         StorageNodeDaemon.instance.stop();
     }
 
-    private String setupEnvironment() {
-        return System.setProperty("stem.config", getStorageNodeConfigPath());
+    private void setupEnvironment() throws URISyntaxException {
+        String yamlPath = getStorageNodeConfigPath();
+        System.setProperty("stem.config", yamlPath);
+        System.setProperty("stem.node.id", new File(yamlPath).getParentFile().getAbsolutePath() + File.separator + "id");
+
+        // Set Cluster Manager yaml config path
+        URL url = YamlConfigurator.convertPathToURL(getClusterManagerConfigName());
+        String absolutePath = new File(url.toURI()).getAbsolutePath();
+        System.setProperty("stem.cluster.config", absolutePath);
     }
 
     @AfterClass
@@ -302,13 +322,20 @@ public class IntegrationTestBase {
         return op;
     }
 
+    protected Blob getRandomWriteMessage2() {
+        byte[] blob = TestUtils.generateRandomBlob(65536);
+        byte[] key = DigestUtils.md5(blob);
+
+        return Blob.create(key, blob);
+    }
+
     protected List<byte[]> generateRandomLoad(int blobsNum) {
         List<byte[]> generatedKeys = new ArrayList<byte[]>(blobsNum);
         for (int i = 0; i < blobsNum; i++) {
             byte[] data = TestUtils.generateRandomBlob(65536);
             byte[] key = DigestUtils.md5(data);
 
-            client.put(key, data);
+            session.put(Blob.create(key, data));
             generatedKeys.add(key);
             System.out.println(String.format("key 0x%s generated", Hex.encodeHexString(key)));
         }
@@ -323,7 +350,7 @@ public class IntegrationTestBase {
             data[i] = 1;
             byte[] key = DigestUtils.md5(data);
 
-            client.put(key, data);
+            session.put(Blob.create(key, data));
             generatedKeys.add(key);
             System.out.println(String.format("key 0x%s generated", Hex.encodeHexString(key)));
         }
@@ -353,5 +380,9 @@ public class IntegrationTestBase {
 
     protected String getStorageNodeConfigName() {
         return "stem.yaml";
+    }
+
+    protected String getClusterManagerConfigName() {
+        return "cluster.yaml";
     }
 }

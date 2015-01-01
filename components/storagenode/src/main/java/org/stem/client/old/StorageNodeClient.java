@@ -41,6 +41,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Deprecated
 public class StorageNodeClient {
 
     private static final Logger logger = LoggerFactory.getLogger(StorageNodeClient.class);

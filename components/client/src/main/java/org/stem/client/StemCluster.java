@@ -166,6 +166,7 @@ public class StemCluster {
                 throw new IllegalStateException("Can't use this StemCluster instance because it was previously closed");
             if (isInit)
                 return;
+
             isInit = true;
             Set<Host> hosts = Sets.newLinkedHashSet(metadata.allHosts());
             try {

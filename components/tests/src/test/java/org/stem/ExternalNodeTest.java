@@ -16,6 +16,7 @@
 
 package org.stem;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.stem.utils.ExternalStorageNode;
 import org.stem.utils.TestUtils;
@@ -23,6 +24,7 @@ import org.stem.utils.YamlConfigurator;
 
 import java.io.File;
 
+@Ignore
 public class ExternalNodeTest {
 
     @Test

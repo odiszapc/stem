@@ -38,10 +38,10 @@ public class CompactionTest extends IntegrationTestBase {
 
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws Exception {
         super.setUp();
         clusterManagerClient.computeMapping();
-        client.start();
+        //client.start();
     }
 
     @Test
