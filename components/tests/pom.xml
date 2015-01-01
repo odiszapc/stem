@@ -49,6 +49,7 @@
       <groupId>org.stem</groupId>
       <artifactId>stem-client</artifactId>
       <version>${project.version}</version>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
