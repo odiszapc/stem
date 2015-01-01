@@ -86,7 +86,8 @@ public class ClusterResource {
         Cluster cluster = Cluster.instance().ensureInitialized();
 
         EventFuture future = cluster.tryJoinAsync(node);
-        return RestUtils.ok(new JoinResponse(future.eventId()), UserMessages.NODE_WAITING);
+        return RestUtils.ok(new JoinResponse(future.eventId()),
+                future.isDone() ? UserMessages.NODE_JOINED : UserMessages.NODE_WAITING);
     }
 
     // TODO: save/load unauthorized nodes
