@@ -116,8 +116,6 @@ public class ClusterDescriber {
             foundHosts.add(addr);
         }
 
-        List<ListenableFuture<?>> futures = new ArrayList<>(foundHosts.size());
-
         for (InetSocketAddress addr : foundHosts) {
             Host host = cluster.metadata.getHost(addr);
             boolean isNew = false;
@@ -127,15 +125,7 @@ public class ClusterDescriber {
             }
 
             if (isNew)
-                futures.add(cluster.triggerOnAdd(host));
-        }
-
-        try {
-            ListenableFuture<List<Object>> f = Futures.allAsList(futures);
-
-            Uninterruptibles.getUninterruptibly(f);
-        } catch (ExecutionException e) {
-            logger.error("Some error while handling addition of new nodes. We continue anyway");
+                cluster.triggerOnAdd(host);
         }
 
         cluster.metadata.updateRouting(state.getTopology(), state.getMapping()); // TODO: merge both parameters into single instance (REST.TopologySnapshot)
