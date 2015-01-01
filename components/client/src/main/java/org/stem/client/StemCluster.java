@@ -185,7 +185,7 @@ public class StemCluster {
                     triggerOnAdd(host);
             } catch (Exception e) {
                 close();
-                throw new ClientException("Can not connect to cluster", e);
+                throw new ClientException("Failed to connect to cluster", e);
             }
         }
 
