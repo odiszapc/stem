@@ -16,15 +16,30 @@
 
 package org.stem;
 
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.stem.db.FatFileAllocator;
+import org.stem.utils.TestUtils;
 
 import java.io.File;
 
 import static org.stem.utils.TestUtils.temporize;
 
-public class AllocatorTest extends IntegrationTestBase {
+public class AllocatorTest {
+
+    @Before
+    public void setUp() throws Exception {
+        TestUtils.cleanupTempDir();
+        TestUtils.createTempDir();
+    }
+
+
+    @After
+    public void tearDown() throws Exception {
+        TestUtils.cleanupTempDir();
+    }
 
     @Test
     public void testSize() throws Exception {
