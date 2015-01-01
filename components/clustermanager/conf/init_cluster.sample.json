@@ -5,5 +5,8 @@
   "partitioner": "crush",
   "meta": {
     "contactPoints": ["localhost"]
+  },
+  "configuration": {
+    "autoApproval": true
   }
 }
