@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.stem.api.ClusterManagerClient;
 import org.stem.api.REST;
 import org.stem.coordination.ZookeeperClient;
-import org.stem.coordination.ZookeeperClientFactory;
+import org.stem.coordination.ZookeeperFactoryCached;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -174,7 +174,7 @@ public class StemCluster {
                 metaStoreClient = new MetaStoreClient(descriptor.getMetaStoreContactPoints());
                 metaStoreClient.start();
 
-                coordinationClient = ZookeeperClientFactory.newClient(descriptor.getZookeeperEndpoint());
+                coordinationClient = ZookeeperFactoryCached.newClient(descriptor.getZookeeperEndpoint());
                 clusterDescriber.start();
 
                 hosts.addAll(metadata.allHosts());

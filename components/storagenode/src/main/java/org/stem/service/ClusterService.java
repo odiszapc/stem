@@ -23,7 +23,7 @@ import org.stem.api.request.JoinRequest;
 import org.stem.api.response.ClusterResponse;
 import org.stem.coordination.ZooException;
 import org.stem.coordination.ZookeeperClient;
-import org.stem.coordination.ZookeeperClientFactory;
+import org.stem.coordination.ZookeeperFactoryCached;
 import org.stem.db.Layout;
 import org.stem.db.MountPoint;
 import org.stem.db.StorageNodeDescriptor;
@@ -51,7 +51,7 @@ public class ClusterService {
     public ClusterService() {
         String endpoint = StorageNodeDescriptor.cluster().getZookeeperEndpoint();
         try {
-            zookeeperClient = ZookeeperClientFactory.newClient(endpoint);
+            zookeeperClient = ZookeeperFactoryCached.newClient(endpoint);
         } catch (ZooException e) {
             throw new RuntimeException("Fail to initialize cluster service", e);
         }
@@ -60,7 +60,7 @@ public class ClusterService {
     public ClusterService(REST.Cluster cluster) {
         String endpoint = cluster.getZookeeperEndpoint();
         try {
-            zookeeperClient = ZookeeperClientFactory.newClient(endpoint);
+            zookeeperClient = ZookeeperFactoryCached.newClient(endpoint);
         } catch (ZooException e) {
             throw new RuntimeException("Fail to initialize cluster service", e);
         }

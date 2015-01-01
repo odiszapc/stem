@@ -33,7 +33,7 @@ public class EventManager {
 
     public EventManager() {
         try {
-            this.client = ZookeeperClientFactory.newClient(Cluster.instance.descriptor().getZookeeperEndpoint());
+            this.client = ZookeeperFactoryCached.newClient(Cluster.instance.descriptor().getZookeeperEndpoint());
         } catch (ZooException e) {
             throw new StemException("Can not create EventManager instance", e);
         }

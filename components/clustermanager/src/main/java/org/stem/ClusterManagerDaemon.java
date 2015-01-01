@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.coordination.ZooException;
 import org.stem.coordination.ZookeeperClient;
-import org.stem.coordination.ZookeeperClientFactory;
+import org.stem.coordination.ZookeeperFactoryCached;
 import org.stem.coordination.ZookeeperPaths;
 import org.stem.domain.Cluster;
 import org.stem.exceptions.DefaultExceptionMapper;
@@ -65,14 +65,19 @@ public class ClusterManagerDaemon {
     private ZookeeperClient zookeeperClient;
 
     static {
-        loadConfig();
+        applyConfig(loadConfig());
+    }
+
+    private static void applyConfig(Config config) {
+        logger.info("Zookeeper address: {}", config.zookeeper_endpoint);
+        logger.info("REST API listen on {}", config.web_listen_address);
     }
 
     public static String zookeeperEndpoint() {
         return config.zookeeper_endpoint;
     }
 
-    public static void loadConfig() {
+    public static Config loadConfig() {
         URL url = getConfigUrl();
         logger.info("Loading settings from " + url);
 
@@ -86,6 +91,7 @@ public class ClusterManagerDaemon {
         Constructor constructor = new Constructor(Config.class);
         Yaml yaml = new Yaml(constructor);
         config = (Config) yaml.load(stream);
+        return config;
     }
 
     static URL getConfigUrl() {
@@ -112,9 +118,18 @@ public class ClusterManagerDaemon {
     private HttpServer server;
 
     public static void main(String[] args) throws InterruptedException {
+        environmentDetect();
         ClusterManagerDaemon daemon = new ClusterManagerDaemon();
         daemon.start();
         Thread.currentThread().join();
+    }
+
+    private static void environmentDetect() {
+        String javaVersion = System.getProperty("java.version");
+        String javaVmName = System.getProperty("java.vm.name");
+        logger.info("Java Virtual Machine: {}/{}", javaVmName, javaVersion);
+        logger.info("Heap size: {}/{}", Runtime.getRuntime().totalMemory(), Runtime.getRuntime().maxMemory());
+        logger.info("Classpath: {}", System.getProperty("java.class.path"));
     }
 
     public void start() {
@@ -130,6 +145,7 @@ public class ClusterManagerDaemon {
     }
 
     private void loadClusterConfiguration() throws Exception {
+        logger.info("Try to load cluster configuration from Zookeeper");
         Cluster.instance.load();
     }
 
@@ -183,8 +199,10 @@ public class ClusterManagerDaemon {
     }
 
     private void connectToZookeeper() {
+        logger.info("Establishing connection to Zookeeper cluster ({})...", config.zookeeper_endpoint);
         try {
-            zookeeperClient = ZookeeperClientFactory.newClient(config.zookeeper_endpoint);
+            zookeeperClient = ZookeeperFactoryCached.newClient(config.zookeeper_endpoint);
+            logger.info("Connected to Zookeeper endpoint {}", config.zookeeper_endpoint);
         } catch (ZooException e) {
             throw new StemException("Failed to connect to Zookeeper", e);
         } catch (Exception e) {
@@ -193,9 +211,12 @@ public class ClusterManagerDaemon {
     }
 
     private void initZookeeperPaths() {
+        logger.info("Initialize Zookeeper z-node hierarchy");
         try {
-            for (String path : ZookeeperPaths.containerNodes())
+            for (String path : ZookeeperPaths.containerNodes()) {
                 zookeeperClient.createIfNotExists(path);
+                logger.info("z-node '{}' initialized", path);
+            }
             //client.createIfNotExists(ZooConstants.CLUSTER_DESCRIPTOR_PATH);
         } catch (ZooException e) {
             throw new StemException("Failed connect to Zookeeper", e);

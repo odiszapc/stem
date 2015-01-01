@@ -30,7 +30,7 @@ import org.junit.Before;
 import org.stem.api.ClusterManagerClient;
 import org.stem.api.response.StemResponse;
 import org.stem.client.old.StemClient;
-import org.stem.coordination.ZookeeperClientFactory;
+import org.stem.coordination.ZookeeperFactoryCached;
 import org.stem.db.Layout;
 import org.stem.db.MountPoint;
 import org.stem.db.StorageNodeDescriptor;
@@ -92,7 +92,7 @@ public class IntegrationTestBase {
 
     @VisibleForTesting
     protected void shoutDownZookeeperClients() {
-        ZookeeperClientFactory.closeAll();
+        ZookeeperFactoryCached.closeAll();
     }
 
     private void loadSchema() {

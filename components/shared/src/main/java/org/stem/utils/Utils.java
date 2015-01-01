@@ -51,14 +51,24 @@ public class Utils {
         }
     }
 
+    public static String endpoint(String host, int port) {
+        return host + ':' + port;
+    }
+
     public static int getPort(String endpoint) {
         int i = endpoint.indexOf(':');
-        return Integer.valueOf(endpoint.substring(i + 1)); // TODO: validation
+        String port = endpoint.substring(i + 1);
+        if (port.isEmpty())
+            throw new RuntimeException("invalid endpoint " + endpoint);
+        return Integer.valueOf(port);
     }
 
     public static String getHost(String endpoint) {
         int i = endpoint.indexOf(':');
-        return endpoint.substring(0, i);
+        String host = endpoint.substring(0, i);
+        if (host.isEmpty())
+            throw new RuntimeException("invalid endpoint " + endpoint);
+        return host;
     }
 
     // TODO: use BBUtils ?

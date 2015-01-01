@@ -276,7 +276,7 @@ public class Cluster {
 
         public Manager(String endpoint) throws ZooException {
             this.endpoint = endpoint;
-            client = ZookeeperClientFactory.newClient(endpoint);
+            client = ZookeeperFactoryCached.newClient(endpoint);
 
             topologyPersistingListener = new TopologyChangesListener() {
                 @Override
@@ -291,8 +291,8 @@ public class Cluster {
         }
 
         void saveTopology() throws Exception {
-            logger.info("Saving topology");
             saveTopology(topology2);
+            logger.info("Topology saved");
         }
 
         private void saveTopology(org.stem.domain.topology.Topology topology) throws Exception {
@@ -309,6 +309,9 @@ public class Cluster {
 
             tryStartZookeeperClient();
 
+            logger.info("Initialize new cluster");
+
+            logClusterConfiguration(newDescriptor);
             validate(newDescriptor);
             descriptor = newDescriptor;
             topology = new Topology(descriptor.name, descriptor.rf);
@@ -320,17 +323,19 @@ public class Cluster {
 
             tryInitializeMetaStore();
 
+            logger.info("Cluster initialized successfully");
             state.set(State.INITIALIZED);
 
             startListenForStats();
         }
 
         private void tryInitializeMetaStore() {
+            logger.info("Initialize meta store.");
             MetaStoreInitializer configurator = new MetaStoreInitializer(metaStoreConfiguration);
             configurator.createSchema();
             configurator.stop();
 
-            logger.info("MetaStore initialized successfully");
+            logger.info("Meta store schema created");
         }
 
         synchronized boolean loadCluster() throws Exception {
@@ -344,11 +349,13 @@ public class Cluster {
 
             Descriptor persisted = readDescriptor();
             if (null == persisted) {
+                logger.info("No cluster descriptor found. Cluster is switched to uninitialized state");
                 state.set(State.UNINITIALIZED);
                 return false;
             }
-
+            logger.info("Cluster descriptor loaded");
             validate(persisted);
+            logClusterConfiguration(persisted);
             descriptor = persisted;
             topology = new Topology(descriptor.name, descriptor.rf);
             partitioner = descriptor.partitioner.builder.build();
@@ -489,7 +496,7 @@ public class Cluster {
 
         private void tryStartZookeeperClient() throws ZooException {
             if (null == client) {
-                client = ZookeeperClientFactory.newClient(endpoint);
+                client = ZookeeperFactoryCached.newClient(endpoint);
             }
         }
 
@@ -534,6 +541,14 @@ public class Cluster {
                 Throwables.propagate(e);
             }
         }
+    }
+
+    private void logClusterConfiguration(Descriptor d) {
+        logger.info("Cluster name: {}", d.getName());
+        logger.info("Replication factor: {}", d.getRf());
+        logger.info("Partitioner: {}, number of partitions: {}", d.getPartitioner(), d.getvBuckets());
+        logger.info("Zookeeper endpoint: {}", d.getZookeeperEndpoint());
+        logger.info("Meta store cluster address: {}", d.getMetaStoreContactPoints());
     }
 
     /**

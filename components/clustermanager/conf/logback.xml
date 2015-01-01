@@ -36,7 +36,7 @@
             class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
       <pattern>
-        %d %-5level %logger{10} - %msg%n
+        %-4level [%thread] %d %file (line %line\) %message%n
       </pattern>
     </encoder>
 
@@ -45,9 +45,11 @@
     </filter>
   </appender>
 
+  <logger name="org.stem" level="INFO">
+    <appender-ref ref="STDOUT"/>
+  </logger>
 
   <root level="INFO">
-    <appender-ref ref="STDOUT"/>
     <appender-ref ref="FILE"/>
   </root>
 

@@ -26,6 +26,7 @@ import org.stem.transport.Message;
 import org.stem.transport.ops.DeleteBlobMessage;
 import org.stem.transport.ops.ResultMessage;
 import org.stem.transport.ops.WriteBlobMessage;
+import org.stem.utils.Utils;
 
 import java.util.*;
 
@@ -46,7 +47,7 @@ public class StemClient implements TopoMapSubscriber {
         mappingListener.listen(this);
         metaClient = new MetaStoreClient();
         try {
-            zooClient = ZookeeperClientFactory.newClient(ZookeeperClient.HOST_DEFAULT, ZookeeperClient.PORT_DEFAULT);
+            zooClient = ZookeeperFactoryCached.newClient(Utils.endpoint(ZookeeperClient.HOST_DEFAULT, ZookeeperClient.PORT_DEFAULT));
         } catch (ZooException e) {
             throw new RuntimeException("Error while initializing STEM client", e);
         }

@@ -18,6 +18,8 @@ package org.stem.coordination;
 
 
 import com.google.common.util.concurrent.AbstractFuture;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -40,10 +42,12 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ZookeeperClient {
 
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperClient.class);
+
     private final String host;
     private final int port;
 
@@ -54,12 +58,15 @@ public class ZookeeperClient {
 
     private static final int DEFAULT_CONNECTION_TIMEOUT_SEC = 5;
 
-    public ZookeeperClient(String host, int port) throws ZooException {
+    private final AtomicReference<StateListeningFuture> initializationFuture = new AtomicReference<>();
+
+    ZookeeperClient(String host, int port) throws ZooException {
         this.host = host;
         this.port = port;
         client = createClient();
         client.start();
-        waitForConnectionEstablished(client, DEFAULT_CONNECTION_TIMEOUT_SEC, TimeUnit.SECONDS);
+        //initializationFuture.set(new StateListeningFuture(client, ConnectionState.CONNECTED));
+        waitForConnectionEstablished(DEFAULT_CONNECTION_TIMEOUT_SEC, TimeUnit.SECONDS);
     }
 
     private String endpoint() {
@@ -74,8 +81,22 @@ public class ZookeeperClient {
         return CuratorFrameworkFactory.newClient(endpoint, new ExponentialBackoffRetry(1000, 3));
     }
 
-    private void waitForConnectionEstablished(CuratorFramework client, int timeout, TimeUnit unit) throws ZooException {
-        StateListeningFuture future = new StateListeningFuture(client, ConnectionState.CONNECTED);
+    private void waitForConnectionEstablished(int timeout, TimeUnit unit) throws ZooException {
+        // We race while waiting for the readiness of client, it's ok
+        if (!initializationFuture.compareAndSet(null, new StateListeningFuture(client, ConnectionState.CONNECTED))) {
+            StateListeningFuture future = initializationFuture.get();
+            try {
+                Long duration = Futures.get(future, RuntimeException.class);
+                logger.info("Connected to Zookeeper in {}ms", duration / 1000000);
+                return;
+            } catch (Exception e) {
+                logger.error("Error while connecting to {}", endpoint());
+                throw new ZooException(String.format("Error while connecting to %s", endpoint()));
+            }
+        }
+
+        // Normal execution
+        StateListeningFuture future = initializationFuture.get();
         try {
             Long duration = Uninterruptibles.getUninterruptibly(future, timeout, unit);
             logger.info("Connected to Zookeeper in {}ms", duration / 1000000);
@@ -84,7 +105,9 @@ public class ZookeeperClient {
             throw new ZooException(String.format("Error while connecting to %s", endpoint()));
         } catch (TimeoutException e) {
             logger.error("Connection timeout ({}ms) to {}", future.duration() / 1000000, endpoint());
-            throw new ZooException(String.format("Connection to %s timed out (%sms)", endpoint(), future.duration() / 1000000));
+            ZooException ex = new ZooException(String.format("Connection to %s timed out (%sms)", endpoint(), future.duration() / 1000000));
+            future.onTimeout(ex);
+            throw ex;
         }
     }
 
@@ -174,12 +197,20 @@ public class ZookeeperClient {
 //
 //    }
 
-    public void createIfNotExists(String path) throws Exception {
+    /**
+     *
+     * @param path z-node to create
+     * @return indicated whether node actually was created
+     * @throws Exception
+     */
+    public boolean createIfNotExists(String path) throws Exception {
         try {
             Stat stat = client.checkExists().forPath(path);
             if (null == stat) {
                 client.create().creatingParentsIfNeeded().forPath(path, new byte[]{});
+                return true;
             }
+            return false;
         } catch (Exception e) {
             throw new Exception("Error occurred during interaction with Zookeeper", e);
         }
@@ -292,6 +323,11 @@ public class ZookeeperClient {
             } else {
                 return System.nanoTime() - startTime;
             }
+        }
+
+        public void onTimeout(ZooException ex) {
+            cancel(true);
+            setException(ex);
         }
     }
 }

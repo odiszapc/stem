@@ -68,10 +68,11 @@ public class MetaStoreInitializer extends MetaStoreClient {
                 start();
 
             for (Statement statement : statements) {
+                logger.info("Execute: {}", statement);
                 session.execute(statement);
             }
         } catch (Exception e) {
-            logger.error("Can't create schema", e);
+            logger.error("Failed to create schema", e);
         }
     }
 

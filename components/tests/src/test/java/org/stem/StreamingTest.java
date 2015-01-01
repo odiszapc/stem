@@ -26,7 +26,7 @@ import org.stem.api.REST;
 import org.stem.api.request.JoinRequest;
 import org.stem.client.old.StorageNodeClient;
 import org.stem.coordination.ZooException;
-import org.stem.coordination.ZookeeperClientFactory;
+import org.stem.coordination.ZookeeperFactoryCached;
 import org.stem.db.DataTracker;
 import org.stem.db.Layout;
 import org.stem.db.MountPoint;
@@ -150,6 +150,6 @@ public class StreamingTest extends IntegrationTestBase {
             node.getDisks().add(disk);
         }
 
-        clusterManagerClient.join(req, ZookeeperClientFactory.newClient("localhost:2180"));
+        clusterManagerClient.join(req, ZookeeperFactoryCached.newClient("localhost:2180"));
     }
 }

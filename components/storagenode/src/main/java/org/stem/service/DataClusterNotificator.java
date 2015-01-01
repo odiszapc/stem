@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.stem.api.REST;
 import org.stem.coordination.ZooException;
 import org.stem.coordination.ZookeeperClient;
-import org.stem.coordination.ZookeeperClientFactory;
+import org.stem.coordination.ZookeeperFactoryCached;
 import org.stem.coordination.ZookeeperPaths;
 import org.stem.db.Layout;
 import org.stem.db.MountPoint;
@@ -40,7 +40,7 @@ public class DataClusterNotificator implements Runnable {
     ZookeeperClient client; // TODO: the client instance must be a singleton ???
 
     public DataClusterNotificator() throws ZooException {
-        client = ZookeeperClientFactory.newClient(StorageNodeDescriptor.cluster().getZookeeperEndpoint());
+        client = ZookeeperFactoryCached.newClient(StorageNodeDescriptor.cluster().getZookeeperEndpoint());
     }
 
     @Override

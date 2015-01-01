@@ -39,7 +39,7 @@ public class StreamManager {
 
     public StreamManager() {
         try {
-            client = ZookeeperClientFactory.newClient(StorageNodeDescriptor.cluster().getZookeeperEndpoint());
+            client = ZookeeperFactoryCached.newClient(StorageNodeDescriptor.cluster().getZookeeperEndpoint());
         } catch (ZooException e) {
             throw new RuntimeException("Error occurred while initializing Stream Manager");
         }
