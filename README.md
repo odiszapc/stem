@@ -4,7 +4,7 @@ STEM is a distributed storage cluster of immutable binary objects. STEM is based
 
 STEM uses distribution strategy based on virtual partitioning (CRUSH implementation is used by default)
 
-STEM is designed as a cheap solution for cloud hosting providers and can easily be deployed on commodity hardware. STEM does not need any vendor specific staff like RAID or SAN, it uses plain formatted disks to store binary data.
+STEM is designed as a cheap solution for cloud hosting providers and can easily be deployed on commodity hardware. STEM does not need any vendor specific stuff like RAID or SAN, it uses plain formatted disks to store binary data.
 
 With STEM each machine in cluster can store up to 100-200TB of data.
 
@@ -44,8 +44,11 @@ STEM Object Storage will allow you to install as many disks to storage node as y
 - Using  If you're using Intellij, you need to install Lombok-Intellij https://code.google.com/p/lombok-intellij-plugin/
 - Import the project as a Maven Project.
 
-##### Eclipse
-- TODO
+##### Eclipse and variants(STS, JBoss Dev Studio)
+- Run lombok.jar as a java app and thus install the plugin
+- Import as a Maven Project
+- Most probably you'll have to silence a few m2e plugin complains
+- Why Eclipse? Use vi!
 
 #### Resources
 Project home: http://stemstorage.org
