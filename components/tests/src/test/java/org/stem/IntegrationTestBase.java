@@ -93,18 +93,20 @@ public class IntegrationTestBase {
 
     @After
     public void tearDown() throws Exception {
+        if (null != session) session.close();
+        if (null != client) client.close();
         stopStorageNodeEmbedded();
         cleanupDataDirectories();
 
         stopClusterManagerEmbedded();
-        //stopCassandraEmbedded();
-        shoutDownZookeeperClients();
+        shutdownZookeeperClients();
         stopZookeeperEmbedded();
-        session.close();
+
+        //stopCassandraEmbedded();
     }
 
     @VisibleForTesting
-    protected void shoutDownZookeeperClients() {
+    protected void shutdownZookeeperClients() {
         ZookeeperFactoryCached.closeAll();
     }
 
@@ -259,7 +261,7 @@ public class IntegrationTestBase {
         //cassandraTestSession.execute("");
     }
 
-    private void stopCassandraEmbedded() {
+    private void stopCassandraEmbedded() throws Exception {
         cassandraTestSession.close();
     }
 
@@ -384,5 +386,9 @@ public class IntegrationTestBase {
 
     protected String getClusterManagerConfigName() {
         return "cluster.yaml";
+    }
+
+    protected MountPoint getFirstMountPoint() {
+        return Layout.instance.getMountPoints().values().iterator().next();
     }
 }

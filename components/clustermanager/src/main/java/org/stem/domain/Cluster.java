@@ -217,10 +217,10 @@ public class Cluster {
 
     public void destroy() {
         ensureInitialized();
-        //manager.zookeeper().close();
+        manager.zookeeper().close(); // TODO: commented to meake it easy to restart embedded cluster manager in tests
         this.descriptor = null;
         this.topology = null;
-        this.topology2 = null;
+        this.topology2 = org.stem.domain.topology.Topology.Factory.create(this);
         partitioner = null;
         mapping = null;
         state.set(State.UNINITIALIZED);
@@ -540,7 +540,7 @@ public class Cluster {
         }
 
         private void tryStartZookeeperClient() throws ZooException {
-            if (null == client) {
+            if (null == client || !client.isRunning()) {
                 client = ZookeeperFactoryCached.newClient(endpoint);
             }
         }

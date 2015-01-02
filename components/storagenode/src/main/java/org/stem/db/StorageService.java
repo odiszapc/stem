@@ -38,6 +38,11 @@ public class StorageService {
     private final Map<UUID, WriteController> wControllers;
     private final Map<UUID, ReadController> rControllers;
 
+    public StorageService() {
+        wControllers = new HashMap<>(Layout.getInstance().getMountPoints().size());
+        rControllers = new HashMap<>(Layout.getInstance().getMountPoints().size());
+    }
+
     @VisibleForTesting
     public int getWriteCandidates(UUID disk) {
         return wControllers.get(disk).getWriteCandidates();
@@ -48,6 +53,19 @@ public class StorageService {
         updateRemoteIndex(descriptor);
         return descriptor;
     }
+
+    public byte[] read(ReadBlobMessage message) {
+        ReadController controller = rControllers.get(message.disk); // TODO: if not found?
+        return controller.read(message.fatFileIndex, message.offset, message.length);
+    }
+
+    public void delete(DeleteBlobMessage message) {
+        ReadController controller = rControllers.get(message.disk); // TODO: find by message directly
+        ExtendedBlobDescriptor desc = controller.delete(message.fatFileIndex, message.offset);
+
+        StorageNodeDescriptor.getMetaStoreClient().deleteReplica(desc.getKey(), message.disk);
+    }
+
 
     private void updateRemoteIndex(ExtendedBlobDescriptor descriptor) {
         try {
@@ -72,21 +90,6 @@ public class StorageService {
         }
     }
 
-    public byte[] read(ReadBlobMessage message) {
-        ReadController controller = rControllers.get(message.disk); // TODO: if not found?
-        return controller.read(message.fatFileIndex, message.offset, message.length);
-    }
-
-    public void delete(DeleteBlobMessage message) {
-        ReadController controller = rControllers.get(message.disk); // TODO: find by message directly
-        controller.delete(message.fatFileIndex, message.offset);
-    }
-
-    public StorageService() {
-        wControllers = new HashMap<UUID, WriteController>(Layout.getInstance().getMountPoints().size());
-        rControllers = new HashMap<UUID, ReadController>(Layout.getInstance().getMountPoints().size());
-    }
-
     public void submitFF(FatFile ff, MountPoint mp) {
         assert ff.isBlank(); // TODO: normal check with Exception throw
         WriteController controller = wControllers.get(mp.uuid);
@@ -104,5 +107,4 @@ public class StorageService {
             rControllers.put(mp.uuid, rc);
         }
     }
-
 }

@@ -16,6 +16,8 @@
 
 package org.stem.db;
 
+import org.stem.domain.ExtendedBlobDescriptor;
+
 import java.io.IOException;
 
 public class ReadController extends IOController {
@@ -33,9 +35,9 @@ public class ReadController extends IOController {
         }
     }
 
-    public void delete(Integer fatFileIndex, Integer offset) {
+    public ExtendedBlobDescriptor delete(Integer fatFileIndex, Integer offset) {
         try {
-            getFatFile(fatFileIndex)
+            return getFatFile(fatFileIndex)
                     .deleteBlob(offset);
 
         } catch (IOException e) {

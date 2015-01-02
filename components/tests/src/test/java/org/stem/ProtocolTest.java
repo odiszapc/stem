@@ -23,15 +23,14 @@ import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.stem.client.MetaStoreClient;
 import org.stem.client.Responses;
-import org.stem.client.Session;
 import org.stem.client.old.StemClient;
 import org.stem.client.old.StorageNodeClient;
 import org.stem.db.Blob;
 import org.stem.db.Layout;
-import org.stem.domain.BlobDescriptor;
+import org.stem.domain.ExtendedBlobDescriptor;
 import org.stem.transport.Message;
-import org.stem.transport.ops.DeleteBlobMessage;
 import org.stem.transport.ops.WriteBlobMessage;
 import org.stem.utils.TestUtils;
 
@@ -46,19 +45,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.junit.Assert.assertEquals;
+
 public class ProtocolTest extends IntegrationTestBase {
 
     final String host = "localhost";
     final int port = 9999;
-
-    @Test
-    public void testConnect() throws Exception {
-        final String host = "localhost";
-        final int port = 9999;
-
-        StorageNodeClient client = new StorageNodeClient(host, port);
-        client.start();
-    }
 
     @Test
     public void testReadWrite() throws Exception {
@@ -66,54 +58,52 @@ public class ProtocolTest extends IntegrationTestBase {
         final int BLOB_SIZE = writeOp.getBlobSize();
 
         Responses.Result.WriteBlob resp = session.put(writeOp);
-        Assert.assertEquals(resp.getFatFileIndex(), 0);
-        Assert.assertEquals(resp.getOffset(), 1 + Blob.Header.SIZE);
+        assertEquals(resp.getFatFileIndex(), 0);
+        assertEquals(resp.getOffset(), 1 + Blob.Header.SIZE);
 
         org.stem.client.Blob readBlob = session.get(writeOp.key);
         Assert.assertArrayEquals(readBlob.body, writeOp.body);
 
         Responses.Result.WriteBlob resp2 = session.put(writeOp);
-        Assert.assertEquals(resp2.getFatFileIndex(), 0);
-        Assert.assertEquals(resp2.getOffset(), resp.getOffset() + Blob.Header.SIZE + BLOB_SIZE);
+        assertEquals(resp2.getFatFileIndex(), 0);
+        assertEquals(resp2.getOffset(), resp.getOffset() + Blob.Header.SIZE + BLOB_SIZE);
     }
 
 
     @Test
-    public void testStorageNodeDelete() throws Exception {
+    public void testStorageNodeDeleteThenRead() throws Exception {
+        MetaStoreClient meta = new MetaStoreClient("localhost");
+        meta.start();
 
-//        StorageNodeClient client = new StorageNodeClient(host, port);
-//        client.start();
-//        WriteBlobMessage writeOp = getRandomWriteMessage();
-//
-//        BlobDescriptor resp = client.writeBlob(writeOp);
-//        Assert.assertEquals(resp.getFFIndex(), 0);
-//        Assert.assertEquals(resp.getBodyOffset(), 1 + Blob.Header.SIZE);
-//
-//        DeleteBlobMessage deleteOp = new DeleteBlobMessage(writeOp.disk, resp.getFFIndex(), resp.getBodyOffset());
-//        client.deleteBlob(deleteOp);
-//        client.deleteBlob(deleteOp);
+        org.stem.client.Blob writeOp = getRandomWriteMessage2();
+
+        Responses.Result.WriteBlob resp = session.put(writeOp);
+        assertEquals(resp.getFatFileIndex(), 0);
+        assertEquals(resp.getOffset(), 1 + Blob.Header.SIZE);
+
+        List<ExtendedBlobDescriptor> descriptors = meta.readMeta(writeOp.key);
+        assertEquals(1, descriptors.size());
+        ExtendedBlobDescriptor d = descriptors.get(0);
+        assertEquals(0, d.getFFIndex());
+        assertEquals(1 + Blob.Header.SIZE, d.getBodyOffset());
+        assertEquals(getFirstMountPoint().getId(), d.getDisk());
+
+        session.delete(writeOp.key);
+
+        descriptors = meta.readMeta(writeOp.key);
+        assertEquals(0, descriptors.size());
+
+        meta.stop();
     }
+
 
     @Test
     public void testDelete() throws Exception {
-        clusterManagerClient.computeMapping();
-
-        StemClient client = new StemClient();
-        client.start();
-
         byte[] in = TestUtils.generateRandomBlob(65536);
         byte[] key = DigestUtils.md5(in);
-
-        client.put(key, in);
-        byte[] out = client.get(key);
-
-        // STEM is not a random generator, but storage, so data before and after must be equal
-        Assert.assertArrayEquals(out, in);
-
-        client.delete(key);
-
-
-        client.get(key);
+        session.put(org.stem.client.Blob.create(key, in));
+        org.stem.client.Blob blob = session.get(key);
+        Assert.assertArrayEquals(blob.body, in);
     }
 
     @Test
@@ -176,23 +166,6 @@ public class ProtocolTest extends IntegrationTestBase {
             }
         }
 
-    }
-
-    @Test
-    public void testClusterWrite() throws Exception {
-        clusterManagerClient.computeMapping();
-
-        StemClient client = new StemClient();
-        client.start();
-
-        byte[] in = TestUtils.generateRandomBlob(65536);
-        byte[] key = DigestUtils.md5(in);
-
-        client.put(key, in);
-        byte[] out = client.get(key);
-
-        // STEM is not a random generator, but storage, so data before and after must be equal
-        Assert.assertArrayEquals(out, in);
     }
 
     @Test

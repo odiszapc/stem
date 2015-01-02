@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -59,21 +60,26 @@ public class ZookeeperClient {
 
     private final AtomicReference<StateListeningFuture> initializationFuture = new AtomicReference<>();
 
+    CopyOnWriteArrayList<NodeCache> cachePool = new CopyOnWriteArrayList<>();
+
     ZookeeperClient(String host, int port) throws ZooException {
         this.host = host;
         this.port = port;
-        client = createClient();
-        client.start();
-        //initializationFuture.set(new StateListeningFuture(client, ConnectionState.CONNECTED));
-        waitForConnectionEstablished(DEFAULT_CONNECTION_TIMEOUT_SEC, TimeUnit.SECONDS);
+
+        init();
+    }
+
+    private synchronized void init() throws ZooException {
+        if (null == client || !isRunning()) {
+            client = createClient(endpoint());
+            client.start();
+            //initializationFuture.set(new StateListeningFuture(client, ConnectionState.CONNECTED));
+            waitForConnectionEstablished(DEFAULT_CONNECTION_TIMEOUT_SEC, TimeUnit.SECONDS);
+        }
     }
 
     private String endpoint() {
         return host + ':' + port;
-    }
-
-    private CuratorFramework createClient() {
-        return createClient(endpoint());
     }
 
     private CuratorFramework createClient(String endpoint) {
@@ -85,12 +91,12 @@ public class ZookeeperClient {
         if (!initializationFuture.compareAndSet(null, new StateListeningFuture(client, ConnectionState.CONNECTED))) {
             StateListeningFuture future = initializationFuture.get();
             try {
-                Long duration = Futures.get(future, RuntimeException.class);
+                Long duration = Futures.get(future, Exception.class);
                 logger.info("Connected to Zookeeper in {}ms", duration / 1000000);
                 return;
             } catch (Exception e) {
                 logger.error("Error while connecting to {}", endpoint());
-                throw new ZooException(String.format("Error while connecting to %s", endpoint()));
+                throw new ZooException(String.format("Error while connecting to %s", endpoint()), e);
             }
         }
 
@@ -122,12 +128,23 @@ public class ZookeeperClient {
         return client.getState() == CuratorFrameworkState.STOPPED;
     }
 
-    public void close() {
+    public synchronized void close() { // TODO: implemente with AtomicReference<CloseFuture>
         logger.info("Close zookeeper client");
+        try {
+            for (NodeCache cache : cachePool) {
+                logger.info("Close cache {}", cache);
+                cache.close();
+            }
+            cachePool.clear();
+        } catch (IOException e) {
+            logger.error("Error while closing zookeeper node listening caches", e);
+        }
         client.close();
+
     }
 
     public void listenChildren(String path, ZNodeEventHandler handler) throws Exception {
+        init();
         PathChildrenCache cache = new PathChildrenCache(client, path, true);
         cache.start();
 
@@ -143,6 +160,7 @@ public class ZookeeperClient {
      * @throws Exception
      */
     public void listenForZNode(String path, ZookeeperEventListener listener) throws Exception {
+        init();
         // TODO: simplify code of this method to:
         // ZNodeListener nodeListener = new ZNodeListener(path, listener, client);
 
@@ -153,9 +171,11 @@ public class ZookeeperClient {
                 listener.getHandler(), cache);
 
         cache.getListenable().addListener(cacheListener);
+        cachePool.add(cache);
     }
 
     public void forcReadListenForZNode(String path, ZookeeperEventListener listener) throws Exception {
+        init();
         NodeCache cache = new NodeCache(client, path);
         cache.start();
 
@@ -164,6 +184,7 @@ public class ZookeeperClient {
 
         cache.getListenable().addListener(cacheListener);
         cacheListener.nodeChanged();
+        cachePool.add(cache);
     }
 
     public void registerListener(ZNodeListener listener) {
@@ -182,6 +203,7 @@ public class ZookeeperClient {
      */
 
     public void listenForChildren(String path, ZookeeperEventListener listener) throws Exception {
+        init();
         PathChildrenCache cache = new PathChildrenCache(client, path, true);
         cache.start();
 
@@ -197,12 +219,12 @@ public class ZookeeperClient {
 //    }
 
     /**
-     *
      * @param path z-node to create
      * @return indicated whether node actually was created
      * @throws Exception
      */
     public boolean createIfNotExists(String path) throws Exception {
+        init();
         try {
             Stat stat = client.checkExists().forPath(path);
             if (null == stat) {
@@ -216,6 +238,7 @@ public class ZookeeperClient {
     }
 
     public boolean createNodeIfNotExists(String parent, ZNode znode) throws Exception {
+        init();
         if (!nodeExists(parent, znode)) {
             createNode(parent, znode);
             return true;
@@ -224,31 +247,37 @@ public class ZookeeperClient {
     }
 
     public boolean nodeExists(String parent, ZNode znode) throws Exception {
+        init();
         String path = ZKPaths.makePath(parent, znode.name());
         return null != client.checkExists().forPath(path);
     }
 
     public void createNode(String parent, ZNode znode) throws Exception // TODO: if already exists?
     {
+        init();
         String path = ZKPaths.makePath(parent, znode.name());
         createNode(path, znode.encode());
     }
 
     public void updateNode(String parent, ZNode znode) throws Exception // TODO: automatically add/remove trailing slash
     {
+        init();
         String path = ZKPaths.makePath(parent, znode.name());
         updateNode(path, znode.encode());
     }
 
     public <T extends ZNode> T readZNodeData(String parent, String nodeName, Class<T> clazz) throws Exception {
+        init();
         return readZNodeData(ZKPaths.makePath(parent, nodeName), clazz);
     }
 
     public <T extends ZNode> T readZNodeData(String path, Class<T> clazz) throws Exception {
+        init();
         return readZNodeData(path, clazz, ZNodeAbstract.JSON_CODEC);
     }
 
     public <T extends ZNode> T readZNodeData(String path, Class<T> clazz, ZNode.Codec codec) throws Exception {
+        init();
         try {
             byte[] data = client.getData().forPath(path);
             if (0 == data.length) {
@@ -262,12 +291,14 @@ public class ZookeeperClient {
     }
 
     public void createNode(String path, byte[] data) throws Exception {
+        init();
         if (isRunning()) {
             client.create().creatingParentsIfNeeded().forPath(path, data);
         }
     }
 
     public void updateNode(String path, byte[] data) throws Exception {
+        init();
         if (isRunning()) {
             client.setData().forPath(path, data);
         }
@@ -276,6 +307,7 @@ public class ZookeeperClient {
     // TODO: this must be redesigned. We save node concatenate parent node path with one from {@link ZNode#name()};
     // We should do that directly to node
     public void saveNode(String path, ZNode node) throws Exception {
+        init();
         if (createNodeIfNotExists(path, node))
             return;
 
@@ -283,6 +315,7 @@ public class ZookeeperClient {
     }
 
     public void removeNode(String path) throws Exception {
+        init();
         if (isRunning()) {
             client.delete().forPath(path);
         }

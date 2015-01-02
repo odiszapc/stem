@@ -17,6 +17,7 @@
 package org.stem.client;
 
 import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -54,7 +55,7 @@ public class ConsistentResponseHandler {
 
         for (DefaultResultFuture future : futures) {
             ReplicaResponseHandler handler = new ReplicaResponseHandler(this, future);
-            handlers.put(handler.getEndpoint(), handler);
+            handlers.put(handler.getHost(), handler);
         }
     }
 
@@ -66,13 +67,44 @@ public class ConsistentResponseHandler {
             counter.await();
 
             if (!isConsistent()) {
+                for (ReplicaResponseHandler handler : completedHandlers) {
+                    if (!handler.isSuccess()) {
+                        logger.error("Request to {} failed with error: {}", handler.getHost(), handler.getErrorMessage());
+                    }
+                }
+
                 throw new ClientException(
-                        String.format("Response is not consistent: %s / %s successful",
-                                successfulRequests, consistencyCondition));
+                        String.format("Response is inconsistent (%s/%s): %s",
+                                successfulRequests, consistencyCondition, replicaState()));
             }
         } catch (InterruptedException e) {
             logger.debug("Thread was interrupted. Ignoring.");
         }
+    }
+
+    private String replicaState() {
+        List<String> messages = Lists.newArrayList();
+        Joiner joiner = Joiner.on(", ");
+        for (ReplicaResponseHandler handler : handlers.values()) {
+            StringBuilder b = new StringBuilder();
+
+            b
+                    .append(handler.getHost())
+                    .append(" ")
+                    .append('(');
+
+            if (!handler.isCompleted())
+                b.append("WAITING");
+            else if (handler.isSuccess())
+                b.append("SUCCESS");
+            else
+                b.append("FAILED");
+
+            b.append(')');
+
+            messages.add(b.toString());
+        }
+        return joiner.join(messages);
     }
 
     private int consistencyCondition(int totalReplicas) {

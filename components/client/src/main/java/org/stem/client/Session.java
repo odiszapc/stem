@@ -106,7 +106,7 @@ public class Session extends AbstractSession implements StemSession {
             return responseHandler.getResult();
         } catch (Exception e) {
             logger.error("Error while executing request", e);
-            throw new StemException(String.format("Error while sending request %s", e.getMessage()));
+            throw new StemException(String.format("Error while sending the request: %s", e.getMessage()));
         }
     }
 
@@ -153,7 +153,7 @@ public class Session extends AbstractSession implements StemSession {
     }
 
     private Requests.DeleteBlob prepareDeleteRequest(ExtendedBlobDescriptor pointer) {
-        return new Requests.DeleteBlob(pointer.getDisk(), pointer.getFFIndex(), pointer.getOffset());
+        return new Requests.DeleteBlob(pointer.getDisk(), pointer.getFFIndex(), pointer.getBodyOffset());
     }
 
     private Requests.WriteBlob prepareWriteRequest(UUID location, Blob obj) {

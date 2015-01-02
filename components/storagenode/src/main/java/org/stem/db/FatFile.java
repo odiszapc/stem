@@ -21,6 +21,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.domain.BlobDescriptor;
+import org.stem.domain.ExtendedBlobDescriptor;
 import org.stem.io.ConsequentWriter;
 import org.stem.io.FatFileReader;
 
@@ -330,11 +331,11 @@ public class FatFile { // TODO: Rename (BlobContainer, ObjContainer, ObjectConta
         }
     }
 
-    public byte[] deleteBlob(Integer bodyOffset) throws IOException {
+    public ExtendedBlobDescriptor deleteBlob(Integer bodyOffset) throws IOException {
         readLock.lock();
 
         try {
-            long headerOffset = bodyOffset - Blob.Header.SIZE;
+            int headerOffset = bodyOffset - Blob.Header.SIZE;
             if (headerOffset < 1)
                 throw new IOException(String.format("Invalid blob offset: %s", headerOffset));
 
@@ -358,7 +359,11 @@ public class FatFile { // TODO: Rename (BlobContainer, ObjContainer, ObjectConta
                 tracker.discount(header.key, header.length, this.id);
             }
 
-            return header.key;
+            BlobDescriptor desc = new BlobDescriptor(this.id, headerOffset, bodyOffset);
+            return new ExtendedBlobDescriptor(header.key, header.length, null, desc);
+        } catch (IOException e) {
+            logger.error("Error", e);
+            throw e;
         } finally {
             readLock.unlock();
         }

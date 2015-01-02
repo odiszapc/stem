@@ -32,7 +32,7 @@ public class ReplicaResponseHandler {
     private final Host endpoint;
 
     private Message.Response response;
-
+    private volatile boolean completed;
 
     public ReplicaResponseHandler(ConsistentResponseHandler context, DefaultResultFuture future) {
         this.context = context;
@@ -46,13 +46,13 @@ public class ReplicaResponseHandler {
         } catch (ExecutionException e) {
             cause = e.getCause();
             logger.error("Error sending request {} to {}, {}", future.request(), endpoint, cause.getMessage());
-        }
-        finally {
+        } finally {
+            this.completed = true;
             context.onRequestFinished(this);
         }
     }
 
-    public Host getEndpoint() {
+    public Host getHost() {
         return endpoint;
     }
 
@@ -66,5 +66,13 @@ public class ReplicaResponseHandler {
 
     public Throwable getError() {
         return cause;
+    }
+
+    public String getErrorMessage() {
+        return cause.getMessage();
+    }
+
+    public boolean isCompleted() {
+        return completed;
     }
 }
