@@ -99,7 +99,7 @@ public class IntegrationTestBase {
         cleanupDataDirectories();
 
         stopClusterManagerEmbedded();
-        shutdownZookeeperClients();
+        //shutdownZookeeperClients();
         stopZookeeperEmbedded();
 
         //stopCassandraEmbedded();

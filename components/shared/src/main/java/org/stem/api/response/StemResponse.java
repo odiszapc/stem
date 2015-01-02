@@ -17,7 +17,7 @@
 package org.stem.api.response;
 
 public class StemResponse {
-    private String message; // can be null
+    protected String message; // can be null
 
     public StemResponse() {
     }

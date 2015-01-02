@@ -19,6 +19,7 @@ package org.stem;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.stem.client.*;
 import org.stem.client.old.StemClient;
@@ -38,14 +39,7 @@ public class CompactionTest extends IntegrationTestBase {
     final String host = "localhost";
     final int port = 9999;
 
-
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
-        clusterManagerClient.computeMapping();
-        //client.start();
-    }
-
+    @Ignore
     @Test
     public void testScanner() throws Exception {
         final int BLOBS_NUM = 256 + 1;

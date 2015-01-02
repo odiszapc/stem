@@ -244,7 +244,6 @@ public class Event extends ZNodeAbstract {
         };
 
         Result result;
-        String message;
 
         public Result getResult() {
             return result;

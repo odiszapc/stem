@@ -43,7 +43,7 @@ public class PersistenceTest extends IntegrationTestBase {
     @After
     public void tearDown() throws InterruptedException {
         stopClusterManagerEmbedded();
-        shutdownZookeeperClients();
+        //shutdownZookeeperClients();
         stopZookeeperEmbedded();
     }
 

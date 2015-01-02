@@ -133,6 +133,7 @@ public class ZookeeperClient {
         try {
             for (NodeCache cache : cachePool) {
                 logger.info("Close cache {}", cache);
+                cache.getListenable().clear();
                 cache.close();
             }
             cachePool.clear();

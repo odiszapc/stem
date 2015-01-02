@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.stem;
+package org.stem.topology;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,12 +38,6 @@ public class EventSerializationTest {
         Assert.assertEquals(decoded.getType(), original.getType());
         Assert.assertEquals(response.getResult(), Event.Join.Result.ERROR);
         Assert.assertEquals(response.getMessage(), "Node already exist in topology!");
-
-    }
-
-    @Test
-    public void testName() throws Exception {
-        //new Event.Join.Result()
 
     }
 
