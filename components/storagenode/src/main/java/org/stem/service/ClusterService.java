@@ -17,6 +17,9 @@
 package org.stem.service;
 
 
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.stem.api.ClusterManagerClient;
 import org.stem.api.REST;
 import org.stem.api.request.JoinRequest;
@@ -33,8 +36,7 @@ import java.net.InetAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 public class ClusterService {
 
@@ -45,8 +47,9 @@ public class ClusterService {
 //    }
 
     private static ClusterManagerClient client = ClusterManagerClient.create(StorageNodeDescriptor.getClusterManagerEndpoint());
-    private Executor periodicTasksExecutor = Executors.newFixedThreadPool(5);
+    ListeningExecutorService executor;
     public final ZookeeperClient zookeeperClient;
+    public  DataClusterNotificator notificator;
 
     public ClusterService() {
         String endpoint = StorageNodeDescriptor.cluster().getZookeeperEndpoint();
@@ -61,6 +64,7 @@ public class ClusterService {
         String endpoint = cluster.getZookeeperEndpoint();
         try {
             zookeeperClient = ZookeeperFactoryCached.newClient(endpoint);
+            executor = newExecutor(4, "Periodic-Tasks-%d");
         } catch (ZooException e) {
             throw new RuntimeException("Fail to initialize cluster service", e);
         }
@@ -101,6 +105,7 @@ public class ClusterService {
     public static REST.Cluster describeAndInit() {
         ClusterResponse resp = client.describeCluster();
         instance = new ClusterService(resp.getCluster());
+
         return resp.getCluster();
     }
 
@@ -111,6 +116,27 @@ public class ClusterService {
 
 
     public void startDataNotificator() throws Exception {
-        periodicTasksExecutor.execute(new DataClusterNotificator());
+        notificator = new DataClusterNotificator();
+        executor.submit(notificator);
+    }
+
+    public void stop() {
+        notificator.stop();
+        executor.shutdown();
+    }
+
+    private static ListeningExecutorService newExecutor(int threads, String name) {
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(threads,
+                threads,
+                30,
+                TimeUnit.SECONDS,
+                new LinkedBlockingQueue<Runnable>(),
+                threadFactory(name));
+        executor.allowCoreThreadTimeOut(true);
+        return MoreExecutors.listeningDecorator(executor);
+    }
+
+    private static ThreadFactory threadFactory(String nameFormat) {
+        return new ThreadFactoryBuilder().setNameFormat(nameFormat).build();
     }
 }

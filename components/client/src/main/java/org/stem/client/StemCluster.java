@@ -366,7 +366,8 @@ public class StemCluster {
             //blockingExecutor.shutdownNow(); TODO: think about this line
             executor.shutdown();
 
-            metaStoreClient.stop();
+            if (null != metaStoreClient)
+                metaStoreClient.stop();
 
             List<CloseFuture> futures = new ArrayList<CloseFuture>(sessions.size() + 1);
             futures.add(clusterDescriber.closeAsync());

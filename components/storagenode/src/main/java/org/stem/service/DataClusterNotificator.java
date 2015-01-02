@@ -36,6 +36,7 @@ public class DataClusterNotificator implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(DataClusterNotificator.class);
     private static final int DELAY_MS = 1000;
+    private volatile boolean interrupted;
 
     ZookeeperClient client; // TODO: the client instance must be a singleton ???
 
@@ -46,13 +47,17 @@ public class DataClusterNotificator implements Runnable {
     @Override
     public void run() {
         while (true) {
+            if (interrupted)
+                return;
+
             try {
                 doWork();
+                Thread.sleep(DELAY_MS);
+            } catch (InterruptedException e) {
+                return;
             } catch (Exception e) {
                 logger.warn("Error occurred during notify Zookeeper", e);
             }
-
-            sleep();
         }
     }
 
@@ -82,11 +87,8 @@ public class DataClusterNotificator implements Runnable {
         return result;
     }
 
-    private void sleep() {
-        try {
-            Thread.sleep(DELAY_MS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    public void stop() {
+        interrupted = true;
     }
+
 }

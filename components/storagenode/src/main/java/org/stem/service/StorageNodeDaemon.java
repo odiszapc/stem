@@ -80,5 +80,6 @@ public class StorageNodeDaemon {
     public void stop() {
         server.stop();
         StorageNodeDescriptor.detachLayout();
+        ClusterService.instance.stop();
     }
 }
