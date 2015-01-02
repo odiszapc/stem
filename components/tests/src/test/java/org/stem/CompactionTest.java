@@ -64,9 +64,6 @@ public class CompactionTest extends IntegrationTestBase {
 
     @Test
     public void testCompaction() throws Exception {
-        clusterManagerClient.computeMapping();
-        StemClient client = new StemClient();
-        client.start();
 
         DataTracker dt = getFirstDisk().getDataTracker();
 
@@ -94,7 +91,7 @@ public class CompactionTest extends IntegrationTestBase {
 
         // Perform WRITE
         List<byte[]> keysGenerated = generateRandomLoad(BLOBS_NUM); // put 238 blobs
-        byte[] before = client.get(keysGenerated.get(96));
+        byte[] before = session.get(keysGenerated.get(96)).body;
 
         assert dt.getTotalBlobs() == BLOBS_NUM;
         assert dt.getLiveBlobs() == BLOBS_NUM;
@@ -119,10 +116,10 @@ public class CompactionTest extends IntegrationTestBase {
         // Delete some data
         for (int i = 0; i < deletes; i++) // Delete 40% of data
         {
-            client.delete(keysGenerated.get(i));
+            session.delete(keysGenerated.get(i));
         }
 
-        byte[] before2 = client.get(keysGenerated.get(96));
+        byte[] before2 = session.get(keysGenerated.get(96)).body;
 
         assert dt.getTotalBlobs() == BLOBS_NUM;
         assert dt.getLiveBlobs() == BLOBS_NUM - deletes;
@@ -145,7 +142,7 @@ public class CompactionTest extends IntegrationTestBase {
 
         // Perform compaction
         CompactionManager.instance.performMajorCompaction();
-        byte[] after = client.get(keysGenerated.get(96));
+        byte[] after = session.get(keysGenerated.get(96)).body;
 
         assert dt.getTotalBlobs() == BLOBS_NUM;
         assert dt.getLiveBlobs() == BLOBS_NUM - deletes;
@@ -169,7 +166,7 @@ public class CompactionTest extends IntegrationTestBase {
         // Control validation. Read all the dataset we put
         for (int i = 0; i < BLOBS_NUM; i++) {
             byte[] keyOrig = keysGenerated.get(i);
-            byte[] data = client.get(keyOrig);
+            byte[] data = session.get(keyOrig).body;
             if (i < deletes) {
                 assert data == null;
                 continue;
