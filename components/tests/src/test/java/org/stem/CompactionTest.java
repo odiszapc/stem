@@ -20,8 +20,10 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.stem.client.*;
 import org.stem.client.old.StemClient;
 import org.stem.db.*;
+import org.stem.db.Blob;
 import org.stem.db.compaction.CompactionManager;
 import org.stem.db.compaction.FFScanner;
 import org.stem.utils.YamlConfigurator;
@@ -166,12 +168,14 @@ public class CompactionTest extends IntegrationTestBase {
         // Control validation. Read all the dataset we put
         for (int i = 0; i < BLOBS_NUM; i++) {
             byte[] keyOrig = keysGenerated.get(i);
-            byte[] data = session.get(keyOrig).body;
+
+            org.stem.client.Blob blob = session.get(keyOrig);
             if (i < deletes) {
-                assert data == null;
+                assert blob == null;
                 continue;
             }
 
+            byte[] data = blob.body;
             byte[] keyActual = DigestUtils.md5(data);
             Assert.assertArrayEquals(keyActual, keyOrig);
         }
