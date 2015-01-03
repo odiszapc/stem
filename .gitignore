@@ -35,4 +35,4 @@ components/tests/target/*
 components/shared/target/*
 target/*
 release/*
-conf/id
+id
