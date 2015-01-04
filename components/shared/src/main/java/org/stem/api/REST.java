@@ -293,12 +293,11 @@ public abstract class REST {
     @Data
     //@NoArgsConstructor
     @RequiredArgsConstructor
-    @JsonSerialize(using = Codecs.StreamingSessionJsonSerializer.class)
-    @JsonDeserialize(using = Codecs.StreamingSessionJsonDeserializer.class)
     public static class StreamingSession extends ZNodeAbstract {
 
 
         public static final String PARTITIONS = "partitions";
+        public static final String PARTITIONS_PACKED = "__packed";
         public static final String ID = "id";
 
 
@@ -307,6 +306,8 @@ public abstract class REST {
         private UUID id;
 
         @JsonProperty(value = PARTITIONS)
+        @JsonSerialize(using = Codecs.StreamingSessionJsonSerializer.class)
+            @JsonDeserialize(using = Codecs.StreamingSessionJsonDeserializer.class)
         @NonNull private Long[] partitions;
 
         public StreamingSession() {
