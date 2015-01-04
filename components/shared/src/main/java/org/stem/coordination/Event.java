@@ -314,7 +314,7 @@ public class Event extends ZNodeAbstract {
         private static ObjectMapper mapper = new ObjectMapper();
 
         @Override
-        public Event deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+        public Event deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
             ObjectCodec codec = jp.getCodec();
             TreeNode treeNode = codec.readTree(jp);
 

@@ -18,18 +18,17 @@ package org.stem.api;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.Lists;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import lombok.*;
 import org.stem.api.request.ClusterConfiguration;
 import org.stem.coordination.Codecs;
 import org.stem.coordination.ZNode;
 import org.stem.coordination.ZNodeAbstract;
 import org.stem.coordination.ZookeeperPaths;
-import org.stem.utils.BBUtils;
-import org.stem.utils.JsonUtils;
 import org.stem.utils.Mappings;
 import org.stem.utils.Utils;
 
@@ -292,11 +291,26 @@ public abstract class REST {
 
     @EqualsAndHashCode(callSuper = false)
     @Data
-    @NoArgsConstructor
+    //@NoArgsConstructor
     @RequiredArgsConstructor
+    @JsonSerialize(using = Codecs.StreamingSessionJsonSerializer.class)
+    @JsonDeserialize(using = Codecs.StreamingSessionJsonDeserializer.class)
     public static class StreamingSession extends ZNodeAbstract {
 
-        @NonNull private UUID id;
+
+        public static final String PARTITIONS = "partitions";
+        public static final String ID = "id";
+
+
+        @JsonProperty(value = ID)
+        @NonNull
+        private UUID id;
+
+        @JsonProperty(value = PARTITIONS)
+        @NonNull private Long[] partitions;
+
+        public StreamingSession() {
+        }
 
         @Override
         public String name() {

@@ -23,7 +23,7 @@ import org.stem.api.REST;
 
 import java.util.*;
 
-public class Mappings {
+public abstract class Mappings {
 
     public static final int UUID_PACKED_SIZE = 16;
 
