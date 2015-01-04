@@ -16,6 +16,7 @@
 
 package org.stem.streaming;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.stem.api.REST;
 import org.stem.coordination.Codecs;
@@ -29,9 +30,11 @@ public class CodecTest {
 
     @Test
     public void packUnpack() throws Exception {
-        REST.StreamingSession original = new REST.StreamingSession(UUID.randomUUID(), preparePartitions(5, 500));
-        REST.StreamingSession decoded = Codecs.JSON.decode(original.encode(), REST.StreamingSession.class);
+        REST.StreamingSession original = new REST.StreamingSession(UUID.randomUUID(), preparePartitions(0, 100000-1));
+        byte[] packed = original.encode();
+        Assert.assertTrue(packed.length < 600 * 1024 * 1024);
 
+        REST.StreamingSession decoded = Codecs.JSON.decode(packed, REST.StreamingSession.class);
         assertEquals(original.getId(), decoded.getId());
         assertArrayEquals(original.getPartitions(), decoded.getPartitions());
     }

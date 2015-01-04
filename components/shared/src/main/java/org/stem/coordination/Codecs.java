@@ -94,13 +94,12 @@ public abstract class Codecs {
         }
     };
 
-    public static class StreamingSessionJsonSerializer extends JsonSerializer<REST.StreamingSession> {
+    public static class StreamingSessionJsonSerializer extends JsonSerializer<Long[]> {
 
         @Override
-        public void serialize(REST.StreamingSession sess, JsonGenerator jgen, SerializerProvider provider) throws IOException {
+        public void serialize(Long[] partitions, JsonGenerator jgen, SerializerProvider provider) throws IOException {
             jgen.writeStartObject();
-            jgen.writeStringField(REST.StreamingSession.ID, sess.getId().toString());
-            jgen.writeBinaryField(REST.StreamingSession.PARTITIONS, packPartitions(sess.getPartitions()));
+            jgen.writeBinaryField(REST.StreamingSession.PARTITIONS_PACKED, packPartitions(partitions));
             jgen.writeEndObject();
         }
 
@@ -111,25 +110,18 @@ public abstract class Codecs {
             }
             return buf.nioBuffer().array();
         }
-
-
     }
 
-
-    public static class StreamingSessionJsonDeserializer extends JsonDeserializer<REST.StreamingSession> {
+    public static class StreamingSessionJsonDeserializer extends JsonDeserializer<Long[]> {
 
         public StreamingSessionJsonDeserializer() {
         }
 
         @Override
-        public REST.StreamingSession deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
+        public Long[] deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
             TreeNode treeNode = jp.getCodec().readTree(jp);
-            UUID id = UUID.fromString(((TextNode) treeNode.get(REST.StreamingSession.ID)).asText());
-            byte[] partitionPacked = ((TextNode) treeNode.get(REST.StreamingSession.PARTITIONS)).binaryValue();
-
-            Long[] partitions = decode(partitionPacked);
-
-            return new REST.StreamingSession(id, partitions);
+            byte[] partitionPacked = ((TextNode) treeNode.get(REST.StreamingSession.PARTITIONS_PACKED)).binaryValue();
+            return decode(partitionPacked);
         }
 
         private Long[] decode(byte[] bin) {
