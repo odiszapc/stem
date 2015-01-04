@@ -16,21 +16,30 @@
 
 package org.stem.streaming;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.stem.api.REST;
 import org.stem.coordination.Codecs;
 
 import java.util.UUID;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
 public class CodecTest {
 
     @Test
     public void packUnpack() throws Exception {
-        REST.StreamingSession original = new REST.StreamingSession(UUID.randomUUID());
+        REST.StreamingSession original = new REST.StreamingSession(UUID.randomUUID(), preparePartitions(5, 500));
         REST.StreamingSession decoded = Codecs.JSON.decode(original.encode(), REST.StreamingSession.class);
 
-        Assert.assertEquals(original.getId(), decoded.getId());
+        assertEquals(original.getId(), decoded.getId());
+        assertArrayEquals(original.getPartitions(), decoded.getPartitions());
+    }
 
+    private Long[] preparePartitions(int from, int to) {
+        Long[] longs = new Long[to - from + 1];
+        for (int i = 0; i <= to - from; i++)
+            longs[i] = (long) i + from;
+        return longs;
     }
 }

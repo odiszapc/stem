@@ -16,6 +16,15 @@
 
 package org.stem.coordination;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.TreeNode;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.node.BinaryNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.stem.api.REST;
@@ -23,7 +32,11 @@ import org.stem.utils.BBUtils;
 import org.stem.utils.JsonUtils;
 import org.stem.utils.Mappings;
 
+import java.io.IOException;
+import java.util.UUID;
+
 public abstract class Codecs {
+
     public static final ZNode.Codec JSON = new ZNode.Codec() {
 
         @Override
@@ -66,4 +79,68 @@ public abstract class Codecs {
             return (T) new REST.TopologySnapshot(topology, mapping);
         }
     };
+
+    public static final ZNode.Codec STREAMING_SESSION = new ZNode.Codec() {
+
+        @Override
+        public byte[] encode(Object obj) {
+            REST.StreamingSession sess = (REST.StreamingSession) obj;
+            return new byte[0];
+        }
+
+        @Override
+        public <T extends ZNode> T decode(byte[] raw, Class<T> clazz) {
+            return null;
+        }
+    };
+
+    public static class StreamingSessionJsonSerializer extends JsonSerializer<REST.StreamingSession> {
+
+        @Override
+        public void serialize(REST.StreamingSession sess, JsonGenerator jgen, SerializerProvider provider) throws IOException {
+            jgen.writeStartObject();
+            jgen.writeStringField(REST.StreamingSession.ID, sess.getId().toString());
+            jgen.writeBinaryField(REST.StreamingSession.PARTITIONS, packPartitions(sess.getPartitions()));
+            jgen.writeEndObject();
+        }
+
+        private byte[] packPartitions(Long[] partitions) {
+            ByteBuf buf = Unpooled.buffer(partitions.length * 4);
+            for (Long p : partitions) {
+                buf.writeInt(p.intValue());
+            }
+            return buf.nioBuffer().array();
+        }
+
+
+    }
+
+
+    public static class StreamingSessionJsonDeserializer extends JsonDeserializer<REST.StreamingSession> {
+
+        public StreamingSessionJsonDeserializer() {
+        }
+
+        @Override
+        public REST.StreamingSession deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
+            TreeNode treeNode = jp.getCodec().readTree(jp);
+            UUID id = UUID.fromString(((TextNode) treeNode.get(REST.StreamingSession.ID)).asText());
+            byte[] partitionPacked = ((TextNode) treeNode.get(REST.StreamingSession.PARTITIONS)).binaryValue();
+
+            Long[] partitions = decode(partitionPacked);
+
+            return new REST.StreamingSession(id, partitions);
+        }
+
+        private Long[] decode(byte[] bin) {
+            ByteBuf buf = Unpooled.wrappedBuffer(bin);
+
+            Long[] result = new Long[buf.readableBytes() / 4];
+            int i = 0;
+            while (buf.readableBytes() > 0) {
+                result[i++] = (long) buf.readInt();
+            }
+            return result;
+        }
+    }
 }
