@@ -16,11 +16,7 @@
 
 package org.stem.coordination;
 
-import org.stem.utils.JsonUtils;
-
 public abstract class ZNodeAbstract implements ZNode {
-
-    protected static final Codec JSON_CODEC = new JsonCodec();
 
     // TODO: Make these methods static
     @Override
@@ -29,28 +25,11 @@ public abstract class ZNodeAbstract implements ZNode {
     }
 
     protected Codec codec() {
-        return JSON_CODEC;
-    }
+        return Codecs.JSON;
+    } // TODO: static method ?
 
     protected Object formingEntity() {
         return this;
     }
 
-    private static class JsonCodec implements ZNode.Codec {
-
-        @Override
-        public byte[] encode(Object obj) {
-            return JsonUtils.encodeBytes(obj);
-        }
-
-        @Override
-        public <T extends ZNode> T decode(byte[] raw, Class<T> clazz) {
-            return JsonUtils.decode(raw, clazz);
-        }
-
-//        @Override
-//        public ZNode decode(byte[] raw, Class<? extends ZNode> clazz) {
-//            return JsonUtils.decode(raw, clazz);
-//        }
-    }
 }
