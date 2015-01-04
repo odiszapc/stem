@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Alexey Plotnik
+ * Copyright 2015 Alexey Plotnik
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package org.stem.api;
+package org.stem.streaming;
 
-public class UserMessages {
+public class StreamingSession {
 
-    public static final String CLUSTER_CREATED = "Cluster successfully created";
-    public static final String NODE_WAITING = "Node is waiting for approval";
-    public static final String NODE_JOINED = "Storage Node has successfully joined the cluster";
-    public static final String STREAMING_SESSION_STARTED = "Streaming session has been submitted";
+    static enum State {
+        READY, RUNNING, COMPLETED, STOPPING
+    }
 
 }

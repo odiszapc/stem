@@ -24,6 +24,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import lombok.*;
 import org.stem.api.request.ClusterConfiguration;
+import org.stem.coordination.Codecs;
 import org.stem.coordination.ZNode;
 import org.stem.coordination.ZNodeAbstract;
 import org.stem.coordination.ZookeeperPaths;
@@ -259,38 +260,9 @@ public abstract class REST {
     @RequiredArgsConstructor
     public static class TopologySnapshot extends ZNodeAbstract {
 
-        public static final ZNode.Codec CODEC = new ZNode.Codec() {
-
-            @Override
-            public byte[] encode(Object obj) {
-                String topologyPacked = JsonUtils.encode(((TopologySnapshot)obj).topology);
-                byte[] mappingPacked = new Mappings.Encoder(((TopologySnapshot) obj).mapping).encode();
-
-                ByteBuf buffer = Unpooled.buffer();
-                BBUtils.writeString(topologyPacked, buffer);
-                BBUtils.writeBytes(mappingPacked, buffer);
-
-                byte[] result = new byte[buffer.readableBytes()];
-                buffer.readBytes(result);
-                return result;
-            }
-
-            @Override
-            public <T extends ZNode> T decode(byte[] raw, Class<T> clazz) {
-                ByteBuf buf = Unpooled.wrappedBuffer(raw);
-                String topologyPacked = BBUtils.readString(buf);
-                Topology topology = JsonUtils.decode(topologyPacked, Topology.class);
-
-                byte[] mappingRaw = new byte[buf.readableBytes()];
-                buf.readBytes(mappingRaw);
-                Mapping mapping = new Mappings.Decoder(mappingRaw).decode();
-                return (T) new TopologySnapshot(topology, mapping);
-            }
-        };
-
         @Override
         protected Codec codec() {
-            return CODEC;
+            return Codecs.TOPOLOGY_SNAPSHOT;
         }
 
         private final Topology topology;
@@ -316,5 +288,26 @@ public abstract class REST {
         public void addDisks(Set<Disk> disks) {
             replicas.addAll(disks);
         }
+    }
+
+    @EqualsAndHashCode(callSuper = false)
+    @Data
+    @NoArgsConstructor
+    @RequiredArgsConstructor
+    public static class StreamingSession extends ZNodeAbstract {
+
+        @NonNull private UUID id;
+
+        @Override
+        public String name() {
+            return id.toString();
+        }
+
+        @Override
+        protected Codec codec() {
+            return Codecs.JSON;
+        }
+
+
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Alexey Plotnik
+ * Copyright 2015 Alexey Plotnik
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,23 @@
  * limitations under the License.
  */
 
-package org.stem.domain;
+package org.stem.streaming;
 
-public class StreamingManager {
+import org.junit.Assert;
+import org.junit.Test;
+import org.stem.api.REST;
+import org.stem.coordination.Codecs;
 
+import java.util.UUID;
+
+public class CodecTest {
+
+    @Test
+    public void packUnpack() throws Exception {
+        REST.StreamingSession original = new REST.StreamingSession(UUID.randomUUID());
+        REST.StreamingSession decoded = Codecs.JSON.decode(original.encode(), REST.StreamingSession.class);
+
+        Assert.assertEquals(original.getId(), decoded.getId());
+
+    }
 }

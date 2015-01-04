@@ -14,11 +14,29 @@
  * limitations under the License.
  */
 
-package org.stem.domain;
+package org.stem.streaming;
 
-/**
- * Created by Alex on 09.03.14.
- */
-public class SessionManager {
+public class StreamingManager {
 
+    public static final StreamingManager instance = new StreamingManager();
+
+    private volatile boolean isInit;
+
+    public StreamingManager() {
+    }
+
+    public synchronized void init() {
+        if (isInit)
+            return;
+        // DO job;
+
+        isInit = true;
+    }
+
+    public void submit(StreamingSession session) {
+
+    }
+
+    void loadSessions() {
+    }
 }

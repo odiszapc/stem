@@ -23,6 +23,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.stem.RestUtils;
 import org.stem.api.REST;
+import org.stem.coordination.Codecs;
 import org.stem.utils.BBUtils;
 import org.stem.utils.JsonUtils;
 import org.stem.utils.Mappings;
@@ -151,13 +152,13 @@ public class TopologyCoderTest {
     }
 
     @Test
-    public void testName() throws Exception {
+    public void packUnpack() throws Exception {
         Topology topology = createTopology();
         REST.Mapping mapping = RestUtils.packMapping(prepareMapping(topology, 100000, 3));
         REST.TopologySnapshot original = new REST.TopologySnapshot(RestUtils.packTopology(topology), mapping);
-        byte[] snapshotEncoded = REST.TopologySnapshot.CODEC.encode(original);
+        byte[] snapshotEncoded = original.encode();
 
-        REST.TopologySnapshot decoded = REST.TopologySnapshot.CODEC.decode(snapshotEncoded, REST.TopologySnapshot.class);
+        REST.TopologySnapshot decoded = Codecs.TOPOLOGY_SNAPSHOT.decode(snapshotEncoded, REST.TopologySnapshot.class);
         assertMappingsEquality(original.getMapping(), decoded.getMapping());
         // TODO: compare topologies
     }

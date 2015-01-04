@@ -23,10 +23,7 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.api.REST;
-import org.stem.coordination.ZNode;
-import org.stem.coordination.ZookeeperClient;
-import org.stem.coordination.ZookeeperEventListener;
-import org.stem.coordination.ZookeeperPaths;
+import org.stem.coordination.*;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -57,7 +54,7 @@ public class ClusterDescriber {
 
                 @Override
                 protected ZNode.Codec codec() {
-                    return REST.TopologySnapshot.CODEC;
+                    return Codecs.TOPOLOGY_SNAPSHOT;
                 }
 
                 @Override
@@ -170,7 +167,7 @@ public class ClusterDescriber {
 
     private REST.TopologySnapshot readState() {
         try {
-            return zookeeperClient().readZNodeData(ZookeeperPaths.topologySnapshotPath(), REST.TopologySnapshot.class, REST.TopologySnapshot.CODEC);
+            return zookeeperClient().readZNodeData(ZookeeperPaths.topologySnapshotPath(), REST.TopologySnapshot.class, Codecs.TOPOLOGY_SNAPSHOT);
 
         } catch (Exception e) {
             Throwables.propagate(e);

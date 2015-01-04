@@ -76,7 +76,7 @@ public abstract class ZookeeperEventListener<T extends ZNode> {
     }
 
     protected ZNode.Codec codec() {
-        return ZNodeAbstract.JSON_CODEC;
+        return Codecs.JSON;
     }
 
     protected void onChildAdded(T object) {

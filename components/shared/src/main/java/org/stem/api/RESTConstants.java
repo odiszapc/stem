@@ -31,6 +31,23 @@ public class RESTConstants {
 
         public static final String BASE = "/api";
 
+        public static class Streaming {
+            public static final String BASE = "/streaming";
+            public static final String URI = Api.BASE + BASE;
+
+            public static class New {
+
+                public static final String BASE = "/new";
+                public static final String URI = Streaming.URI + BASE;
+            }
+
+            public static class Stop {
+
+                public static final String BASE = "/stop";
+                public static final String URI = Streaming.URI + BASE;
+            }
+        }
+
         public static class Cluster {
 
             public static final String BASE = "/cluster";

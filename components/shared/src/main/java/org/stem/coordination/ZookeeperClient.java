@@ -274,7 +274,7 @@ public class ZookeeperClient {
 
     public <T extends ZNode> T readZNodeData(String path, Class<T> clazz) throws Exception {
         init();
-        return readZNodeData(path, clazz, ZNodeAbstract.JSON_CODEC);
+        return readZNodeData(path, clazz, Codecs.JSON);
     }
 
     public <T extends ZNode> T readZNodeData(String path, Class<T> clazz, ZNode.Codec codec) throws Exception {
