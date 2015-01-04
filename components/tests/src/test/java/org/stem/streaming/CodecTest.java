@@ -32,7 +32,7 @@ public class CodecTest {
     public void packUnpack() throws Exception {
         REST.StreamingSession original = new REST.StreamingSession(UUID.randomUUID(), preparePartitions(0, 100000-1));
         byte[] packed = original.encode();
-        Assert.assertTrue(packed.length < 600 * 1024 * 1024); // 600KB to fit znode
+        Assert.assertTrue(packed.length < 1024 * 1024 * 1024); // < 1MB to fit znode
 
         REST.StreamingSession decoded = Codecs.JSON.decode(packed, REST.StreamingSession.class);
         assertEquals(original.getId(), decoded.getId());
