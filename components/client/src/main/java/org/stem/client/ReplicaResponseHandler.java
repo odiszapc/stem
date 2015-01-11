@@ -17,10 +17,11 @@
 package org.stem.client;
 
 import com.google.common.util.concurrent.Uninterruptibles;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.ExecutionException;
 
 public class ReplicaResponseHandler {
 
@@ -40,12 +41,15 @@ public class ReplicaResponseHandler {
         endpoint = context.session.router.getHost(future.request()); // TODO: optimize
     }
 
-    public void start() {
+    public void startWithTimeout(long timeoutMs) {
         try {
-            response = Uninterruptibles.getUninterruptibly(future);
+            this.response = Uninterruptibles.getUninterruptibly(this.future, timeoutMs, TimeUnit.MILLISECONDS);
         } catch (ExecutionException e) {
-            cause = e.getCause();
-            logger.error("Error sending request {} to {}, {}", future.request(), endpoint, cause.getMessage());
+            this.cause = e.getCause();
+            logger.error("Error sending request {} to {}, {}", this.future.request(), this.endpoint, this.cause.getMessage());
+        } catch (TimeoutException e) {
+            this.cause = e;
+            logger.error("Timed out sending request {} to {}, {}", this.future.request(), this.endpoint, e.getMessage());
         } finally {
             this.completed = true;
             context.onRequestFinished(this);
