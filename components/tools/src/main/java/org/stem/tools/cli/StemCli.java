@@ -16,38 +16,20 @@
 
 package org.stem.tools.cli;
 
-import java.io.Console;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOError;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.lang.Exception;
-import java.lang.IllegalArgumentException;
-import java.lang.String;
-import java.lang.System;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 import org.apache.commons.cli.*;
 import org.apache.commons.codec.digest.DigestUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.stem.client.Blob;
 import org.stem.client.ClientInternalError;
 import org.stem.client.Session;
 import org.stem.client.StemCluster;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public class StemCli {
 
-    private static final Logger logger = LoggerFactory.getLogger(StemCli.class);
     private static final int INTERACTIVE_MODE = 1;
     private static final int MAX_FILE_SIZE = 100; //Max size of file is 100MB
     private static final int MIN_QUANTITY_ARGS = 2; //Min quantity of args in commands from file
@@ -56,7 +38,12 @@ public class StemCli {
     private static Session session = null;
 
     static {
-        options = new Options();
+        options = buildOptions();
+    }
+
+    @SuppressWarnings("all")
+    private static Options buildOptions() {
+        Options options = new Options();
         options.addOption(OptionBuilder.withLongOpt("data")
                 .hasArg()
                 .withArgName("DATA")
@@ -80,18 +67,33 @@ public class StemCli {
                 .create());
         options.addOption(OptionBuilder.withLongOpt("help")
                 .create());
+        return options;
     }
 
     public static void main(String[] args) {
-        if (args.length == 0) {
-            System.err.println("There are no arguments");
-        }
+        StemCli cli = new StemCli(args);
+        cli.run();
+        System.exit(0);
+    }
 
-        CommandLine cmd = null;
+    private enum Mode {
+        INTERACTIVE, BATCH, SINGLE
+    }
+
+    CommandLine cmd;
+    private String[] args;
+    private Mode mode;
+
+    public StemCli(String[] args) {
+        this.args = args;
+        if (args.length == 0) {
+            usage();
+            System.exit(1);
+        }
 
         try {
             cmd = parser.parse(options, args);
-        }catch(ParseException e){
+        } catch (ParseException e) {
             System.out.println(e.getMessage());
             usage();
             System.exit(1);
@@ -102,38 +104,40 @@ public class StemCli {
             System.exit(0);
         }
 
+        if (args.length == INTERACTIVE_MODE)
+            mode = Mode.INTERACTIVE;
+        else if (cmd.hasOption("file"))
+            mode = Mode.BATCH;
+        else
+            mode = Mode.SINGLE;
+    }
+
+    private void run() {
         try {
             connect(cmd.getOptionValue("manager"));
         } catch (Exception ex) {
-//            System.err.println("Connection is not established");
-            System.err.println(ex.getMessage());
+            System.err.println("Unable to connect to cluster manager" + ex.getMessage());
             System.exit(1);
         }
 
-        if (args.length == INTERACTIVE_MODE) {
-            interactiveMode();
-            System.exit(0);
-        } else if (cmd.hasOption("file")) {
-            try {
-                parsingFile(cmd.getOptionValue("file"));
-            } catch (FileNotFoundException fne) {
-                System.err.println(fne.getMessage());
-            }catch (IOException ioe) {
-                System.err.println(ioe.getMessage());
-            }
-        } else {
-            try {
-                processing(cmd, args);
-            } catch (IllegalArgumentException ile) {
-                System.err.println(ile.getMessage());
-            } catch (IOException ioe) {
-                System.err.println(ioe.getMessage());
-            } catch (Exception ex) {
-                System.err.println(ex.getMessage());
-            }
+        switch (mode) {
+            case INTERACTIVE:
+                interactiveMode();
+                break;
+            case BATCH:
+                try {
+                    parsingFile(cmd.getOptionValue("file"));
+                } catch (IOException e) {
+                    System.err.println(e.getMessage());
+                }
+                break;
+            default:
+                try {
+                    processing(cmd, args);
+                } catch (Exception ex) {
+                    System.err.println(ex.getMessage());
+                }
         }
-
-        System.exit(0);
     }
 
     /**
@@ -149,11 +153,10 @@ public class StemCli {
 
     private static void usage() {
         System.out.println("Usage (batch mode):");
-        new HelpFormatter().printHelp("stem-cli [<COMMAND>] [<KEY>] [--data <DATA>] [--dst <FILE>] [--src <FILE>] [--file <FILE>] --manager=<URL>",options);
+        new HelpFormatter().printHelp("stem-cli [<COMMAND>] [<KEY>] [--data <DATA>] [--dst <FILE>] [--src <FILE>] [--file <FILE>] --manager=<URL>", options);
         System.out.println("Usage (interactive mode):");
         new HelpFormatter().printHelp("<COMMAND> <KEY> [--data <DATA>] [--dst <FILE>] [--src <FILE>] [--file <FILE>]", options);
     }
-
 
     private static void interactiveMode() {
         Console input = System.console();
@@ -164,15 +167,12 @@ public class StemCli {
         System.out.println("Enter 'quit' to quit");
 
         String inputString;
-        CommandLine cmd = null;
-        
+        CommandLine cmd;
+
         while (true) {
-            try
-            {
+            try {
                 inputString = input.readLine("> ");
-            }
-            catch (IOError e)
-            {
+            } catch (IOError e) {
                 System.err.println(e.getMessage());
                 continue;
             }
@@ -193,10 +193,6 @@ public class StemCli {
             }
             try {
                 processing(cmd, inputString.split(" "));
-            } catch (IllegalArgumentException ile) {
-                System.err.println(ile.getMessage());
-            } catch (IOException ioe) {
-                System.err.println(ioe.getMessage());
             } catch (Exception ex) {
                 System.err.println(ex.getMessage());
             }
@@ -205,20 +201,21 @@ public class StemCli {
 
     /**
      * Parsing commands from file line-by-line like in interaction mode
-     * @param fileName
+     *
+     * @param fileName file to read commands from
      * @throws IOException
      * @throws FileNotFoundException
      */
-    private static void parsingFile(String fileName) throws IOException, FileNotFoundException {
+    private static void parsingFile(String fileName) throws IOException {
         BufferedReader reader;
         reader = new BufferedReader(new FileReader(fileName));
-        String line = "";
+        String line;
         int lineNumber = 0;
-        CommandLine cmd = null;
+        CommandLine cmd;
         String[] args;
 
-        while((line = reader.readLine()) != null) {
-            line.trim();
+        while ((line = reader.readLine()) != null) {
+            line = line.trim();
             ++lineNumber;
 
             if (line.isEmpty() || line.startsWith("#"))
@@ -234,14 +231,8 @@ public class StemCli {
             try {
                 args = line.split(" ");
                 processing(cmd, args);
-            } catch (IllegalArgumentException ile) {
+            } catch (Exception ile) {
                 System.err.println(ile.getMessage());
-                continue;
-            } catch (ClientInternalError cie) {
-                System.err.println(cie.getMessage());
-            } catch (IOException ioe) {
-                System.err.println(ioe.getMessage());
-                continue;
             }
         }
     }
@@ -261,70 +252,74 @@ public class StemCli {
 
     /**
      * Processing commands
-     * @param cmd
-     * @param inputArgs
+     *
+     * @param cmd command line object
+     * @param args arguments
      * @throws IllegalArgumentException
      * @throws IOException
      * @throws ClientInternalError
      */
-    private static void processing(CommandLine cmd, String[] inputArgs) throws IllegalArgumentException, IOException, ClientInternalError {
+    private static void processing(CommandLine cmd, String[] args) throws IOException {
         long startTime = System.nanoTime();
-        if (inputArgs[1].startsWith("--")) {
-            throw new IllegalArgumentException(String.format("Unknown argument '%s'", inputArgs[1]));
+        if (args[1].startsWith("--")) {
+            throw new IllegalArgumentException(String.format("Unknown argument '%s'", args[1]));
         }
         byte[] data;
-        if (inputArgs[0].equals("put")) {
-            if (cmd.hasOption("data")) {
-                data = cmd.getOptionValue("data").getBytes();
-            } else {
-                data = dataFromFile(cmd.getOptionValue("src"));
-            }
-            Blob blob = Blob.create(DigestUtils.md5(inputArgs[1].replace("\"","").getBytes()), data);
-            session.put(blob);
-        } else if (inputArgs[0].equals("get")) {
-            Blob stored = session.get(DigestUtils.md5(inputArgs[1].replace("\"", "").getBytes()));
-            if (stored == null)
-                return;
-            if (cmd.hasOption("dsc")) {
-                dataToFile(stored.body, cmd.getOptionValue("dsc"));
-            } else {
-                for (int i = 0; i < stored.getBlobSize(); i++) {
-                    System.out.print((char) stored.body[i]);
+        switch (args[0]) {
+            case "put":
+                if (cmd.hasOption("data")) {
+                    data = cmd.getOptionValue("data").getBytes();
+                } else {
+                    data = dataFromFile(cmd.getOptionValue("src"));
                 }
-                System.out.println("");
-            }
-        } else if (inputArgs[0].equals("delete")) {
-            session.delete(DigestUtils.md5(inputArgs[1].replace("\"", "").getBytes()));
-        } else {
-            throw new IllegalArgumentException("Method " + inputArgs[0].toString() + " is not allowed");
+                Blob blob = Blob.create(DigestUtils.md5(args[1].replace("\"", "").getBytes()), data);
+                session.put(blob);
+                break;
+            case "get":
+                Blob stored = session.get(DigestUtils.md5(args[1].replace("\"", "").getBytes()));
+                if (stored == null)
+                    return;
+                if (cmd.hasOption("dsc")) {
+                    dataToFile(stored.body, cmd.getOptionValue("dsc"));
+                } else {
+                    for (int i = 0; i < stored.getBlobSize(); i++) {
+                        System.out.print((char) stored.body[i]);
+                    }
+                    System.out.println("");
+                }
+                break;
+            case "delete":
+                session.delete(DigestUtils.md5(args[1].replace("\"", "").getBytes()));
+                break;
+            default:
+                throw new IllegalArgumentException("Method " + args[0] + " is not allowed");
         }
-        elapsedTime(startTime, inputArgs[0]);
+        elapsedTime(startTime, args[0]);
     }
 
     /**
      * Get data from file
-     * @param fileName
-     * @return
+     *
+     * @param fileName file name to read commands from
+     * @return byte[] binary data
      * @throws IOException
      */
     private static byte[] dataFromFile(String fileName) throws IOException {
         FileInputStream fis = null;
-        int i = 0;
         Path filePath = Paths.get(fileName);
         if (!Files.exists(filePath) && !Files.isRegularFile(filePath)) {
             throw new FileNotFoundException("There is no file or it is not regular file.");
         }
 
-        if (Files.size(filePath) > MAX_FILE_SIZE ) {
+        if (Files.size(filePath) > MAX_FILE_SIZE) {
             throw new IOException("File is too big");
         }
         byte[] blob = new byte[(int) Files.size(filePath)];
 
-        try{
+        try {
             fis = new FileInputStream(fileName);
-            i = fis.read(blob);
             return blob;
-        } catch (IOException ex){
+        } catch (IOException ex) {
             throw new IOException(ex.getMessage());
         } finally {
             if (fis != null)
@@ -335,8 +330,9 @@ public class StemCli {
 
     /**
      * Save data to file
-     * @param blob
-     * @param fileName
+     *
+     * @param blob binary data
+     * @param fileName file to save result to
      * @throws IOException
      */
     private static void dataToFile(byte[] blob, String fileName) throws IOException {
@@ -345,7 +341,7 @@ public class StemCli {
             fos = new FileOutputStream(fileName);
             fos.write(blob);
             fos.flush();
-        } catch (IOException ex){
+        } catch (IOException ex) {
             throw new IOException(ex.getMessage());
         } finally {
             if (fos != null)
@@ -355,19 +351,16 @@ public class StemCli {
 
     /**
      * Print elapsed time. Print 2 fraction digits if eta is under 10 ms.
+     *
      * @param startTime starting time in nanoseconds
      */
-    private static void elapsedTime(long startTime, String commandName)
-    {
+    private static void elapsedTime(long startTime, String commandName) {
         long eta = System.nanoTime() - startTime;
         System.out.printf("Elapsed time for command %s: ", commandName);
-        if (eta < 10000000)
-        {
-            System.out.print(Math.round(eta/10000.0)/100.0);
-        }
-        else
-        {
-            System.out.print(Math.round(eta/1000000.0));
+        if (eta < 10000000) {
+            System.out.print(Math.round(eta / 10000.0) / 100.0);
+        } else {
+            System.out.print(Math.round(eta / 1000000.0));
         }
         System.out.println(" msec(s).");
     }
