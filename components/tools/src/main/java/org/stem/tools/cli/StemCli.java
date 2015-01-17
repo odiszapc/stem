@@ -23,10 +23,10 @@ import org.stem.client.ClientInternalError;
 import org.stem.client.Session;
 import org.stem.client.StemCluster;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Scanner;
 
 import static org.stem.tools.cli.Utils.printLine;
@@ -178,27 +178,16 @@ public class StemCli {
 
         while (true) {
             try {
-                inputString = userPromt();
-            } catch (IOError e) {
-                System.err.println(e.getMessage());
-                continue;
-            }
+                inputString = readUserInput().trim();
 
-            inputString = inputString.trim();
+                if (inputString.isEmpty())
+                    continue;
 
-            if (inputString.isEmpty())
-                continue;
+                if (inputString.equals("quit"))
+                    return;
 
-            if (inputString.equals("quit"))
-                return;
-
-            try {
                 cmd = parsingArgs(inputString, true);
-            } catch (ParseException pe) {
-                System.err.println(pe.getMessage());
-                continue;
-            }
-            try {
+
                 processing(cmd, inputString.split(" "));
             } catch (Exception ex) {
                 System.err.println(ex.getMessage());
@@ -260,7 +249,7 @@ public class StemCli {
     /**
      * Processing commands
      *
-     * @param cmd command line object
+     * @param cmd  command line object
      * @param args arguments
      * @throws IllegalArgumentException
      * @throws IOException
@@ -277,7 +266,7 @@ public class StemCli {
                 if (cmd.hasOption("data")) {
                     data = cmd.getOptionValue("data").getBytes();
                 } else {
-                    data = dataFromFile(cmd.getOptionValue("src"));
+                    data = Utils.readFromFile(cmd.getOptionValue("src"), MAX_FILE_SIZE);
                 }
                 Blob blob = Blob.create(DigestUtils.md5(args[1].replace("\"", "").getBytes()), data);
                 session.put(blob);
@@ -287,7 +276,7 @@ public class StemCli {
                 if (stored == null)
                     break;
                 if (cmd.hasOption("dsc")) {
-                    dataToFile(stored.body, cmd.getOptionValue("dsc"));
+                    Utils.writeToFile(stored.body, cmd.getOptionValue("dsc"));
                 } else {
                     for (int i = 0; i < stored.getBlobSize(); i++) {
                         System.out.print((char) stored.body[i]);
@@ -302,58 +291,6 @@ public class StemCli {
                 throw new IllegalArgumentException("Method " + args[0] + " is not allowed");
         }
         elapsedTime(startTime, args[0]);
-    }
-
-    /**
-     * Get data from file
-     *
-     * @param fileName file name to read commands from
-     * @return byte[] binary data
-     * @throws IOException
-     */
-    private byte[] dataFromFile(String fileName) throws IOException {
-        FileInputStream fis = null;
-        Path filePath = Paths.get(fileName);
-        if (!Files.exists(filePath) && !Files.isRegularFile(filePath)) {
-            throw new FileNotFoundException("There is no file or it is not regular file.");
-        }
-
-        if (Files.size(filePath) > MAX_FILE_SIZE) {
-            throw new IOException("File is too big");
-        }
-        byte[] blob = new byte[(int) Files.size(filePath)];
-
-        try {
-            fis = new FileInputStream(fileName);
-            return blob;
-        } catch (IOException ex) {
-            throw new IOException(ex.getMessage());
-        } finally {
-            if (fis != null)
-                fis.close();
-        }
-
-    }
-
-    /**
-     * Save data to file
-     *
-     * @param blob binary data
-     * @param fileName file to save result to
-     * @throws IOException
-     */
-    private void dataToFile(byte[] blob, String fileName) throws IOException {
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(fileName);
-            fos.write(blob);
-            fos.flush();
-        } catch (IOException ex) {
-            throw new IOException(ex.getMessage());
-        } finally {
-            if (fos != null)
-                fos.close();
-        }
     }
 
     /**
@@ -372,15 +309,13 @@ public class StemCli {
         printLine(" ms");
     }
 
-    private String userPromt() {
+    private String readUserInput() {
         String promt = String.format("[%s] ", cluster.getName());
         return readLine(promt);
     }
 
     private String readLine(String message) {
-
         System.out.print(message);
         return console.nextLine();
     }
-
 }
