@@ -27,6 +27,9 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Scanner;
+
+import static org.stem.tools.cli.Utils.printLine;
 
 public class StemCli {
 
@@ -83,6 +86,8 @@ public class StemCli {
     CommandLine cmd;
     private String[] args;
     private Mode mode;
+    private final Scanner console = new Scanner(System.in);
+    private StemCluster cluster;
 
     public StemCli(String[] args) {
         this.args = args;
@@ -94,7 +99,7 @@ public class StemCli {
         try {
             cmd = parser.parse(options, args);
         } catch (ParseException e) {
-            System.out.println(e.getMessage());
+            printLine(e.getMessage());
             usage();
             System.exit(1);
         }
@@ -141,37 +146,39 @@ public class StemCli {
     }
 
     /**
-     * Establish a session with org.stem.client.StemCluster
+     * Establish connection to cluster
      */
-    private static void connect(String url) {
-        StemCluster cluster = new StemCluster.Builder()
+    private void connect(String url) {
+        this.cluster = new StemCluster.Builder()
                 .withClusterManagerUrl(url)
                 .build();
 
         session = cluster.connect();
+
+        printLine(String.format("Connected to \"%s\" on %s", cluster.getName(), cmd.getOptionValue("manager")));
     }
 
     private static void usage() {
-        System.out.println("Usage (batch mode):");
+        printLine("Usage (batch mode):");
         new HelpFormatter().printHelp("stem-cli [<COMMAND>] [<KEY>] [--data <DATA>] [--dst <FILE>] [--src <FILE>] [--file <FILE>] --manager=<URL>", options);
-        System.out.println("Usage (interactive mode):");
+        printLine();
+        printLine("Usage (interactive mode):");
         new HelpFormatter().printHelp("<COMMAND> <KEY> [--data <DATA>] [--dst <FILE>] [--src <FILE>] [--file <FILE>]", options);
     }
 
-    private static void interactiveMode() {
-        Console input = System.console();
-        if (input == null) {
+    private void interactiveMode() {
+        if (console == null) {
             System.err.println("There is no console.");
             System.exit(1);
         }
-        System.out.println("Enter 'quit' to quit");
+        printLine("Enter 'quit' to exit interactive mode");
 
         String inputString;
         CommandLine cmd;
 
         while (true) {
             try {
-                inputString = input.readLine("> ");
+                inputString = userPromt();
             } catch (IOError e) {
                 System.err.println(e.getMessage());
                 continue;
@@ -206,7 +213,7 @@ public class StemCli {
      * @throws IOException
      * @throws FileNotFoundException
      */
-    private static void parsingFile(String fileName) throws IOException {
+    private void parsingFile(String fileName) throws IOException {
         BufferedReader reader;
         reader = new BufferedReader(new FileReader(fileName));
         String line;
@@ -224,8 +231,8 @@ public class StemCli {
             try {
                 cmd = parsingArgs(line, true);
             } catch (ParseException pe) {
-                System.out.println("Error occurred in the line " + lineNumber + " of file.");
-                System.out.println(pe.getMessage());
+                printLine("Error occurred in the line " + lineNumber + " of file.");
+                printLine(pe.getMessage());
                 continue;
             }
             try {
@@ -237,7 +244,7 @@ public class StemCli {
         }
     }
 
-    private static CommandLine parsingArgs(String inputString, boolean interactiveMode) throws ParseException {
+    private CommandLine parsingArgs(String inputString, boolean interactiveMode) throws ParseException {
         String[] inputArgs = inputString.split(" ");
 
         CommandLine cmd = parser.parse(options, inputArgs);
@@ -259,7 +266,7 @@ public class StemCli {
      * @throws IOException
      * @throws ClientInternalError
      */
-    private static void processing(CommandLine cmd, String[] args) throws IOException {
+    private void processing(CommandLine cmd, String[] args) throws IOException {
         long startTime = System.nanoTime();
         if (args[1].startsWith("--")) {
             throw new IllegalArgumentException(String.format("Unknown argument '%s'", args[1]));
@@ -278,14 +285,14 @@ public class StemCli {
             case "get":
                 Blob stored = session.get(DigestUtils.md5(args[1].replace("\"", "").getBytes()));
                 if (stored == null)
-                    return;
+                    break;
                 if (cmd.hasOption("dsc")) {
                     dataToFile(stored.body, cmd.getOptionValue("dsc"));
                 } else {
                     for (int i = 0; i < stored.getBlobSize(); i++) {
                         System.out.print((char) stored.body[i]);
                     }
-                    System.out.println("");
+                    printLine("");
                 }
                 break;
             case "delete":
@@ -304,7 +311,7 @@ public class StemCli {
      * @return byte[] binary data
      * @throws IOException
      */
-    private static byte[] dataFromFile(String fileName) throws IOException {
+    private byte[] dataFromFile(String fileName) throws IOException {
         FileInputStream fis = null;
         Path filePath = Paths.get(fileName);
         if (!Files.exists(filePath) && !Files.isRegularFile(filePath)) {
@@ -335,7 +342,7 @@ public class StemCli {
      * @param fileName file to save result to
      * @throws IOException
      */
-    private static void dataToFile(byte[] blob, String fileName) throws IOException {
+    private void dataToFile(byte[] blob, String fileName) throws IOException {
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(fileName);
@@ -354,7 +361,7 @@ public class StemCli {
      *
      * @param startTime starting time in nanoseconds
      */
-    private static void elapsedTime(long startTime, String commandName) {
+    private void elapsedTime(long startTime, String commandName) {
         long eta = System.nanoTime() - startTime;
         System.out.printf("Elapsed time for command %s: ", commandName);
         if (eta < 10000000) {
@@ -362,6 +369,18 @@ public class StemCli {
         } else {
             System.out.print(Math.round(eta / 1000000.0));
         }
-        System.out.println(" msec(s).");
+        printLine(" ms");
     }
+
+    private String userPromt() {
+        String promt = String.format("[%s] ", cluster.getName());
+        return readLine(promt);
+    }
+
+    private String readLine(String message) {
+
+        System.out.print(message);
+        return console.nextLine();
+    }
+
 }

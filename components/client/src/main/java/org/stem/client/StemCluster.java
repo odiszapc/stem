@@ -60,6 +60,10 @@ public class StemCluster {
         return manager.metadata;
     }
 
+    public String getName() {
+        return getMetadata().getName();
+    }
+
     public CloseFuture closeAsync() {
         return manager.close();
     }
