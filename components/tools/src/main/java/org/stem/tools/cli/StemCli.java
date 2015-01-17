@@ -27,6 +27,9 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.Exception;
+import java.lang.String;
+import java.lang.System;
 import java.util.Scanner;
 
 import static org.stem.tools.cli.Utils.printLine;
@@ -91,25 +94,22 @@ public class StemCli {
 
     public StemCli(String[] args) {
         this.args = args;
-        if (args.length == 0) {
-            usage();
-            System.exit(1);
+
+        if (args.length > 0) {
+            try {
+                cmd = parser.parse(options, args);
+            } catch (ParseException e) {
+                printLine(e.getMessage());
+                usage();
+                System.exit(1);
+            }
+            if (cmd.hasOption("help")) {
+                usage();
+                System.exit(0);
+            }
         }
 
-        try {
-            cmd = parser.parse(options, args);
-        } catch (ParseException e) {
-            printLine(e.getMessage());
-            usage();
-            System.exit(1);
-        }
-
-        if (cmd.hasOption("help")) {
-            usage();
-            System.exit(0);
-        }
-
-        if (args.length == INTERACTIVE_MODE)
+        if (args.length <= INTERACTIVE_MODE)
             mode = Mode.INTERACTIVE;
         else if (cmd.hasOption("file"))
             mode = Mode.BATCH;
@@ -118,29 +118,34 @@ public class StemCli {
     }
 
     private void run() {
-        try {
-            connect(cmd.getOptionValue("manager"));
-        } catch (Exception ex) {
-            System.err.println("Unable to connect to cluster manager" + ex.getMessage());
-            System.exit(1);
+        if (cmd != null && cmd.hasOption("manager")) {
+            try {
+                connect(cmd.getOptionValue("manager"));
+            } catch (Exception ex) {
+                printLine("Unable to connect to cluster manager" + ex.getMessage());
+                System.exit(1);
+            }
         }
-
         switch (mode) {
             case INTERACTIVE:
                 interactiveMode();
                 break;
             case BATCH:
-                try {
-                    parsingFile(cmd.getOptionValue("file"));
-                } catch (IOException e) {
-                    System.err.println(e.getMessage());
+                if (session != null) {
+                    try {
+                        parsingFile(cmd.getOptionValue("file"));
+                    } catch (IOException e) {
+                        printLine(e.getMessage());
+                    }
+                } else {
+                    printLine("There is no connection to cluster manager.");
                 }
                 break;
             default:
                 try {
                     processing(cmd, args);
                 } catch (Exception ex) {
-                    System.err.println(ex.getMessage());
+                    printLine(ex.getMessage());
                 }
         }
     }
@@ -160,7 +165,7 @@ public class StemCli {
 
     private static void usage() {
         printLine("Usage (batch mode):");
-        new HelpFormatter().printHelp("stem-cli [<COMMAND>] [<KEY>] [--data <DATA>] [--dst <FILE>] [--src <FILE>] [--file <FILE>] --manager=<URL>", options);
+        new HelpFormatter().printHelp("stem-cli [<COMMAND>] [<KEY>] [--data <DATA>] [--dst <FILE>] [--src <FILE>] [--file <FILE>] [--manager=<URL>]", options);
         printLine();
         printLine("Usage (interactive mode):");
         new HelpFormatter().printHelp("<COMMAND> <KEY> [--data <DATA>] [--dst <FILE>] [--src <FILE>] [--file <FILE>]", options);
@@ -190,7 +195,7 @@ public class StemCli {
 
                 processing(cmd, inputString.split(" "));
             } catch (Exception ex) {
-                System.err.println(ex.getMessage());
+                printLine(ex.getMessage());
             }
         }
     }
@@ -228,7 +233,7 @@ public class StemCli {
                 args = line.split(" ");
                 processing(cmd, args);
             } catch (Exception ile) {
-                System.err.println(ile.getMessage());
+                printLine(ile.getMessage());
             }
         }
     }
@@ -257,11 +262,21 @@ public class StemCli {
      */
     private void processing(CommandLine cmd, String[] args) throws IOException {
         long startTime = System.nanoTime();
+        if (session == null && !args[0].equals("connect")) {
+            return;
+        }
         if (args[1].startsWith("--")) {
             throw new IllegalArgumentException(String.format("Unknown argument '%s'", args[1]));
         }
         byte[] data;
         switch (args[0]) {
+            case "connect":
+                try {
+                    connect(args[1]);
+                } catch (Exception ex) {
+                    printLine("Unable to connect to cluster manager" + ex.getMessage());
+                }
+                break;
             case "put":
                 if (cmd.hasOption("data")) {
                     data = cmd.getOptionValue("data").getBytes();
@@ -281,7 +296,7 @@ public class StemCli {
                     for (int i = 0; i < stored.getBlobSize(); i++) {
                         System.out.print((char) stored.body[i]);
                     }
-                    printLine("");
+                    printLine();
                 }
                 break;
             case "delete":
@@ -300,7 +315,7 @@ public class StemCli {
      */
     private void elapsedTime(long startTime, String commandName) {
         long eta = System.nanoTime() - startTime;
-        System.out.printf("Elapsed time for command %s: ", commandName);
+        printLine(String.format("Elapsed time for command %s: ", commandName));
         if (eta < 10000000) {
             System.out.print(Math.round(eta / 10000.0) / 100.0);
         } else {
@@ -310,7 +325,12 @@ public class StemCli {
     }
 
     private String readUserInput() {
-        String promt = String.format("[%s] ", cluster.getName());
+        String promt = null;
+        if (session != null) {
+            promt = String.format("[%s] ", cluster.getName());
+        } else {
+            promt = String.format("[disconnected] ");
+        }
         return readLine(promt);
     }
 
