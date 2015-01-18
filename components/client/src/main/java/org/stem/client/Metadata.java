@@ -62,6 +62,10 @@ public class Metadata {
         this.descriptor = descriptor;
     }
 
+    public REST.Cluster getDescriptor() {
+        return this.descriptor;
+    }
+
     public REST.Topology getTopology() {
         return topology.get();
     }
