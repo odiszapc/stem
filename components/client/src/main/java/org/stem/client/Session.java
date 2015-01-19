@@ -16,12 +16,11 @@
 
 package org.stem.client;
 
-import com.google.common.util.concurrent.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.stem.domain.ExtendedBlobDescriptor;
-import org.stem.exceptions.StemException;
-
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.Striped;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +31,11 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.stem.client.Connection.Factory;
+import org.stem.domain.ExtendedBlobDescriptor;
+import org.stem.exceptions.StemException;
 
 public class Session extends AbstractSession implements StemSession {
 
@@ -46,6 +50,12 @@ public class Session extends AbstractSession implements StemSession {
 
     private volatile boolean isInit;
     private volatile boolean isClosing;
+
+    public Session(StemCluster cluster, RequestRouter router) {
+        this.cluster = cluster;
+        this.pools = new ConcurrentHashMap<>();
+        this.router = router;
+    }
 
     public Session(StemCluster cluster) {
         this.cluster = cluster;
@@ -97,9 +107,16 @@ public class Session extends AbstractSession implements StemSession {
         sendAndReceive(requests);
     }
 
+    public Metadata getClusterMetadata() {
+        return this.cluster.manager.metadata;
+    }
+
     private Message.Response sendAndReceive(List<? extends Message.Request> requests) {
         List<DefaultResultFuture> futures = prepareFutures(requests);
-        ConsistentResponseHandler responseHandler = new ConsistentResponseHandler(this, futures, configuration().getQueryOpts().getConsistency());
+        QueryOpts queryOptions = configuration().getQueryOpts();
+        long timeoutMs = (configuration().getSocketOpts().getConnectTimeoutMs() + Factory.TIMER_RESOLUTION) * 2;
+        ConsistentResponseHandler responseHandler = new ConsistentResponseHandler(
+                this, futures, queryOptions.getConsistency(), timeoutMs);
 
         for (DefaultResultFuture future : futures) {
             new RequestHandler(this, future, future.request()).sendRequest();

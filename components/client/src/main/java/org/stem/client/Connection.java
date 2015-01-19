@@ -283,12 +283,13 @@ public class Connection {
      *
      */
     public static class Factory {
+        public static final long TIMER_RESOLUTION = 100L;
 
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
         private StemCluster.Manager manager;
         private final Configuration configuration;
-        public final Timer timer = new HashedWheelTimer(new ThreadFactoryBuilder().setNameFormat("Timeouter-%d").build());
+        public final Timer timer = new HashedWheelTimer(new ThreadFactoryBuilder().setNameFormat("Timeouter-%d").build(), TIMER_RESOLUTION, TimeUnit.MILLISECONDS);
         private volatile boolean isShutdown;
         private InetSocketAddress address;
 
