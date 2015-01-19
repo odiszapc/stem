@@ -16,12 +16,17 @@
 
 package org.stem.tools.cli;
 
+import com.sun.org.apache.xpath.internal.operations.Mod;
 import org.apache.commons.cli.*;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.stem.client.*;
 import org.stem.client.Blob;
 import org.stem.client.ClientInternalError;
 import org.stem.client.Session;
 import org.stem.client.StemCluster;
+import org.stem.client.ClientException;
+import org.stem.utils.JsonUtils;
+import org.stem.api.REST;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -86,6 +91,10 @@ public class StemCli {
         INTERACTIVE, BATCH, SINGLE
     }
 
+    private enum Argument {
+        COMMAND, KEY, DATA
+    }
+
     CommandLine cmd;
     private String[] args;
     private Mode mode;
@@ -122,8 +131,8 @@ public class StemCli {
             try {
                 connect(cmd.getOptionValue("manager"));
             } catch (Exception ex) {
-                printLine("Unable to connect to cluster manager" + ex.getMessage());
-                System.exit(1);
+                printLine(ex.getMessage());
+//                System.exit(1);
             }
         }
         switch (mode) {
@@ -169,6 +178,16 @@ public class StemCli {
         printLine();
         printLine("Usage (interactive mode):");
         new HelpFormatter().printHelp("<COMMAND> <KEY> [--data <DATA>] [--dst <FILE>] [--src <FILE>] [--file <FILE>]", options);
+    }
+
+    private void usageInteractiveMode() {
+        printLine();
+        printLine("Usage commands: ");
+        printLine("connect <URL> - Connect to cluster");
+        printLine("put <KEY> [<DATA> or --data <DATA>] [--src <FILE>]  - Put data to storage");
+        printLine("get <KEY> [--dst <FILE>] - Show saved data or save it in to file");
+        printLine("delete <KEY> - Delete data from storage");
+        printLine("describe - Show information about cluster.");
     }
 
     private void interactiveMode() {
@@ -232,6 +251,8 @@ public class StemCli {
             try {
                 args = line.split(" ");
                 processing(cmd, args);
+            } catch (ClientException ce) {
+                printLine(ce.getMessage());
             } catch (Exception ile) {
                 printLine(ile.getMessage());
             }
@@ -245,7 +266,7 @@ public class StemCli {
         if (!interactiveMode && !cmd.hasOption("manager") && !cmd.hasOption("help"))
             throw new ParseException("There is no '--manager' option!");
 
-        if (inputArgs.length < MIN_QUANTITY_ARGS)
+        if (inputArgs.length == 0 && !inputArgs[Argument.COMMAND.ordinal()].equals("help") && inputArgs.length < MIN_QUANTITY_ARGS)
             throw new ParseException("Too few arguments");
 
         return cmd;
@@ -260,36 +281,47 @@ public class StemCli {
      * @throws IOException
      * @throws ClientInternalError
      */
-    private void processing(CommandLine cmd, String[] args) throws IOException {
+    private void processing(CommandLine cmd, String[] args) throws IOException, ParseException, ClientException {
         long startTime = System.nanoTime();
-        if (session == null && !args[0].equals("connect")) {
+
+        if (session == null && (!args[Argument.COMMAND.ordinal()].equals("connect") &&
+                !args[Argument.COMMAND.ordinal()].equals("help"))) {
             return;
         }
-        if (args[1].startsWith("--")) {
-            throw new IllegalArgumentException(String.format("Unknown argument '%s'", args[1]));
-        }
+
         byte[] data;
-        switch (args[0]) {
+        switch (args[Argument.COMMAND.ordinal()]) {
             case "connect":
                 try {
                     connect(args[1]);
                 } catch (Exception ex) {
-                    printLine("Unable to connect to cluster manager" + ex.getMessage());
+                    printLine(ex.getMessage());
                 }
                 break;
             case "put":
-                if (cmd.hasOption("data")) {
-                    data = cmd.getOptionValue("data").getBytes();
+                if (args.length <= MIN_QUANTITY_ARGS)
+                    throw new ParseException("Too few arguments for put command");
+
+                if (mode == Mode.INTERACTIVE && !cmd.hasOption("data") && !cmd.hasOption("src")) {
+                    if (args[Argument.DATA.ordinal()].startsWith("--")) {
+                        throw new IllegalArgumentException(String.format("Wrong argument '%s'", args[Argument.DATA.ordinal()]));
+                    }
+                    data = args[Argument.DATA.ordinal()].replace("\"", "").getBytes();
+                } else if (cmd.hasOption("data")) {
+                    data = cmd.getOptionValue("data").replace("\"", "").getBytes();
                 } else {
                     data = Utils.readFromFile(cmd.getOptionValue("src"), MAX_FILE_SIZE);
                 }
-                Blob blob = Blob.create(DigestUtils.md5(args[1].replace("\"", "").getBytes()), data);
+
+                Blob blob = Blob.create(DigestUtils.md5(args[Argument.KEY.ordinal()].replace("\"", "").getBytes()), data);
                 session.put(blob);
                 break;
             case "get":
-                Blob stored = session.get(DigestUtils.md5(args[1].replace("\"", "").getBytes()));
+                Blob stored = session.get(DigestUtils.md5(args[Argument.KEY.ordinal()].replace("\"", "").getBytes()));
+
                 if (stored == null)
                     break;
+
                 if (cmd.hasOption("dsc")) {
                     Utils.writeToFile(stored.body, cmd.getOptionValue("dsc"));
                 } else {
@@ -300,12 +332,20 @@ public class StemCli {
                 }
                 break;
             case "delete":
-                session.delete(DigestUtils.md5(args[1].replace("\"", "").getBytes()));
+                session.delete(DigestUtils.md5(args[Argument.KEY.ordinal()].replace("\"", "").getBytes()));
+                break;
+            case "help":
+                usageInteractiveMode();
+                break;
+            case "describe":
+                REST.Cluster clusterDescriptor = cluster.getMetadata().getDescriptor();
+                clusterDescriptor.setNodes(null);
+                printLine(JsonUtils.encodeFormatted(clusterDescriptor));
                 break;
             default:
-                throw new IllegalArgumentException("Method " + args[0] + " is not allowed");
+                throw new IllegalArgumentException("Method " + args[Argument.COMMAND.ordinal()] + " is not allowed");
         }
-        elapsedTime(startTime, args[0]);
+        elapsedTime(startTime, args[Argument.COMMAND.ordinal()]);
     }
 
     /**
