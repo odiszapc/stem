@@ -66,6 +66,11 @@ public class Metadata {
         return this.descriptor;
     }
 
+    public String getName() {
+        if (null == descriptor) return null;
+        return this.descriptor.getName();
+    }
+
     public REST.Topology getTopology() {
         return topology.get();
     }
