@@ -44,7 +44,7 @@ public class RequestRouter {
     }
 
     private Metadata metadata() {
-        return session.cluster.manager.metadata;
+        return this.session.getClusterMetadata();
     }
 
     private Host getHostForRoutingKey(Object routingKey) {

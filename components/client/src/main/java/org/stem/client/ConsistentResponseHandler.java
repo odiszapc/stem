@@ -18,19 +18,19 @@ package org.stem.client;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
-import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.stem.utils.Utils;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.stem.utils.Utils;
 
 public class ConsistentResponseHandler {
 
@@ -42,14 +42,15 @@ public class ConsistentResponseHandler {
     Map<Host, ReplicaResponseHandler> handlers = new HashMap<>();
     List<ReplicaResponseHandler> completedHandlers = new CopyOnWriteArrayList<>();
 
-
+    private long timeoutMs;
     private int consistencyCondition;
     private final CountDownLatch counter;
     private final AtomicInteger successfulRequests = new AtomicInteger();
 
-    public ConsistentResponseHandler(Session session, List<DefaultResultFuture> futures, Consistency.Level consistency) {
+    public ConsistentResponseHandler(Session session, List<DefaultResultFuture> futures, Consistency.Level consistency, long timeoutMs) {
         this.session = session;
         this.consistency = consistency;
+        this.timeoutMs = timeoutMs;
         consistencyCondition = consistencyCondition(futures.size());
         counter = new CountDownLatch(consistencyCondition);
 
@@ -61,13 +62,16 @@ public class ConsistentResponseHandler {
 
     public void waitFor() {
         try {
-            for (ReplicaResponseHandler handler : handlers.values()) {
-                handler.start();
+            for (ReplicaResponseHandler handler : this.handlers.values()) {
+                handler.startWithTimeout(this.timeoutMs);
             }
-            counter.await();
+            boolean awaitHappenedOnTime = this.counter.await(this.timeoutMs, TimeUnit.MILLISECONDS);
+            if (!awaitHappenedOnTime) {
+                logger.error("Timed out({} ms) waiting for responses. Netty should have prevented this from happening by timing out down the stack. Contact devs.", this.timeoutMs);
+            }
 
             if (!isConsistent()) {
-                for (ReplicaResponseHandler handler : completedHandlers) {
+                for (ReplicaResponseHandler handler : this.completedHandlers) {
                     if (!handler.isSuccess()) {
                         logger.error("Request to {} failed with error: {}", handler.getHost(), handler.getErrorMessage());
                     }
@@ -151,13 +155,7 @@ public class ConsistentResponseHandler {
             }
         });
 
-        return Lists.newArrayList(
-                Iterables.filter(transformed, new Predicate<Message.Response>() {
-                    @Override
-                    public boolean apply(Message.Response input) {
-                        return input != null;
-                    }
-                }));
+        return Lists.newArrayList(Iterables.filter(transformed, Predicates.notNull()));
     }
 
     public Message.Response getResult() {
