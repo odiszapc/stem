@@ -49,6 +49,14 @@ public class JsonUtils {
         }
     }
 
+    public static String encodeFormatted(Object obj) {
+        try {
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Can't serialize object", e);
+        }
+    }
+
     public static byte[] encodeBytes(Object obj) {
         try {
             return mapper.writeValueAsBytes(obj);
