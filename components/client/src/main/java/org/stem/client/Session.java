@@ -85,6 +85,7 @@ public class Session extends AbstractSession implements StemSession {
     @Override
     public Blob get(byte[] key) {
         init();
+
         List<Requests.ReadBlob> requests = prepareReadRequests(key);
         if (requests.isEmpty())
             return null;

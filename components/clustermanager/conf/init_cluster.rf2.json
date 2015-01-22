@@ -1,0 +1,12 @@
+{
+  "name": "StemCluster",
+  "vBuckets": 100000,
+  "rf": 2,
+  "partitioner": "crush",
+  "meta": {
+    "contactPoints": ["localhost"]
+  },
+  "configuration": {
+    "autoApproval": true
+  }
+}

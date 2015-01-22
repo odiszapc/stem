@@ -109,14 +109,14 @@ public class Cluster {
             // TODO: check node status
             approve(future.eventId(), node.getId());
 
-        // If autApproval is turned on add and approve immediately
+            // If autApproval is turned on add and approve immediately
         } else if (configuration().isAutoApproval()) {
             logger.info("Auto approve node {}", node);
             freshNodesPool.add(node, future);
             AutoPlacementPolicy policy = freshNodesPool.getPlacementPolicy();
             approve(node.getId(), policy.getDatacenterNode(node), policy.getRackForNode(node));
 
-        // If node is really new - add it to the queue for manual approval
+            // If node is really new - add it to the queue for manual approval
         } else {
             logger.info("Add node {} to the queue for manual approval", node);
             freshNodesPool.add(node, future);
@@ -284,9 +284,12 @@ public class Cluster {
         try {
             manager.recalculateDataMapping();
         } catch (Exception e) {
-            logger.error("Compute mapping failed");
-            throw new StemException("Compute mapping failed", e);
-
+            if (topology().getStorageNodes().size() < descriptor().getRf()) {
+                logger.debug("{} nodes is not applicable for RF={}. Mapping can not be calculated", topology().getStorageNodes().size(), descriptor().getRf());
+            } else {
+                logger.error("Compute mapping failed");
+                throw new StemException("Compute mapping failed", e);
+            }
         }
     }
 
