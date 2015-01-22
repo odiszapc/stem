@@ -104,6 +104,8 @@ public class Session extends AbstractSession implements StemSession {
     public void delete(byte[] key) {
         init();
         List<Requests.DeleteBlob> requests = prepareDeleteRequests(key);
+        if (requests.isEmpty())
+            return;
         sendAndReceive(requests);
     }
 
