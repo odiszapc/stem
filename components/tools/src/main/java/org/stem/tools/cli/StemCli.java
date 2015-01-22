@@ -355,13 +355,9 @@ public class StemCli {
      */
     private void elapsedTime(long startTime, String commandName) {
         long eta = System.nanoTime() - startTime;
-        printLine(String.format("Elapsed time for command %s: ", commandName));
-        if (eta < 10000000) {
-            System.out.print(Math.round(eta / 10000.0) / 100.0);
-        } else {
-            System.out.print(Math.round(eta / 1000000.0));
-        }
-        printLine(" ms");
+        double durationMs = eta < 10000000 ? Math.round(eta / 10000.0) / 100.0 : Math.round(eta / 1000000.0);
+        printLine("Elapsed time: %s ms", durationMs);
+
     }
 
     private String readUserInput() {

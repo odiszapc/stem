@@ -29,6 +29,10 @@ public class Utils {
         System.out.println(message);
     }
 
+    public static void printLine(String message, Object... params) {
+        System.out.println(String.format(message, params));
+    }
+
     public static void printLine() {
         System.out.println();
     }
