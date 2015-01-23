@@ -37,6 +37,13 @@ public class StemCli {
     private static final int MAX_FILE_SIZE = 100; //Max size of file is 100MB
     private static final int MIN_QUANTITY_ARGS = 2; //Min quantity of args in commands from file
 
+    public static final String CONNECT = "connect";
+    private static final String PUT = "put";
+    private static final String GET = "get";
+    private static final String DELETE = "delete";
+    private static final String DESCRIBE = "describe";
+    private static final String HELP = "help";
+
     private enum Mode {
         INTERACTIVE, BATCH, SINGLE
     }
@@ -222,8 +229,6 @@ public class StemCli {
             try {
                 args = line.split(" ");
                 processing(cmd, args);
-            } catch (ClientException ce) {
-                printLine(ce.getMessage());
             } catch (Exception ile) {
                 printLine(ile.getMessage());
             }
@@ -262,14 +267,14 @@ public class StemCli {
 
         byte[] data;
         switch (args[Argument.COMMAND.ordinal()]) {
-            case "connect":
+            case CONNECT:
                 try {
                     connect(args[1]);
                 } catch (Exception ex) {
                     printLine(ex.getMessage());
                 }
                 break;
-            case "put":
+            case PUT:
                 if (args.length <= MIN_QUANTITY_ARGS)
                     throw new ParseException("Too few arguments for put command");
 
@@ -287,7 +292,7 @@ public class StemCli {
                 Blob blob = Blob.create(DigestUtils.md5(args[Argument.KEY.ordinal()].replace("\"", "").getBytes()), data);
                 session.put(blob);
                 break;
-            case "get":
+            case GET:
                 Blob stored = session.get(DigestUtils.md5(args[Argument.KEY.ordinal()].replace("\"", "").getBytes()));
 
                 if (stored == null)
@@ -302,13 +307,13 @@ public class StemCli {
                     printLine();
                 }
                 break;
-            case "delete":
+            case DELETE:
                 session.delete(DigestUtils.md5(args[Argument.KEY.ordinal()].replace("\"", "").getBytes()));
                 break;
-            case "help":
+            case HELP:
                 usageInteractiveMode();
                 break;
-            case "describe":
+            case DESCRIBE:
                 REST.Cluster clusterDescriptor = cluster.getMetadata().getDescriptor();
                 clusterDescriptor.setNodes(null);
                 printLine(JsonUtils.encodeFormatted(clusterDescriptor));
@@ -336,13 +341,8 @@ public class StemCli {
     }
 
     private String readUserInput() {
-        String promt = null;
-        if (session != null) {
-            promt = String.format("[%s] ", cluster.getName());
-        } else {
-            promt = String.format("[disconnected] ");
-        }
-        return readLine(promt);
+        String prompt = session != null ? String.format("[%s] ", cluster.getName()) : String.format("[disconnected] ");
+        return readLine(prompt);
     }
 
     private String readLine(String message) {
