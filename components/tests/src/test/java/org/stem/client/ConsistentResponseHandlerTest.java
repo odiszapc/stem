@@ -1,12 +1,5 @@
 package org.stem.client;
 
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import org.easymock.IMocksControl;
 import org.junit.Before;
 import org.junit.Rule;
@@ -14,6 +7,14 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.stem.client.Message.Request;
 import org.stem.client.Requests.DeleteBlob;
+
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static org.easymock.EasyMock.*;
 

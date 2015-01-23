@@ -16,27 +16,19 @@
 
 package org.stem.tools.cli;
 
-import com.sun.org.apache.xpath.internal.operations.Mod;
 import org.apache.commons.cli.*;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.stem.client.*;
-import org.stem.client.Blob;
-import org.stem.client.ClientInternalError;
-import org.stem.client.Session;
-import org.stem.client.StemCluster;
-import org.stem.client.ClientException;
-import org.stem.utils.JsonUtils;
 import org.stem.api.REST;
+import org.stem.client.*;
+import org.stem.utils.JsonUtils;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.Exception;
-import java.lang.String;
-import java.lang.System;
 import java.util.Scanner;
 
+import static org.stem.tools.cli.Utils.newOpt;
 import static org.stem.tools.cli.Utils.printLine;
 
 public class StemCli {
@@ -44,48 +36,13 @@ public class StemCli {
     private static final int INTERACTIVE_MODE = 1;
     private static final int MAX_FILE_SIZE = 100; //Max size of file is 100MB
     private static final int MIN_QUANTITY_ARGS = 2; //Min quantity of args in commands from file
-    private static final Options options;
-    private static final CommandLineParser parser = new PosixParser();
-    private static Session session = null;
 
-    static {
-        options = buildOptions();
-    }
-
-    @SuppressWarnings("all")
-    private static Options buildOptions() {
-        Options options = new Options();
-        options.addOption(OptionBuilder.withLongOpt("data")
-                .hasArg()
-                .withArgName("DATA")
-                .create());
-        options.addOption(OptionBuilder.withLongOpt("src")
-                .hasArg()
-                .withArgName("FILE")
-                .create());
-        options.addOption(OptionBuilder.withLongOpt("dst")
-                .hasArg()
-                .withArgName("FILE")
-                .create());
-        options.addOption(OptionBuilder.withLongOpt("manager")
-                .hasArg()
-                .withArgName("--manager=<URL>")
-//                .isRequired()
-                .create());
-        options.addOption(OptionBuilder.withLongOpt("file")
-                .hasArg()
-                .withArgName("FILE")
-                .create());
-        options.addOption(OptionBuilder.withLongOpt("help")
-                .create());
-        return options;
-    }
-
-    public static void main(String[] args) {
-        StemCli cli = new StemCli(args);
-        cli.run();
-        System.exit(0);
-    }
+    public static final String CONNECT = "connect";
+    private static final String PUT = "put";
+    private static final String GET = "get";
+    private static final String DELETE = "delete";
+    private static final String DESCRIBE = "describe";
+    private static final String HELP = "help";
 
     private enum Mode {
         INTERACTIVE, BATCH, SINGLE
@@ -95,13 +52,37 @@ public class StemCli {
         COMMAND, KEY, DATA
     }
 
-    CommandLine cmd;
-    private String[] args;
-    private Mode mode;
+    public static void main(String[] args) {
+        StemCli cli = new StemCli(args);
+        cli.run();
+        System.exit(0);
+    }
+
+    private final CommandLineParser parser = new PosixParser();
+    private final Options options;
     private final Scanner console = new Scanner(System.in);
+    private final String[] args;
+
+    private CommandLine cmd;
+    private Mode mode;
+
     private StemCluster cluster;
+    private Session session = null;
+
+    @SuppressWarnings("all")
+    private Options buildOptions() {
+        Options options = new Options();
+        options.addOption(newOpt("data", "DATA"))
+                .addOption(newOpt("src", "FILE"))
+                .addOption(newOpt("dst", "FILE"))
+                .addOption(newOpt("manager", "URL"))
+                .addOption(newOpt("file", "FILE"))
+                .addOption(newOpt("help", null));
+        return options;
+    }
 
     public StemCli(String[] args) {
+        options = buildOptions();
         this.args = args;
 
         if (args.length > 0) {
@@ -116,9 +97,7 @@ public class StemCli {
                 usage();
                 System.exit(0);
             }
-        }
-
-        if (args.length <= INTERACTIVE_MODE)
+        } else if (args.length <= INTERACTIVE_MODE)
             mode = Mode.INTERACTIVE;
         else if (cmd.hasOption("file"))
             mode = Mode.BATCH;
@@ -132,7 +111,6 @@ public class StemCli {
                 connect(cmd.getOptionValue("manager"));
             } catch (Exception ex) {
                 printLine(ex.getMessage());
-//                System.exit(1);
             }
         }
         switch (mode) {
@@ -172,7 +150,7 @@ public class StemCli {
         printLine(String.format("Connected to \"%s\" on %s", cluster.getName(), cmd.getOptionValue("manager")));
     }
 
-    private static void usage() {
+    private void usage() {
         printLine("Usage (batch mode):");
         new HelpFormatter().printHelp("stem-cli [<COMMAND>] [<KEY>] [--data <DATA>] [--dst <FILE>] [--src <FILE>] [--file <FILE>] [--manager=<URL>]", options);
         printLine();
@@ -251,8 +229,6 @@ public class StemCli {
             try {
                 args = line.split(" ");
                 processing(cmd, args);
-            } catch (ClientException ce) {
-                printLine(ce.getMessage());
             } catch (Exception ile) {
                 printLine(ile.getMessage());
             }
@@ -260,13 +236,13 @@ public class StemCli {
     }
 
     private CommandLine parsingArgs(String inputString, boolean interactiveMode) throws ParseException {
-        String[] inputArgs = inputString.split(" ");
+        String[] args = inputString.split(" ");
 
-        CommandLine cmd = parser.parse(options, inputArgs);
+        CommandLine cmd = parser.parse(options, args);
         if (!interactiveMode && !cmd.hasOption("manager") && !cmd.hasOption("help"))
             throw new ParseException("There is no '--manager' option!");
 
-        if (inputArgs.length == 0 && !inputArgs[Argument.COMMAND.ordinal()].equals("help") && inputArgs.length < MIN_QUANTITY_ARGS)
+        if (args.length == 0 && !args[Argument.COMMAND.ordinal()].equals("help") && args.length < MIN_QUANTITY_ARGS)
             throw new ParseException("Too few arguments");
 
         return cmd;
@@ -291,14 +267,14 @@ public class StemCli {
 
         byte[] data;
         switch (args[Argument.COMMAND.ordinal()]) {
-            case "connect":
+            case CONNECT:
                 try {
                     connect(args[1]);
                 } catch (Exception ex) {
                     printLine(ex.getMessage());
                 }
                 break;
-            case "put":
+            case PUT:
                 if (args.length <= MIN_QUANTITY_ARGS)
                     throw new ParseException("Too few arguments for put command");
 
@@ -316,7 +292,7 @@ public class StemCli {
                 Blob blob = Blob.create(DigestUtils.md5(args[Argument.KEY.ordinal()].replace("\"", "").getBytes()), data);
                 session.put(blob);
                 break;
-            case "get":
+            case GET:
                 Blob stored = session.get(DigestUtils.md5(args[Argument.KEY.ordinal()].replace("\"", "").getBytes()));
 
                 if (stored == null)
@@ -331,13 +307,13 @@ public class StemCli {
                     printLine();
                 }
                 break;
-            case "delete":
+            case DELETE:
                 session.delete(DigestUtils.md5(args[Argument.KEY.ordinal()].replace("\"", "").getBytes()));
                 break;
-            case "help":
+            case HELP:
                 usageInteractiveMode();
                 break;
-            case "describe":
+            case DESCRIBE:
                 REST.Cluster clusterDescriptor = cluster.getMetadata().getDescriptor();
                 clusterDescriptor.setNodes(null);
                 printLine(JsonUtils.encodeFormatted(clusterDescriptor));
@@ -361,13 +337,8 @@ public class StemCli {
     }
 
     private String readUserInput() {
-        String promt = null;
-        if (session != null) {
-            promt = String.format("[%s] ", cluster.getName());
-        } else {
-            promt = String.format("[disconnected] ");
-        }
-        return readLine(promt);
+        String prompt = session != null ? String.format("[%s] ", cluster.getName()) : String.format("[disconnected] ");
+        return readLine(prompt);
     }
 
     private String readLine(String message) {
