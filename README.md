@@ -68,7 +68,7 @@ Dmitry Kolesov
 
 Ivan Sobolev
 
-LucasAllan Amorim
+Lucas Allan Amorim
 
 #### License
 Apache 2.0
