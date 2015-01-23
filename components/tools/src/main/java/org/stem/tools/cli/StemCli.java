@@ -16,25 +16,16 @@
 
 package org.stem.tools.cli;
 
-import com.sun.org.apache.xpath.internal.operations.Mod;
 import org.apache.commons.cli.*;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.stem.client.*;
-import org.stem.client.Blob;
-import org.stem.client.ClientInternalError;
-import org.stem.client.Session;
-import org.stem.client.StemCluster;
-import org.stem.client.ClientException;
-import org.stem.utils.JsonUtils;
 import org.stem.api.REST;
+import org.stem.client.*;
+import org.stem.utils.JsonUtils;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.Exception;
-import java.lang.String;
-import java.lang.System;
 import java.util.Scanner;
 
 import static org.stem.tools.cli.Utils.printLine;
@@ -116,9 +107,7 @@ public class StemCli {
                 usage();
                 System.exit(0);
             }
-        }
-
-        if (args.length <= INTERACTIVE_MODE)
+        } else if (args.length <= INTERACTIVE_MODE)
             mode = Mode.INTERACTIVE;
         else if (cmd.hasOption("file"))
             mode = Mode.BATCH;
@@ -132,7 +121,6 @@ public class StemCli {
                 connect(cmd.getOptionValue("manager"));
             } catch (Exception ex) {
                 printLine(ex.getMessage());
-//                System.exit(1);
             }
         }
         switch (mode) {
