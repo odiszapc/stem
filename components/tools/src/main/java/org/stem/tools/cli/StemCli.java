@@ -97,7 +97,9 @@ public class StemCli {
                 usage();
                 System.exit(0);
             }
-        } else if (args.length <= INTERACTIVE_MODE)
+        }
+
+        if (args.length <= INTERACTIVE_MODE)
             mode = Mode.INTERACTIVE;
         else if (cmd.hasOption("file"))
             mode = Mode.BATCH;
