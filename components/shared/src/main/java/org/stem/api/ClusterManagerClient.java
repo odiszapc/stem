@@ -18,7 +18,6 @@ package org.stem.api;
 
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stem.api.request.ClusterConfiguration;

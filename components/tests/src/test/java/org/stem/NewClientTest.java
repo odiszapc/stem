@@ -22,10 +22,6 @@ import org.junit.Test;
 import org.stem.client.Blob;
 import org.stem.client.Session;
 import org.stem.client.StemCluster;
-import org.stem.client.old.StorageNodeClient;
-import org.stem.transport.ops.WriteBlobMessage;
-
-import java.util.UUID;
 
 
 public class NewClientTest extends IntegrationTestBase

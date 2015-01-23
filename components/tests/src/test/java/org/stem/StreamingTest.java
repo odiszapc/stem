@@ -16,28 +16,8 @@
 
 package org.stem;
 
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Test;
-import org.stem.api.REST;
-import org.stem.api.request.JoinRequest;
-import org.stem.client.old.StorageNodeClient;
-import org.stem.coordination.ZooException;
-import org.stem.coordination.ZookeeperFactoryCached;
-import org.stem.db.DataTracker;
-import org.stem.db.Layout;
-import org.stem.db.MountPoint;
-import org.stem.db.StorageNodeDescriptor;
-import org.stem.db.compaction.CompactionManager;
-import org.stem.domain.ExtendedBlobDescriptor;
-import org.stem.utils.Utils;
-
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.*;
 
 @Ignore
 public class StreamingTest extends IntegrationTestBase {

@@ -18,18 +18,13 @@ package org.stem;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.stem.client.*;
-import org.stem.client.old.StemClient;
 import org.stem.db.*;
-import org.stem.db.Blob;
 import org.stem.db.compaction.CompactionManager;
 import org.stem.db.compaction.FFScanner;
 import org.stem.utils.YamlConfigurator;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
