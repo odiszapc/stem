@@ -236,13 +236,13 @@ public class StemCli {
     }
 
     private CommandLine parsingArgs(String inputString, boolean interactiveMode) throws ParseException {
-        String[] inputArgs = inputString.split(" ");
+        String[] args = inputString.split(" ");
 
-        CommandLine cmd = parser.parse(options, inputArgs);
+        CommandLine cmd = parser.parse(options, args);
         if (!interactiveMode && !cmd.hasOption("manager") && !cmd.hasOption("help"))
             throw new ParseException("There is no '--manager' option!");
 
-        if (inputArgs.length == 0 && !inputArgs[Argument.COMMAND.ordinal()].equals("help") && inputArgs.length < MIN_QUANTITY_ARGS)
+        if (args.length == 0 && !args[Argument.COMMAND.ordinal()].equals("help") && args.length < MIN_QUANTITY_ARGS)
             throw new ParseException("Too few arguments");
 
         return cmd;
