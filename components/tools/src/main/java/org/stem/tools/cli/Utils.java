@@ -16,6 +16,9 @@
 
 package org.stem.tools.cli;
 
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -82,6 +85,15 @@ public class Utils {
             if (fis != null)
                 fis.close();
         }
+    }
 
+
+    @SuppressWarnings("all")
+    static Option newOpt(String longOpt, String name) {
+        OptionBuilder builder = OptionBuilder.withLongOpt(longOpt);
+        if (null != name)
+            builder.withArgName(name).hasArg();
+
+        return builder.create();
     }
 }

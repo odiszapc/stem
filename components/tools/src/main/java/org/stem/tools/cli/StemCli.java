@@ -28,6 +28,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Scanner;
 
+import static org.stem.tools.cli.Utils.newOpt;
 import static org.stem.tools.cli.Utils.printLine;
 
 public class StemCli {
@@ -35,48 +36,6 @@ public class StemCli {
     private static final int INTERACTIVE_MODE = 1;
     private static final int MAX_FILE_SIZE = 100; //Max size of file is 100MB
     private static final int MIN_QUANTITY_ARGS = 2; //Min quantity of args in commands from file
-    private static final Options options;
-    private static final CommandLineParser parser = new PosixParser();
-    private static Session session = null;
-
-    static {
-        options = buildOptions();
-    }
-
-    @SuppressWarnings("all")
-    private static Options buildOptions() {
-        Options options = new Options();
-        options.addOption(OptionBuilder.withLongOpt("data")
-                .hasArg()
-                .withArgName("DATA")
-                .create());
-        options.addOption(OptionBuilder.withLongOpt("src")
-                .hasArg()
-                .withArgName("FILE")
-                .create());
-        options.addOption(OptionBuilder.withLongOpt("dst")
-                .hasArg()
-                .withArgName("FILE")
-                .create());
-        options.addOption(OptionBuilder.withLongOpt("manager")
-                .hasArg()
-                .withArgName("--manager=<URL>")
-//                .isRequired()
-                .create());
-        options.addOption(OptionBuilder.withLongOpt("file")
-                .hasArg()
-                .withArgName("FILE")
-                .create());
-        options.addOption(OptionBuilder.withLongOpt("help")
-                .create());
-        return options;
-    }
-
-    public static void main(String[] args) {
-        StemCli cli = new StemCli(args);
-        cli.run();
-        System.exit(0);
-    }
 
     private enum Mode {
         INTERACTIVE, BATCH, SINGLE
@@ -86,13 +45,37 @@ public class StemCli {
         COMMAND, KEY, DATA
     }
 
-    CommandLine cmd;
-    private String[] args;
-    private Mode mode;
+    public static void main(String[] args) {
+        StemCli cli = new StemCli(args);
+        cli.run();
+        System.exit(0);
+    }
+
+    private final CommandLineParser parser = new PosixParser();
+    private final Options options;
     private final Scanner console = new Scanner(System.in);
+    private final String[] args;
+
+    private CommandLine cmd;
+    private Mode mode;
+
     private StemCluster cluster;
+    private Session session = null;
+
+    @SuppressWarnings("all")
+    private Options buildOptions() {
+        Options options = new Options();
+        options.addOption(newOpt("data", "DATA"))
+                .addOption(newOpt("src", "FILE"))
+                .addOption(newOpt("dst", "FILE"))
+                .addOption(newOpt("manager", "URL"))
+                .addOption(newOpt("file", "FILE"))
+                .addOption(newOpt("help", null));
+        return options;
+    }
 
     public StemCli(String[] args) {
+        options = buildOptions();
         this.args = args;
 
         if (args.length > 0) {
@@ -160,7 +143,7 @@ public class StemCli {
         printLine(String.format("Connected to \"%s\" on %s", cluster.getName(), cmd.getOptionValue("manager")));
     }
 
-    private static void usage() {
+    private void usage() {
         printLine("Usage (batch mode):");
         new HelpFormatter().printHelp("stem-cli [<COMMAND>] [<KEY>] [--data <DATA>] [--dst <FILE>] [--src <FILE>] [--file <FILE>] [--manager=<URL>]", options);
         printLine();
