@@ -58,8 +58,17 @@ Project home: http://stemstorage.org
 JIRA: http://tracker.stemstorage.org
 
 
-#### Authors
+#### Author
 Alexey Plotnik (odiszapc@gmail.com, http://twitter.com/odiszapc)
+
+#### Contributors
+Alexey Plotnik
+
+Dmitry Kolesov
+
+Ivan Sobolev
+
+LucasAllan Amorim
 
 #### License
 Apache 2.0
