@@ -33,7 +33,7 @@ import static org.stem.tools.cli.Utils.printLine;
 
 public class StemCli {
 
-    private static final int INTERACTIVE_MODE = 1;
+    private static final int INTERACTIVE_MODE_ARG_LENGTH = 1;
     private static final int MAX_FILE_SIZE = 100; //Max size of file is 100MB
     private static final int MIN_QUANTITY_ARGS = 2; //Min quantity of args in commands from file
     private static final int URL = 1;
@@ -108,8 +108,8 @@ public class StemCli {
             }
         }
 
-        if (args.length <= INTERACTIVE_MODE ||
-                (args.length <= INTERACTIVE_MODE + CONSISTENCY  && this.cmd.hasOption("consistency")))
+        if (args.length <= INTERACTIVE_MODE_ARG_LENGTH ||
+                (args.length <= INTERACTIVE_MODE_ARG_LENGTH + CONSISTENCY && this.cmd.hasOption("consistency")))
             mode = Mode.INTERACTIVE;
         else if (cmd.hasOption("file"))
             mode = Mode.BATCH;
