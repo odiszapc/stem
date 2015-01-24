@@ -82,6 +82,7 @@ public class Utils {
 
         try {
             fis = new FileInputStream(fileName);
+            fis.read(blob);
             return blob;
         } catch (IOException ex) {
             throw new IOException(ex.getMessage());
