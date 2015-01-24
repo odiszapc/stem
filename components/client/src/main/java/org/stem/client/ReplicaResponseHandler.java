@@ -82,10 +82,21 @@ public class ReplicaResponseHandler {
     }
 
     public static interface SuccessCondition {
+
         boolean success();
     }
 
-    public static class ReadSuccessCondition {
+    public static class ReadSuccessCondition implements SuccessCondition {
 
+        private ReplicaResponseHandler handler;
+
+        public ReadSuccessCondition(ReplicaResponseHandler handler) {
+            this.handler = handler;
+        }
+
+        @Override
+        public boolean success() {
+            return handler.isSuccess();
+        }
     }
 }
