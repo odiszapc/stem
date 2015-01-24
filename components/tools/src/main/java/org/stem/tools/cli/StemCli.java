@@ -127,7 +127,7 @@ public class StemCli {
     }
 
     private void ensureClusterManagerUrl() {
-        if (cmd.hasOption("manager")) {
+        if (!cmd.hasOption("manager")) {
             printLine("Manager URL not set");
             System.exit(1);
         }
