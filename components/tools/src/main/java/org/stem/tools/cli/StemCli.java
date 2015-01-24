@@ -47,12 +47,6 @@ public class StemCli {
     private static final String CONSISTENCYLEVEL = "consistencylevel";
     private static final String HELP = "help";
 
-    private static final String ONE = "one";
-    private static final String TWO = "two";
-    private static final String THREE = "three";
-    private static final String QUORUM = "quorum";
-    private static final String ALL = "all";
-
     private enum Mode {
         INTERACTIVE, BATCH, SINGLE
     }
@@ -77,7 +71,7 @@ public class StemCli {
 
     private StemCluster cluster;
     private Session session = null;
-    private final Consistency.Level consistency;
+    private Consistency.Level consistency = QueryOpts.DEFAULT_CONSISTENCY;
 
     @SuppressWarnings("all")
     private Options buildOptions() {
@@ -96,30 +90,32 @@ public class StemCli {
         options = buildOptions();
         this.args = args;
 
-        if (args.length > 0) {
-            try {
-                cmd = parser.parse(options, args);
-            } catch (ParseException e) {
-                printLine(e.getMessage());
-                usage();
-                System.exit(1);
-            }
-            if (cmd.hasOption("help")) {
-                usage();
-                System.exit(0);
-            }
+        try {
+            cmd = parser.parse(options, args);
+
+            consistency = readConsistencyLevel(cmd.getOptionValue("consistency"));
+
+            if (cmd.hasOption("file")) {
+                mode = Mode.BATCH;
+                ensureClusterManagerUrl();
+            } else if (hasArg("put") || hasArg("get") || hasArg("delete")) {
+                mode = Mode.SINGLE;
+                ensureClusterManagerUrl();
+            } else
+                mode = Mode.INTERACTIVE;
+        } catch (ParseException e) {
+            printLine(e.getMessage());
+            usage();
+            System.exit(1);
+        } catch (Exception e) {
+            printLine(e.getMessage());
+            System.exit(1);
         }
 
-        consistency = readConsistencyLevel(cmd.getOptionValue("consistency"));
-
-        if (cmd.hasOption("file")) {
-            mode = Mode.BATCH;
-            ensureClusterManagerUrl();
-        } else if (hasArg("put") || hasArg("get") || hasArg("delete")) {
-            mode = Mode.SINGLE;
-            ensureClusterManagerUrl();
-        } else
-            mode = Mode.INTERACTIVE;
+        if (cmd.hasOption("help")) {
+            usage();
+            System.exit(0);
+        }
     }
 
     private boolean hasArg(String arg) {
