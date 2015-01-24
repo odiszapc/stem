@@ -36,6 +36,8 @@ public class StemCli {
     private static final int INTERACTIVE_MODE = 1;
     private static final int MAX_FILE_SIZE = 100; //Max size of file is 100MB
     private static final int MIN_QUANTITY_ARGS = 2; //Min quantity of args in commands from file
+    private static final int URL = 1;
+    private static final int CONSISTENCY = 2; //Interactive mode with consistency argument
 
     public static final String CONNECT = "connect";
     private static final String PUT = "put";
@@ -43,6 +45,12 @@ public class StemCli {
     private static final String DELETE = "delete";
     private static final String DESCRIBE = "describe";
     private static final String HELP = "help";
+
+    private static final String ONE = "one";
+    private static final String TWO = "two";
+    private static final String THREE = "three";
+    private static final String QUORUM = "quorum";
+    private static final String ALL = "all";
 
     private enum Mode {
         INTERACTIVE, BATCH, SINGLE
@@ -77,6 +85,7 @@ public class StemCli {
                 .addOption(newOpt("dst", "FILE"))
                 .addOption(newOpt("manager", "URL"))
                 .addOption(newOpt("file", "FILE"))
+                .addOption(newOpt("consistency", "NAME"))
                 .addOption(newOpt("help", null));
         return options;
     }
@@ -99,7 +108,8 @@ public class StemCli {
             }
         }
 
-        if (args.length <= INTERACTIVE_MODE)
+        if (args.length <= INTERACTIVE_MODE ||
+                (args.length <= INTERACTIVE_MODE + CONSISTENCY  && this.cmd.hasOption("consistency")))
             mode = Mode.INTERACTIVE;
         else if (cmd.hasOption("file"))
             mode = Mode.BATCH;
@@ -110,7 +120,7 @@ public class StemCli {
     private void run() {
         if (cmd != null && cmd.hasOption("manager")) {
             try {
-                connect(cmd.getOptionValue("manager"));
+                connect(cmd.getOptionValue("manager"), cmd);
             } catch (Exception ex) {
                 printLine(ex.getMessage());
             }
@@ -141,29 +151,46 @@ public class StemCli {
 
     /**
      * Establish connection to cluster
+     * @param url
+     * @param cmd
      */
-    private void connect(String url) {
-        this.cluster = new StemCluster.Builder()
-                .withClusterManagerUrl(url)
-                .build();
+    private void connect(String url, CommandLine cmd) {
 
+        if (cmd != null && cmd.hasOption("consistency")) {
+            this.cluster = buildCluster(url, getConsistency(cmd.getOptionValue("consistency")));
+        } else {
+            this.cluster = buildCluster(url);
+        }
         session = cluster.connect();
 
-        printLine(String.format("Connected to \"%s\" on %s", cluster.getName(), cmd.getOptionValue("manager")));
+        printLine(String.format("Connected to \"%s\" on %s", cluster.getName(), url));
+    }
+
+    private StemCluster buildCluster(String url) {
+        return new StemCluster.Builder()
+                .withClusterManagerUrl(url)
+                .build();
+    }
+
+    private StemCluster buildCluster(String url, Consistency.Level level) {
+        return new StemCluster.Builder()
+                .withClusterManagerUrl(url)
+                .withQueryOpts(new QueryOpts().setConsistency(level))
+                .build();
     }
 
     private void usage() {
         printLine("Usage (batch mode):");
-        new HelpFormatter().printHelp("stem-cli [<COMMAND>] [<KEY>] [--data <DATA>] [--dst <FILE>] [--src <FILE>] [--file <FILE>] [--manager=<URL>]", options);
+        new HelpFormatter().printHelp("stem-cli [<COMMAND>] [<KEY>] [--data <DATA>] [--dst <FILE>] [--src <FILE>] [--file <FILE>] [--manager=<URL>] [--consistency <NAME>]", options);
         printLine();
         printLine("Usage (interactive mode):");
-        new HelpFormatter().printHelp("<COMMAND> <KEY> [--data <DATA>] [--dst <FILE>] [--src <FILE>] [--file <FILE>]", options);
+        new HelpFormatter().printHelp("<COMMAND> <KEY> [--data <DATA>] [--dst <FILE>] [--src <FILE>] [--file <FILE>] [--consistency <NAME>]", options);
     }
 
     private void usageInteractiveMode() {
         printLine();
         printLine("Usage commands: ");
-        printLine("connect <URL> - Connect to cluster");
+        printLine("connect <URL> [--consistency <NAME>] - Connect to cluster, consistency=<ONE,TWO,THREE,QUORUM,ALL>");
         printLine("put <KEY> [<DATA> or --data <DATA>] [--src <FILE>]  - Put data to storage");
         printLine("get <KEY> [--dst <FILE>] - Show saved data or save it in to file");
         printLine("delete <KEY> - Delete data from storage");
@@ -271,7 +298,7 @@ public class StemCli {
         switch (args[Argument.COMMAND.ordinal()]) {
             case CONNECT:
                 try {
-                    connect(args[1]);
+                    connect(args[URL], cmd);
                 } catch (Exception ex) {
                     printLine(ex.getMessage());
                 }
@@ -346,5 +373,24 @@ public class StemCli {
     private String readLine(String message) {
         System.out.print(message);
         return console.nextLine();
+    }
+
+    private Consistency.Level getConsistency(String consistency) {
+
+        switch (consistency.toLowerCase()) {
+            case ONE:
+                return Consistency.Level.ONE;
+            case TWO:
+                return Consistency.Level.TWO;
+            case THREE:
+                return Consistency.Level.THREE;
+            case QUORUM:
+                return Consistency.Level.QUORUM;
+            case ALL:
+                return Consistency.Level.ALL;
+            default:
+                printLine(String.format("There is no consistency %s. Default consistency is used.", consistency));
+                return QueryOpts.DEFAULT_CONSISTENCY;
+        }
     }
 }
