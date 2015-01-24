@@ -44,6 +44,7 @@ public class StemCli {
     private static final String GET = "get";
     private static final String DELETE = "delete";
     private static final String DESCRIBE = "describe";
+    private static final String CONSISTENCYLEVEL = "consistencylevel";
     private static final String HELP = "help";
 
     private static final String ONE = "one";
@@ -76,6 +77,7 @@ public class StemCli {
 
     private StemCluster cluster;
     private Session session = null;
+    private final Consistency.Level consistency;
 
     @SuppressWarnings("all")
     private Options buildOptions() {
@@ -108,19 +110,33 @@ public class StemCli {
             }
         }
 
-        if (args.length <= INTERACTIVE_MODE_ARG_LENGTH ||
-                (args.length <= INTERACTIVE_MODE_ARG_LENGTH + CONSISTENCY && this.cmd.hasOption("consistency")))
-            mode = Mode.INTERACTIVE;
-        else if (cmd.hasOption("file"))
+        consistency = readConsistencyLevel(cmd.getOptionValue("consistency"));
+
+        if (cmd.hasOption("file")) {
             mode = Mode.BATCH;
-        else
+            ensureClusterManagerUrl();
+        } else if (hasArg("put") || hasArg("get") || hasArg("delete")) {
             mode = Mode.SINGLE;
+            ensureClusterManagerUrl();
+        } else
+            mode = Mode.INTERACTIVE;
+    }
+
+    private boolean hasArg(String arg) {
+        return cmd.getArgList().contains(arg);
+    }
+
+    private void ensureClusterManagerUrl() {
+        if (cmd.hasOption("manager")) {
+            printLine("Manager URL not set");
+            System.exit(1);
+        }
     }
 
     private void run() {
         if (cmd != null && cmd.hasOption("manager")) {
             try {
-                connect(cmd.getOptionValue("manager"), cmd);
+                connect(cmd.getOptionValue("manager"));
             } catch (Exception ex) {
                 printLine(ex.getMessage());
             }
@@ -151,16 +167,12 @@ public class StemCli {
 
     /**
      * Establish connection to cluster
+     *
      * @param url
-     * @param cmd
      */
-    private void connect(String url, CommandLine cmd) {
+    private void connect(String url) {
 
-        if (cmd != null && cmd.hasOption("consistency")) {
-            this.cluster = buildCluster(url, getConsistency(cmd.getOptionValue("consistency")));
-        } else {
-            this.cluster = buildCluster(url);
-        }
+        this.cluster = buildCluster(url, consistency);
         session = cluster.connect();
 
         printLine(String.format("Connected to \"%s\" on %s", cluster.getName(), url));
@@ -195,6 +207,7 @@ public class StemCli {
         printLine("get <KEY> [--dst <FILE>] - Show saved data or save it in to file");
         printLine("delete <KEY> - Delete data from storage");
         printLine("describe - Show information about cluster.");
+        printLine("consistencylevel - show current Consistency level.");
     }
 
     private void interactiveMode() {
@@ -295,10 +308,11 @@ public class StemCli {
         }
 
         byte[] data;
+        boolean measure = true;
         switch (args[Argument.COMMAND.ordinal()]) {
             case CONNECT:
                 try {
-                    connect(args[URL], cmd);
+                    connect(args[URL]);
                 } catch (Exception ex) {
                     printLine(ex.getMessage());
                 }
@@ -341,16 +355,24 @@ public class StemCli {
                 break;
             case HELP:
                 usageInteractiveMode();
+                measure = false;
                 break;
             case DESCRIBE:
                 REST.Cluster clusterDescriptor = cluster.getMetadata().getDescriptor();
                 clusterDescriptor.setNodes(null);
                 printLine(JsonUtils.encodeFormatted(clusterDescriptor));
+                measure = false;
+                break;
+            case CONSISTENCYLEVEL:
+                printLine(String.format("Current consistency level: %s", consistency));
+                measure = false;
                 break;
             default:
                 throw new IllegalArgumentException("Method " + args[Argument.COMMAND.ordinal()] + " is not allowed");
         }
-        elapsedTime(startTime, args[Argument.COMMAND.ordinal()]);
+
+        if (measure)
+            elapsedTime(startTime, args[Argument.COMMAND.ordinal()]);
     }
 
     /**
@@ -375,22 +397,15 @@ public class StemCli {
         return console.nextLine();
     }
 
-    private Consistency.Level getConsistency(String consistency) {
+    private Consistency.Level readConsistencyLevel(String consistency) {
+        if (null == consistency || consistency.isEmpty())
+            return QueryOpts.DEFAULT_CONSISTENCY;
 
-        switch (consistency.toLowerCase()) {
-            case ONE:
-                return Consistency.Level.ONE;
-            case TWO:
-                return Consistency.Level.TWO;
-            case THREE:
-                return Consistency.Level.THREE;
-            case QUORUM:
-                return Consistency.Level.QUORUM;
-            case ALL:
-                return Consistency.Level.ALL;
-            default:
-                printLine(String.format("There is no consistency %s. Default consistency is used.", consistency));
-                return QueryOpts.DEFAULT_CONSISTENCY;
+        try {
+            return Consistency.Level.valueOf(consistency.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return QueryOpts.DEFAULT_CONSISTENCY;
         }
+
     }
 }

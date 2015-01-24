@@ -130,12 +130,12 @@ public class ConsistentResponseHandler {
     }
 
     void onRequestFinished(ReplicaResponseHandler handler) {
-        if (isRunning()) {
-            completedHandlers.add(handler);
-            if (handler.isSuccess())
-                successfulRequests.incrementAndGet();
-            counter.countDown();
-        }
+        if (!isRunning()) return;
+
+        completedHandlers.add(handler);
+        if (handler.isSuccess())
+            successfulRequests.incrementAndGet();
+        counter.countDown();
     }
 
     public boolean isRunning() {

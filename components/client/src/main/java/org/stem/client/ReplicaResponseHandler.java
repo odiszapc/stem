@@ -80,4 +80,12 @@ public class ReplicaResponseHandler {
     public boolean isCompleted() {
         return completed;
     }
+
+    public static interface SuccessCondition {
+        boolean success();
+    }
+
+    public static class ReadSuccessCondition {
+
+    }
 }
