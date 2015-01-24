@@ -61,6 +61,15 @@ public class ConsistentResponseHandler {
         }
     }
 
+    void onRequestFinished(ReplicaResponseHandler handler) {
+        if (!isRunning()) return;
+
+        completedHandlers.add(handler);
+        if (handler.isSuccess())
+            successfulRequests.incrementAndGet();
+        counter.countDown();
+    }
+
     public void waitFor() {
         try {
             for (ReplicaResponseHandler handler : this.handlers.values()) {
@@ -127,15 +136,6 @@ public class ConsistentResponseHandler {
             default:
                 return totalReplicas;
         }
-    }
-
-    void onRequestFinished(ReplicaResponseHandler handler) {
-        if (!isRunning()) return;
-
-        completedHandlers.add(handler);
-        if (handler.isSuccess())
-            successfulRequests.incrementAndGet();
-        counter.countDown();
     }
 
     public boolean isRunning() {
