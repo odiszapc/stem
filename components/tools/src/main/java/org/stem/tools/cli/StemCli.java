@@ -337,8 +337,8 @@ public class StemCli {
                 if (stored == null)
                     break;
 
-                if (cmd.hasOption("dsc")) {
-                    Utils.writeToFile(stored.body, cmd.getOptionValue("dsc"));
+                if (cmd.hasOption("dst")) {
+                    Utils.writeToFile(stored.body, cmd.getOptionValue("dst"));
                 } else {
                     for (int i = 0; i < stored.getBlobSize(); i++) {
                         System.out.print((char) stored.body[i]);
