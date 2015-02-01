@@ -16,8 +16,10 @@
 
 package org.stem.tools.cli;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import org.apache.commons.cli.*;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.stem.api.REST;
 import org.stem.client.*;
 import org.stem.utils.JsonUtils;
@@ -26,6 +28,9 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 import static org.stem.tools.cli.Utils.newOpt;
@@ -33,19 +38,12 @@ import static org.stem.tools.cli.Utils.printLine;
 
 public class StemCli {
 
-    private static final int INTERACTIVE_MODE_ARG_LENGTH = 1;
-    private static final int MAX_FILE_SIZE = 100; //Max size of file is 100MB
-    private static final int MIN_QUANTITY_ARGS = 2; //Min quantity of args in commands from file
-    private static final int URL = 1;
-    private static final int CONSISTENCY = 2; //Interactive mode with consistency argument
-
-    public static final String CONNECT = "connect";
-    private static final String PUT = "put";
-    private static final String GET = "get";
-    private static final String DELETE = "delete";
-    private static final String DESCRIBE = "describe";
-    private static final String CONSISTENCYLEVEL = "consistencylevel";
-    private static final String HELP = "help";
+    private static final int MAX_FILE_SIZE = 100; //Max size of file is 100MB.
+    private static final int MIN_QUANTITY_ARGS = 2; //Min quantity of args in commands from file.
+    private static final int INFO_COMMAND_QUANTITY_ARGS = 1;
+    private static final int URL = 1; //Position of URL in the arguments array.
+    private static final boolean ENABLE_CALCULATION = true; //Calculation of elapsed time
+    private static final boolean DISABLE_CALCULATION = false;
 
     private enum Mode {
         INTERACTIVE, BATCH, SINGLE
@@ -64,7 +62,7 @@ public class StemCli {
     private final CommandLineParser parser = new PosixParser();
     private final Options options;
     private final Scanner console = new Scanner(System.in);
-    private final String[] args;
+    private String[] args;
 
     private CommandLine cmd;
     private Mode mode;
@@ -72,6 +70,128 @@ public class StemCli {
     private StemCluster cluster;
     private Session session = null;
     private Consistency.Level consistency = QueryOpts.DEFAULT_CONSISTENCY;
+
+    private enum Command {
+        CONNECT("connect", DISABLE_CALCULATION, MIN_QUANTITY_ARGS) {
+            public void execute(StemCli stemCli) {
+                stemCli.connect(stemCli.args[URL]);
+            }
+        },
+        PUT("put", ENABLE_CALCULATION, MIN_QUANTITY_ARGS + 1) {
+            public void execute(StemCli stemCli) throws ParseException, IOException {
+                if (stemCli.args.length <= MIN_QUANTITY_ARGS)
+                    throw new ParseException("Too few arguments for put command");
+
+                byte[] data;
+                if (stemCli.mode == Mode.INTERACTIVE && !stemCli.cmd.hasOption("data") && !stemCli.cmd.hasOption("src")) {
+                    if (stemCli.args[Argument.DATA.ordinal()].startsWith("--")) {
+                        throw new IllegalArgumentException(String.format("Wrong argument '%s'", stemCli.args[Argument.DATA.ordinal()]));
+                    }
+                    data = stemCli.args[Argument.DATA.ordinal()].replace("\"", "").getBytes();
+                } else if (stemCli.cmd.hasOption("data")) {
+                    data = stemCli.cmd.getOptionValue("data").replace("\"", "").getBytes();
+                } else {
+                    data = Utils.readFromFile(stemCli.cmd.getOptionValue("src"), MAX_FILE_SIZE);
+                }
+
+                Blob blob = Blob.create(DigestUtils.md5(stemCli.args[Argument.KEY.ordinal()].replace("\"", "").getBytes()), data);
+                stemCli.session.put(blob);
+            }
+        },
+        GET("get", ENABLE_CALCULATION, MIN_QUANTITY_ARGS) {
+            public void execute(StemCli stemCli) {
+                Blob stored = stemCli.session.get(DigestUtils.md5(stemCli.args[Argument.KEY.ordinal()].replace("\"", "").getBytes()));
+
+                if (stored == null)
+                    return;
+
+                if (stemCli.cmd.hasOption("dst")) {
+                    try {
+                        Utils.writeToFile(stored.body, stemCli.cmd.getOptionValue("dst"));
+                    } catch (IOException ioe) {
+                        printLine(ioe.getMessage());
+                    }
+                } else {
+                    for (int i = 0; i < stored.getBlobSize(); i++) {
+                        System.out.print((char) stored.body[i]);
+                    }
+                    printLine();
+                }
+            }
+        },
+        DELETE("delete", ENABLE_CALCULATION, MIN_QUANTITY_ARGS) {
+            public void execute(StemCli stemCli) {
+                stemCli.session.delete(DigestUtils.md5(stemCli.args[Argument.KEY.ordinal()].replace("\"", "").getBytes()));
+            }
+        },
+        DESCRIBE("describe", DISABLE_CALCULATION, INFO_COMMAND_QUANTITY_ARGS) {
+            public void execute(StemCli stemCli) {
+                REST.Cluster clusterDescriptor = stemCli.cluster.getMetadata().getDescriptor();
+                clusterDescriptor.setNodes(null);
+                printLine(JsonUtils.encodeFormatted(clusterDescriptor));
+            }
+        },
+        CONSISTENCYLEVEL("consistencylevel", DISABLE_CALCULATION, INFO_COMMAND_QUANTITY_ARGS) {
+            public void execute(StemCli stemCli) {
+                printLine(String.format("Current consistency level: %s", stemCli.consistency));
+            }
+        },
+        HELP("help", DISABLE_CALCULATION, INFO_COMMAND_QUANTITY_ARGS) {
+            public void execute(StemCli stemCli) {
+                stemCli.usageInteractiveMode();
+            }
+        };
+
+        private final String name;
+        private final boolean measure;
+        private int minQuantityArgs;
+        private static long startTime;
+
+        /**
+         *
+         * @param name This is the name of command to execute.
+         * @param measure It is used to calculate elapsed time of execution.
+         * @param minQuantityArgs This is the minimum quantity of arguments for current command.
+         */
+        Command(String name, boolean measure, int minQuantityArgs) {
+            this.name = name;
+            this.measure = measure;
+            this.minQuantityArgs = minQuantityArgs;
+        }
+
+        private static Map<String, Command> values = new HashMap<>();
+
+        static {
+            for (Command val : Command.values()) {
+                values.put(val.name, val);
+            }
+        }
+
+        private static Command byName(String name) {
+            startTime = System.nanoTime();
+            Command command = values.get(name);
+
+            if (null == command)
+                throw new IllegalStateException("Command " + name + " is not allowed");
+
+            startTime = System.nanoTime();
+            return command;
+        }
+
+        private void getElapsedTime() {
+            if (measure) {
+                long eta = System.nanoTime() - startTime;
+                double durationMs = eta < 10000000 ? Math.round(eta / 10000.0) / 100.0 : Math.round(eta / 1000000.0);
+                printLine("Elapsed time: %s ms", durationMs);
+            }
+        }
+
+        private boolean isArgsValid(int argsLength) {
+            return argsLength >= minQuantityArgs;
+        }
+
+        abstract void execute(StemCli stemCli) throws ParseException, IOException;
+    }
 
     @SuppressWarnings("all")
     private Options buildOptions() {
@@ -154,7 +274,7 @@ public class StemCli {
                 break;
             default:
                 try {
-                    processing(cmd, args);
+                    processing();
                 } catch (Exception ex) {
                     printLine(ex.getMessage());
                 }
@@ -167,7 +287,6 @@ public class StemCli {
      * @param url
      */
     private void connect(String url) {
-
         this.cluster = buildCluster(url, consistency);
         session = cluster.connect();
 
@@ -208,13 +327,12 @@ public class StemCli {
 
     private void interactiveMode() {
         if (console == null) {
-            System.err.println("There is no console.");
+            printLine("There is no console.");
             System.exit(1);
         }
         printLine("Enter 'quit' to exit interactive mode");
 
         String inputString;
-        CommandLine cmd;
 
         while (true) {
             try {
@@ -226,9 +344,8 @@ public class StemCli {
                 if (inputString.equals("quit"))
                     return;
 
-                cmd = parsingArgs(inputString, true);
-
-                processing(cmd, inputString.split(" "));
+                parsingArgs(inputString, true);
+                processing();
             } catch (Exception ex) {
                 printLine(ex.getMessage());
             }
@@ -247,8 +364,6 @@ public class StemCli {
         reader = new BufferedReader(new FileReader(fileName));
         String line;
         int lineNumber = 0;
-        CommandLine cmd;
-        String[] args;
 
         while ((line = reader.readLine()) != null) {
             line = line.trim();
@@ -258,117 +373,53 @@ public class StemCli {
                 continue;
 
             try {
-                cmd = parsingArgs(line, true);
-            } catch (ParseException pe) {
+                parsingArgs(line, true);
+              } catch (ParseException pe) {
                 printLine("Error occurred in the line " + lineNumber + " of file.");
                 printLine(pe.getMessage());
                 continue;
             }
             try {
-                args = line.split(" ");
-                processing(cmd, args);
+                processing();
             } catch (Exception ile) {
                 printLine(ile.getMessage());
             }
         }
     }
 
-    private CommandLine parsingArgs(String inputString, boolean interactiveMode) throws ParseException {
-        String[] args = inputString.split(" ");
+    /**
+     * Parsing args from lines which is received from file or console
+     * @param inputString - string from file or console
+     * @param interactiveMode - current mode
+     * @throws ParseException
+     */
+    private void parsingArgs(String inputString, boolean interactiveMode) throws ParseException {
+        this.args = inputString.split(" ");
 
-        CommandLine cmd = parser.parse(options, args);
-        if (!interactiveMode && !cmd.hasOption("manager") && !cmd.hasOption("help"))
+        this.cmd = parser.parse(options, this.args);
+        if (!interactiveMode && !this.cmd.hasOption("manager") && !this.cmd.hasOption("help"))
             throw new ParseException("There is no '--manager' option!");
 
-        if (args.length == 0 && !args[Argument.COMMAND.ordinal()].equals("help") && args.length < MIN_QUANTITY_ARGS)
-            throw new ParseException("Too few arguments");
-
-        return cmd;
+//        if (!hasArg("help") && !hasArg("describe") && !hasArg("consistencylevel") && this.args.length < MIN_QUANTITY_ARGS)
+//            throw new ParseException("Too few arguments");
     }
 
     /**
      * Processing commands
-     *
-     * @param cmd  command line object
-     * @param args arguments
      * @throws IllegalArgumentException
      * @throws IOException
      * @throws ClientInternalError
      */
-    private void processing(CommandLine cmd, String[] args) throws IOException, ParseException, ClientException {
-        long startTime = System.nanoTime();
-
-        if (session == null && (!args[Argument.COMMAND.ordinal()].equals("connect") &&
-                !args[Argument.COMMAND.ordinal()].equals("help"))) {
+    private void processing() throws IOException, ParseException, ClientException {
+        if (session == null && !hasArg("connect") && !hasArg("help")) {
             return;
         }
 
-        byte[] data;
-        boolean measure = true;
-        switch (args[Argument.COMMAND.ordinal()]) {
-            case CONNECT:
-                try {
-                    connect(args[URL]);
-                } catch (Exception ex) {
-                    printLine(ex.getMessage());
-                }
-                break;
-            case PUT:
-                if (args.length <= MIN_QUANTITY_ARGS)
-                    throw new ParseException("Too few arguments for put command");
-
-                if (mode == Mode.INTERACTIVE && !cmd.hasOption("data") && !cmd.hasOption("src")) {
-                    if (args[Argument.DATA.ordinal()].startsWith("--")) {
-                        throw new IllegalArgumentException(String.format("Wrong argument '%s'", args[Argument.DATA.ordinal()]));
-                    }
-                    data = args[Argument.DATA.ordinal()].replace("\"", "").getBytes();
-                } else if (cmd.hasOption("data")) {
-                    data = cmd.getOptionValue("data").replace("\"", "").getBytes();
-                } else {
-                    data = Utils.readFromFile(cmd.getOptionValue("src"), MAX_FILE_SIZE);
-                }
-
-                Blob blob = Blob.create(DigestUtils.md5(args[Argument.KEY.ordinal()].replace("\"", "").getBytes()), data);
-                session.put(blob);
-                break;
-            case GET:
-                Blob stored = session.get(DigestUtils.md5(args[Argument.KEY.ordinal()].replace("\"", "").getBytes()));
-
-                if (stored == null)
-                    break;
-
-                if (cmd.hasOption("dst")) {
-                    Utils.writeToFile(stored.body, cmd.getOptionValue("dst"));
-                } else {
-                    for (int i = 0; i < stored.getBlobSize(); i++) {
-                        System.out.print((char) stored.body[i]);
-                    }
-                    printLine();
-                }
-                break;
-            case DELETE:
-                session.delete(DigestUtils.md5(args[Argument.KEY.ordinal()].replace("\"", "").getBytes()));
-                break;
-            case HELP:
-                usageInteractiveMode();
-                measure = false;
-                break;
-            case DESCRIBE:
-                REST.Cluster clusterDescriptor = cluster.getMetadata().getDescriptor();
-                clusterDescriptor.setNodes(null);
-                printLine(JsonUtils.encodeFormatted(clusterDescriptor));
-                measure = false;
-                break;
-            case CONSISTENCYLEVEL:
-                printLine(String.format("Current consistency level: %s", consistency));
-                measure = false;
-                break;
-            default:
-                throw new IllegalArgumentException("Method " + args[Argument.COMMAND.ordinal()] + " is not allowed");
-        }
-
-        if (measure)
-            elapsedTime(startTime, args[Argument.COMMAND.ordinal()]);
+        Command command = Command.byName(this.args[Argument.COMMAND.ordinal()].toLowerCase());
+        if (!command.isArgsValid(this.args.length))
+            throw new ParseException(String.format("Too few arguments for %s command",command.name));
+        command.execute(this);
+        command.getElapsedTime();
     }
 
     /**
@@ -376,7 +427,7 @@ public class StemCli {
      *
      * @param startTime starting time in nanoseconds
      */
-    private void elapsedTime(long startTime, String commandName) {
+    private void elapsedTime(long startTime) {
         long eta = System.nanoTime() - startTime;
         double durationMs = eta < 10000000 ? Math.round(eta / 10000.0) / 100.0 : Math.round(eta / 1000000.0);
         printLine("Elapsed time: %s ms", durationMs);
@@ -402,6 +453,5 @@ public class StemCli {
         } catch (IllegalArgumentException e) {
             return QueryOpts.DEFAULT_CONSISTENCY;
         }
-
     }
 }
