@@ -108,5 +108,30 @@ public class RESTConstants {
             }
         }
 
+        public static class Frontend {
+
+            public static final String BASE = "/frontend";
+            public static final String URI = Api.BASE + BASE;
+
+            public static class Get {
+
+                public static final String BASE = "/get";
+                public static final String URI = Frontend.URI + BASE;
+            }
+
+            public static class Put {
+
+                public static final String BASE = "/put";
+                public static final String URI = Frontend.URI + BASE;
+            }
+
+            public static class Delete {
+
+                public static final String BASE = "/delete";
+                public static final String URI = Frontend.URI + BASE;
+            }
+
+        }
+
     }
 }
