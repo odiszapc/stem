@@ -48,16 +48,9 @@ public class Utils {
      * @throws java.io.IOException
      */
     public static void writeToFile(byte[] blob, String fileName) throws IOException {
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(fileName);
+        try (FileOutputStream fos = new FileOutputStream(fileName)) {
             fos.write(blob);
             fos.flush();
-        } catch (IOException ex) {
-            throw new IOException(ex.getMessage());
-        } finally {
-            if (fos != null)
-                fos.close();
         }
     }
 
@@ -69,7 +62,6 @@ public class Utils {
      * @throws IOException
      */
     public static byte[] readFromFile(String fileName, final int maxSize) throws IOException {
-        FileInputStream fis = null;
         Path filePath = Paths.get(fileName);
         if (!Files.exists(filePath) && !Files.isRegularFile(filePath)) {
             throw new FileNotFoundException("There is no file or it is not regular file.");
@@ -80,15 +72,9 @@ public class Utils {
         }
         byte[] blob = new byte[(int) Files.size(filePath)];
 
-        try {
-            fis = new FileInputStream(fileName);
+        try (FileInputStream fis = new FileInputStream(fileName)) {
             fis.read(blob);
             return blob;
-        } catch (IOException ex) {
-            throw new IOException(ex.getMessage());
-        } finally {
-            if (fis != null)
-                fis.close();
         }
     }
 
