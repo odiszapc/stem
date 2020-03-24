@@ -10,7 +10,7 @@ With STEM each machine in cluster can store up to 100-200TB of data.
 
 In terms of CAP theorem STEM is AP (high availability and partition tolerance) system.
 
-STEM was inspired by [Twitter Blobstore storage model](https://blog.twitter.com/2012/blobstore-twitter%E2%80%99s-house-photo-storage-system)
+STEM was inspired by [Twitter Blobstore storage model](https://blog.twitter.com/engineering/en_us/a/2012/blobstore-twitter-s-in-house-photo-storage-system.html)
 
 #### Features
 - Linear scalability
