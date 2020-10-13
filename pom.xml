@@ -280,7 +280,7 @@
     <author.name>Alexey Plotnik</author.name>
     <author.email>odiszapc@gmail.com</author.email>
 
-    <junit.version>4.11</junit.version>
+    <junit.version>4.13.1</junit.version>
     <fest.version>2.0M10</fest.version>
     <guava.version>16.0.1</guava.version>
     <httpclient.version>4.3.3</httpclient.version>
