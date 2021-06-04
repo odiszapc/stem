@@ -283,7 +283,7 @@
     <junit.version>4.11</junit.version>
     <fest.version>2.0M10</fest.version>
     <guava.version>16.0.1</guava.version>
-    <httpclient.version>4.3.3</httpclient.version>
+    <httpclient.version>4.5.13</httpclient.version>
     <curator.version>2.4.1</curator.version>
     <netty.version>4.0.18.Final</netty.version>
     <libcrunch.version>1.0.3</libcrunch.version>
