@@ -287,7 +287,7 @@
     <curator.version>2.4.1</curator.version>
     <netty.version>4.0.18.Final</netty.version>
     <libcrunch.version>1.0.3</libcrunch.version>
-    <snakeyaml.version>1.13</snakeyaml.version>
+    <snakeyaml.version>1.31</snakeyaml.version>
     <commons-io.version>2.4</commons-io.version>
     <commons-collections.version>4.0</commons-collections.version>
     <commons-codec.version>1.9</commons-codec.version>
