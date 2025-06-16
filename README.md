@@ -1,74 +1,94 @@
 # STEM Object Storage
 
-STEM is a distributed storage cluster of immutable binary objects. STEM is based on top of Netty, Grizzly, Zookeeper and Cassandra (meta store). STEM has its own data storage format based on a bunch of pre-allocated blob containers called "fat files" of the same size.
+**STEM** is a distributed object storage system designed to store immutable binary data. It is built on top of Netty, Grizzly, ZooKeeper, and Cassandra (used as a metadata store). STEM implements its own storage format using pre-allocated blob containers called *fat files*, which are uniform in size.
 
-STEM uses distribution strategy based on virtual partitioning (CRUSH implementation is used by default)
+STEM utilizes a data distribution strategy based on virtual partitioning, with a default implementation of the CRUSH algorithm.
 
-STEM is designed as a cheap solution for cloud hosting providers and can easily be deployed on commodity hardware. STEM does not need any vendor specific stuff like RAID or SAN, it uses plain formatted disks to store binary data.
+It is designed as a cost-effective solution for cloud hosting providers and can be deployed on commodity hardware. STEM requires no vendor-specific components such as RAID or SAN; it uses plain formatted disks for binary data storage.
 
-With STEM each machine in cluster can store up to 100-200TB of data.
+Each machine in the cluster can handle up to 100–200 TB of data.
 
-In terms of CAP theorem STEM is AP (high availability and partition tolerance) system.
+According to the CAP theorem, STEM is an **AP** (Availability and Partition tolerance) system.
 
-STEM was inspired by [Twitter Blobstore storage model](https://blog.twitter.com/engineering/en_us/a/2012/blobstore-twitter-s-in-house-photo-storage-system.html)
+STEM was inspired by the [Twitter Blobstore storage model](https://blog.twitter.com/engineering/en_us/a/2012/blobstore-twitter-s-in-house-photo-storage-system.html).
 
-#### Features
+---
+
+### Features
+
 - Linear scalability
 - No single point of failure
-- High availability (x3 replication by default)
-- Heterogeneous design of cluster (binary objects are separated from meta data)
-- Linux/Windows compatible (HotSpot JVM)
-- Low cost — store up to 200TB of data on storage node
-- Stray forward compaction with no overhead (it takes few hours to free up space after deletion of data on a 3TB disk)
-- Automated cluster re-balancing logic — put into rack and power on
-- Process of data recover calculates dataset differences without overhead
-- Tolerate disk fragmentation by pre-allocating of disk space
-- True sequential write helps to reach the maximum capabilities of spindle disks
-- Tunable consistency on reads
-- Coordination and monitoring of data movement with Zookeeper
-- Uses Cassandra 2.0 as meta-data registry
-- Cluster management user interface
+- High availability (3x replication by default)
+- Heterogeneous cluster design (binary objects are decoupled from metadata)
+- Compatible with Linux and Windows (HotSpot JVM)
+- Low-cost storage — up to 200 TB per storage node
+- Straightforward compaction with minimal overhead (e.g., a 3 TB disk can be compacted within hours)
+- Automated cluster rebalancing — just rack and power on
+- Efficient data recovery via differential set calculation
+- Tolerant of disk fragmentation through pre-allocation of space
+- True sequential writes to maximize spindle disk performance
+- Tunable read consistency
+- ZooKeeper-based coordination and monitoring of data movement
+- Cassandra 2.0 used as metadata registry
+- Web-based cluster management interface
 - Hierarchical cluster topology
-- Data distribution logic is based on CRUSH algorithm to compute data flow
-- REST API (PUT, GET, DELETE)
+- Data distribution logic based on the CRUSH algorithm
+- REST API (supports PUT, GET, DELETE)
 
-#### Use cases
-Linear scalability, high availability with zer-overhead compaction and repair make STEM perfect platform for the following production cases:
-- File storage backend, i.e. video hosting
-- Storage for a large amount of small blocks of data
-- Core engine for image hosting
-- Video hosting back-end
+---
 
-STEM Object Storage will allow you to install as many disks to storage node as you want. Indexes are located in a separate cluster; you don't need to worry about running out of RAM — meta- and binary- clusters can be scaled out separately.
+### Use Cases
 
-#### Development
-##### Intellij
-- Using  If you're using Intellij, you need to install Lombok-Intellij https://code.google.com/p/lombok-intellij-plugin/
-- Import the project as a Maven Project.
+With linear scalability, high availability, and zero-overhead compaction and repair, STEM is ideal for:
 
-##### Eclipse and variants(STS, JBoss Dev Studio)
-- Run lombok.jar as a java app and thus install the plugin
-- Import as a Maven Project
-- Most probably you'll have to silence a few m2e plugin complains
-- Why Eclipse? Use vi!
+- File storage backends (e.g., video hosting)
+- Storage of a large volume of small binary objects
+- Image hosting core engines
+- Video hosting backends
 
-#### Resources
-Project home: http://stemstorage.org
+STEM allows you to attach an arbitrary number of disks to a storage node. Indexes are stored in a separate metadata cluster, so memory limitations on storage nodes are not a concern. Binary and metadata clusters can be scaled independently.
 
-JIRA: http://tracker.stemstorage.org
+---
 
+### Development
 
-#### Author
-Alexey Plotnik (odiszapc@gmail.com, http://twitter.com/odiszapc)
+#### IntelliJ IDEA
 
-#### Contributors
-Alexey Plotnik
+- If you're using IntelliJ, install the [Lombok plugin](https://plugins.jetbrains.com/plugin/6317-lombok) for proper annotation support.
+- Import the project as a Maven project.
 
-Dmitry Kolesov
+#### Eclipse and Variants (STS, JBoss Developer Studio)
 
-Ivan Sobolev
+- Run `lombok.jar` as a Java application to install the plugin.
+- Import the project as a Maven project.
+- You may need to suppress some m2e plugin warnings.
 
-Lucas Allan Amorim
+> Why Eclipse? Use `vi`!
 
-#### License
-Apache 2.0
+---
+
+### Resources
+
+- Project homepage: [http://stemstorage.org](http://stemstorage.org)
+- JIRA issue tracker: [http://tracker.stemstorage.org](http://tracker.stemstorage.org)
+
+---
+
+### Author
+
+- Alexey Plotnik ([odiszapc@gmail.com](mailto:odiszapc@gmail.com), [@odiszapc](http://twitter.com/odiszapc))
+
+---
+
+### Contributors
+
+- Alexey Plotnik  
+- Dmitry Kolesov  
+- Ivan Sobolev  
+- Lucas Allan Amorim  
+
+---
+
+### License
+
+Apache License 2.0
